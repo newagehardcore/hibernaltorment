@@ -1,6 +1,0 @@
-[Text]
-Normal=#FFFFFF
-Current=#ff0000
-NormalBG=#000000
-SelectedBG=#800000
-Font=Arial
