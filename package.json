@@ -1,0 +1,19 @@
+{
+  "name": "hibernal-torment",
+  "version": "1.0.0",
+  "description": "A haunted Winamp-style music player experience",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node scripts/dev.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "fkill": "^8.1.1",
+    "open": "^8.4.2"
+  }
+}

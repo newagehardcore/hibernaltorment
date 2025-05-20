@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATEKEEPER - HIBERNAL TORMENT - 2025</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 10 L30 50 L50 40 L70 50 Z' fill='%23FFA500'/><path d='M40 50 L50 30 L60 50 L50 70 Z' fill='%23FF8C00'/></svg>">
+    <link rel="stylesheet" type="text/css" href="webamp.css">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            font-family: Arial, sans-serif;
+            cursor: auto !important;
+            /* Prevent scrolling */
+            position: fixed;
+            background-color: #000; /* Ensure body background is black */
+        }
+        
+        /* Overlay for the glow effect - kept for now, adjust z-index */
+        #glow-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255, 150, 50, 0.15), rgba(0, 0, 0, 0.3));
+            pointer-events: none;
+            z-index: 1; /* Below halo-reveal-layer */
+            animation: flicker 5s infinite alternate;
+            opacity: 0; /* Start with no opacity */
+            transition: opacity 10s cubic-bezier(0.4, 0, 0.2, 1); /* Super gradual 10 second fade in */
+        }
+        
+        /* Candle flicker animation */
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                opacity: 0.6;
+            }
+            20%, 24%, 55% {
+                opacity: 0.4;
+            }
+            40%, 42% {
+                opacity: 0.5;
+            }
+            60%, 80%, 85% {
+                opacity: 0.7;
+            }
+            90%, 95% {
+                opacity: 0.8;
+            }
+        }
+        
+        #webamp-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;  /* Above background */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        /* Apply zoom only to Webamp windows */
+        #webamp {
+            zoom: 1.05 !important;
+            -moz-transform: scale(1.05);
+            -moz-transform-origin: top left;
+        }
+        
+        /* Adjust positioning for scaled elements */
+        #webamp .window {
+            filter: 
+                drop-shadow(0 0 10px rgba(0, 0, 0, 0.9))
+                drop-shadow(0 0 20px rgba(0, 0, 0, 0.7))
+                drop-shadow(0 0 100px rgba(0, 0, 0, 0.8))
+                drop-shadow(0 0 200px rgba(0, 0, 0, 0.4));
+            will-change: filter, transform;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Additional glow effect for windows */
+        #webamp .window::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Remove loading text styles */
+        #loading {
+            display: none;
+        }
+        
+        /* Override ALL cursor styles */
+        * {
+            cursor: auto !important;
+        }
+        /* Ensure cursor stays normal on all parts of Webamp */
+        .window, .webamp-region, #webamp, #webamp * {
+            cursor: auto !important;
+        }
+
+        /* Password protection overlay */
+        #password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 2s ease-out;
+        }
+
+        #password-container {
+            position: relative;
+            width: 300px;
+        }
+
+        #password-label {
+            position: absolute;
+            font-family: monospace;
+            color: #222;
+            font-size: 10px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-transform: uppercase;
+            pointer-events: none;
+            letter-spacing: 0px;
+        }
+
+        #password-input {
+            width: 100%;
+            padding: 15px;
+            background-color: #111;
+            border: 1px solid #333;
+            color: #f00;
+            font-family: monospace;
+            font-size: 14px;
+            letter-spacing: 0px;
+            text-align: center;
+            outline: none;
+            transition: border 0.3s ease-in-out;
+        }
+
+        #password-input:focus {
+            border-color: #555;
+        }
+
+        @keyframes flash-red {
+            0% { color: #ff0000; }
+            50% { color: #a00000; }
+            100% { color: #ff0000; }
+        }
+
+        .flashing {
+            animation: flash-red 0.5s infinite;
+        }
+
+        #access-indicator {
+            margin-top: 15px;
+            height: 2px;
+            background-color: #222;
+            transform-origin: left;
+            transform: scaleX(0);
+            transition: transform 0.5s ease-in-out, background-color 0.5s ease-in-out;
+        }
+
+        .granted {
+            transform: scaleX(1) !important;
+            background-color: rgb(255, 0, 0) !important;
+        }
+
+        #background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        #current-background, #next-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .background-gif {
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            object-fit: cover;
+            object-position: center;
+            will-change: opacity;
+        }
+
+        .background-gif.active {
+            opacity: 1;
+        }
+
+        /* Replace button styles with floating tilde styles */
+        #animation-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: monospace;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            user-select: none;
+            padding: 10px;
+        }
+
+        #animation-toggle:hover {
+            color: rgba(255, 255, 255, 1);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        #animation-toggle.active {
+            color: rgba(255, 255, 255, 1);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background container for GIFs -->
+    <div id="background-container">
+        <div id="current-background" class="background-gif"></div>
+    </div>
+
+        
+    <!-- Password protection overlay -->
+    <div id="password-overlay">
+        <div id="password-container">
+            <div id="password-label"></div>
+            <input type="text" id="password-input" autocomplete="off" spellcheck="false">
+            <div id="access-indicator"></div>
+        </div>
+    </div>
+
+    <!-- This image will be the halo reveal layer - COMMENTED OUT
+    <img id="halo-reveal-layer" src="assets/loops/01Loop.gif" alt="Eyes">
+    -->
+    
+    <!-- Candle glow effect overlay -->
+    <div id="glow-overlay"></div>
+    
+    <!-- Replace button with tilde -->
+    <div id="animation-toggle">~</div>
+    <div id="webamp-container"></div>
+    
+    <!-- Load Webamp from CDN -->
+    <script src="https://unpkg.com/webamp@1.4.2/built/webamp.bundle.min.js"></script>
+    
+    <script>
+        // Global variables
+        let webampInstance = null;
+        let usesCustomSkin = true;
+        let animationId = null;
+        let eqIntervalId = null;
+        let passwordUnlocked = false;
+        /* Commented out halo-related variables
+        let haloRevealLayerElement = null;
+        let haloBeatLastUpdate = 0;
+        const HALO_BEAT_THROTTLE_MS = 100;
+        let haloRectCombined = null;
+        let haloBlurFilterElement = null;
+        */
+        // Window height constants (MAIN_WINDOW_HEIGHT for EQ is still useful if EQ has fixed height relative to main)
+        const MAIN_WINDOW_HEIGHT = 116;
+        const EQ_WINDOW_HEIGHT = 116;
+        
+        // Function to convert binary data to base64
+        async function fetchAndConvertToBase64(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+                }
+                const blob = await response.blob();
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } catch (error) {
+                console.error('Error fetching skin:', error);
+                return null;
+            }
+        }
+
+        // Function to preload an audio file and get its blob URL
+        async function preloadAudioFile(url) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                return URL.createObjectURL(blob);
+            } catch (error) {
+                console.error('Error preloading audio:', error);
+                return url; // Fallback to original URL if fetch fails
+            }
+        }
+
+        // Define the music files with their metadata - exact file names from the directory
+        const tracksData = [
+            { 
+                url: "assets/music/01 Gross Excelations.mp3",
+                defaultName: "Gross Excelations",
+                duration: 68.784,
+                metaData: {
+                    title: "Gross Excelations"
+                }
+            },
+            { 
+                url: "assets/music/02 Two Travelers.mp3",
+                defaultName: "Two Travelers",
+                duration: 208.152,
+                metaData: {
+                    title: "Two Travelers"
+                }
+            },
+            { 
+                url: "assets/music/03 Chambers of the Starwatcher.mp3",
+                defaultName: "Chambers of the Starwatcher",
+                duration: 218.5665,
+                metaData: {
+                    title: "Chambers of the Starwatcher"
+                }
+            },
+            { 
+                url: "assets/music/04 Hibernal Torment.mp3",
+                defaultName: "Hibernal Torment",
+                duration: 216,
+                metaData: {
+                    title: "Hibernal Torment"
+                }
+            },
+            { 
+                url: "assets/music/05 Rats.mp3",
+                defaultName: "Rats",
+                duration: 233.64,
+                metaData: {
+                    title: "Rats"
+                }
+            },
+            { 
+                url: "assets/music/06 Entrusted to Fools.mp3",
+                defaultName: "Entrusted to Fools",
+                duration: 196.008,
+                metaData: {
+                    title: "Entrusted to Fools"
+                }
+            },
+            { 
+                url: "assets/music/07 Stale Biscuits.mp3",
+                defaultName: "Stale Biscuits",
+                duration: 192,
+                metaData: {
+                    title: "Stale Biscuits"
+                }
+            },
+            { 
+                url: "assets/music/08 Crusted Aucklet.mp3",
+                defaultName: "Crusted Aucklet",
+                duration: 71.016,
+                metaData: {
+                    title: "Crusted Aucklet"
+                }
+            },
+            { 
+                url: "assets/music/09 Ill Wind.mp3",
+                defaultName: "Ill Wind",
+                duration: 216,
+                metaData: {
+                    title: "Ill Wind"
+                }
+            },
+            { 
+                url: "assets/music/10 Breadmaker.mp3",
+                defaultName: "Breadmaker",
+                duration: 193.824,
+                metaData: {
+                    title: "Breadmaker"
+                }
+            },
+            { 
+                url: "assets/music/11 Taste of my Chime.mp3",
+                defaultName: "Taste of my Chime",
+                duration: 138,
+                metaData: {
+                    title: "Taste of my Chime"
+                }
+            },
+            { 
+                url: "assets/music/12 Doom Fruit.mp3",
+                defaultName: "Doom Fruit",
+                duration: 210,
+                metaData: {
+                    title: "Doom Fruit"
+                }
+            },
+            { 
+                url: "assets/music/13 Bone Window.mp3",
+                defaultName: "Bone Window",
+                duration: 141.648,
+                metaData: {
+                    title: "Bone Window"
+                }
+            }
+        ];
+
+        // Background GIF mapping for each track with preloaded images
+        const trackBackgrounds = {
+            0: {  // Track 1 - Gross Excelations
+                url: "assets/loops/01Loop.gif",
+                preloadedImage: null,
+                fadeIn: 10,    // 10 seconds fade in
+                fadeOut: 0     // no fade out
+            },
+            1: {  // Track 2 - Two Travelers
+                url: "assets/loops/02Loop.gif",
+                preloadedImage: null,
+                fadeIn: 0,   // 0.2 seconds fade in
+                fadeOut: .3   // 0.2 seconds fade out
+            },
+            2: {  // Track 3 - Chambers of the Starwatcher
+                url: "assets/loops/03Loop.gif",
+                preloadedImage: null,
+                fadeIn: 2,     // 2 seconds fade in
+                fadeOut: 0   // 0.2 seconds fade out
+            },
+            3: {  // Track 4 - Hibernal Torment
+                url: "assets/loops/04Loop.gif",
+                preloadedImage: null,
+                fadeIn: 0,     // 2 seconds fade in
+                fadeOut: 0   // 0.2 seconds fade out
+            }
+        };
+
+        // Function to set transition duration for an element
+        function setTransitionDuration(element, duration) {
+            // Remove transitions for instant changes
+            element.style.transition = 'none';
+        }
+
+        // Function to initialize background system
+        function initBackgroundSystem() {
+            console.log('Initializing background system');
+            const currentBg = document.getElementById('current-background');
+            
+            if (trackBackgrounds[0]) {
+                console.log('Setting up initial background:', trackBackgrounds[0].url);
+                const img = new Image();
+                img.className = 'background-gif';
+                
+                // Ensure image starts completely invisible with no transition
+                img.style.transition = 'none';
+                img.style.opacity = '0';
+                
+                img.onload = () => {
+                    console.log('Initial background loaded successfully');
+                    currentBg.innerHTML = '';
+                    currentBg.appendChild(img);
+                };
+                
+                img.onerror = (error) => {
+                    console.error('Error loading initial background:', error);
+                };
+                
+                img.src = trackBackgrounds[0].url;
+            }
+        }
+
+        // Function to preload all background GIFs
+        function preloadBackgrounds() {
+            console.log('Starting background preload...');
+            
+            // Preload all backgrounds
+            Object.values(trackBackgrounds).forEach((background, index) => {
+                const img = new Image();
+                img.onload = () => {
+                    console.log(`Preloaded background ${index + 1}: ${background.url}`);
+                    background.preloadedImage = img;  // Store the preloaded image
+                };
+                img.onerror = (error) => {
+                    console.error(`Error preloading background ${index + 1}:`, error);
+                };
+                img.src = background.url;
+            });
+        }
+
+        // Modified track change handler with detailed logging
+        function handleTrackChange(trackInfo) {
+            // Immediately handle track change
+            requestAnimationFrame(() => {
+                console.log('DEBUG - Track Change Event:', {
+                    trackInfo,
+                    url: trackInfo?.url,
+                    title: trackInfo?.metaData?.title,
+                    defaultName: trackInfo?.defaultName
+                });
+                
+                if (!trackInfo) return;
+                
+                // Find the track index by matching the title
+                let trackIndex = -1;
+                
+                // First try to match by URL if available
+                if (trackInfo.url) {
+                    trackIndex = tracksData.findIndex(track => 
+                        track.url === trackInfo.url || 
+                        track.url.endsWith(trackInfo.url)
+                    );
+                    console.log('URL matching result:', {
+                        trackIndex,
+                        incomingUrl: trackInfo.url,
+                        matchedTrack: trackIndex !== -1 ? tracksData[trackIndex] : null
+                    });
+                }
+                
+                // If URL matching failed, try title matching
+                if (trackIndex === -1) {
+                    trackIndex = tracksData.findIndex(track => {
+                        // Try to match by title from metadata
+                        if (trackInfo.metaData?.title && track.metaData?.title === trackInfo.metaData.title) {
+                            return true;
+                        }
+                        
+                        // Try to match by defaultName
+                        if (trackInfo.defaultName && track.defaultName === trackInfo.defaultName) {
+                            return true;
+                        }
+                        
+                        // Try to match by filename
+                        const trackFileName = track.url.split('/').pop();
+                        const incomingFileName = (trackInfo.url || '').split('/').pop();
+                        if (trackFileName === incomingFileName) {
+                            return true;
+                        }
+                        
+                        return false;
+                    });
+                }
+
+                console.log('DEBUG - Track Matching Result:', {
+                    finalTrackIndex: trackIndex,
+                    matchedTrack: trackIndex !== -1 ? tracksData[trackIndex] : null,
+                    associatedBackground: trackIndex !== -1 ? trackBackgrounds[trackIndex] : null
+                });
+                
+                if (trackIndex !== -1 && trackBackgrounds[trackIndex]) {
+                    console.log('Switching background for track index:', trackIndex);
+                    switchBackground(trackIndex);
+                } else {
+                    console.log('Could not find matching track or background:', {
+                        trackIndex,
+                        hasBackground: trackIndex !== -1 ? !!trackBackgrounds[trackIndex] : false
+                    });
+                }
+            });
+        }
+
+        // Function to handle background transitions
+        function switchBackground(trackIndex) {
+            console.log('Switching background for track:', trackIndex);
+            
+            const currentBg = document.getElementById('current-background');
+            const backgroundConfig = trackBackgrounds[trackIndex];
+
+            if (!backgroundConfig) {
+                console.log('No background defined for track index:', trackIndex);
+                return;
+            }
+
+            // Create new image or use preloaded one
+            const newImage = backgroundConfig.preloadedImage ? 
+                backgroundConfig.preloadedImage.cloneNode(true) : 
+                new Image();
+            
+            newImage.className = 'background-gif';
+            
+            // Set initial state
+            newImage.style.transition = 'none';
+            newImage.style.opacity = '0';
+
+            const handleImageReady = () => {
+                // Clear any existing content and timeouts
+                if (window.bgTransitionTimeout) {
+                    clearTimeout(window.bgTransitionTimeout);
+                }
+                
+                // Remove any existing images
+                currentBg.innerHTML = '';
+                
+                // Add new image
+                currentBg.appendChild(newImage);
+                
+                // Force reflow
+                void newImage.offsetHeight;
+                
+                // Set up fade in
+                requestAnimationFrame(() => {
+                    newImage.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
+                    newImage.style.opacity = '1';
+                });
+            };
+
+            // Handle image loading
+            if (backgroundConfig.preloadedImage) {
+                handleImageReady();
+            } else {
+                newImage.onload = handleImageReady;
+                newImage.onerror = (error) => {
+                    console.error('Error loading background image:', error);
+                };
+                newImage.src = backgroundConfig.url;
+            }
+        }
+
+        // Add animation state variable - set to false by default
+        let isAnimationEnabled = false;
+
+        // Function to center windows
+        function centerWindows() {
+            if (!webampInstance || !webampInstance.store) return;
+
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const zoomFactor = 1.25;
+            
+            // Original Webamp dimensions
+            const playerWidth = 275;
+            const totalHeight = 500;
+            
+            // Calculate center position
+            const centerX = Math.max(0, Math.floor((windowWidth - (playerWidth * zoomFactor)) / 2 / zoomFactor));
+            const centerY = Math.max(0, Math.floor((windowHeight - (totalHeight * zoomFactor)) / 2 / zoomFactor));
+
+            // Update window positions
+            webampInstance.store.dispatch({
+                type: 'UPDATE_WINDOW_POSITIONS',
+                positions: {
+                    main: { x: centerX, y: centerY },
+                    equalizer: { x: centerX, y: centerY + 116 },
+                    playlist: { x: centerX, y: centerY + 232 }
+                },
+                absolute: true
+            });
+        }
+
+        // Function to toggle animation
+        function toggleAnimation() {
+            isAnimationEnabled = !isAnimationEnabled;
+            const toggleButton = document.getElementById('animation-toggle');
+            toggleButton.classList.toggle('active');
+
+            if (isAnimationEnabled) {
+                startHauntedAnimation();
+            } else {
+                stopAnimation();
+                centerWindows();
+            }
+        }
+
+        // Modified animation function
+        function startHauntedAnimation() {
+            // Clean up any existing animation
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            // Get the container element for bounds checking
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const zoomFactor = 1.25;
+            
+            // Base position and animation parameters - explicitly centered
+            const playerWidth = 275;
+            const totalHeight = 500;
+            let xPos = (windowWidth - (playerWidth * zoomFactor)) / 2 / zoomFactor;
+            let yPos = (windowHeight - (totalHeight * zoomFactor)) / 2 / zoomFactor;
+            
+            // Ensure we start exactly centered
+            xPos = Math.max(0, xPos);
+            yPos = Math.max(0, yPos);
+            
+            // Initialize with gentler starting velocities
+            let xVelocity = 0.05 * (Math.random() > 0.5 ? 1 : -1);
+            let yVelocity = 0.05 * (Math.random() > 0.5 ? 1 : -1);
+            let time = 0;
+            
+            function animate() {
+                if (!isAnimationEnabled) {
+                    animationId = null;
+                    return;
+                }
+
+                // Only apply animation if webamp exists and no element is being dragged
+                if (webampInstance && webampInstance.store) {
+                    const state = webampInstance.store.getState();
+                    
+                    // Check if any window is being dragged
+                    const windowsState = state.windows || {};
+                    const isDragging = Object.values(windowsState).some(w => w && w.isDragging === true);
+                    
+                    // Only animate if no dragging is happening
+                    if (!isDragging) {
+                        // Use original animation speed
+                        time += 0.0001 * 25;
+                        
+                        // Create haunting velocity changes
+                        xVelocity += Math.sin(time * 0.1) * 0.0002;
+                        yVelocity += Math.cos(time * 0.08) * 0.0002;
+                        
+                        // Constrain velocity for ghostly movement
+                        xVelocity = Math.max(-0.08, Math.min(0.08, xVelocity));
+                        yVelocity = Math.max(-0.08, Math.min(0.08, yVelocity));
+                        
+                        // Update position with velocity and haunting motion
+                        xPos += xVelocity * (1 + Math.sin(time * 0.05) * 0.3);
+                        yPos += yVelocity * (1 + Math.cos(time * 0.03) * 0.3);
+                        
+                        // Boundaries with soft bounce - account for zoom
+                        const maxX = (windowWidth / zoomFactor) - playerWidth;
+                        const maxY = (windowHeight / zoomFactor) - totalHeight;
+                        const edgeBuffer = 50;
+                        
+                        if (xPos <= edgeBuffer) {
+                            xVelocity += (edgeBuffer - xPos) * 0.001;
+                        } else if (xPos >= maxX - edgeBuffer) {
+                            xVelocity -= (xPos - (maxX - edgeBuffer)) * 0.001;
+                        }
+                        
+                        if (yPos <= edgeBuffer) {
+                            yVelocity += (edgeBuffer - yPos) * 0.001;
+                        } else if (yPos >= maxY - edgeBuffer) {
+                            yVelocity -= (yPos - (maxY - edgeBuffer)) * 0.001;
+                        }
+                        
+                        // Keep within absolute bounds
+                        xPos = Math.max(0, Math.min(xPos, maxX));
+                        yPos = Math.max(0, Math.min(yPos, maxY));
+                        
+                        // Create complex ethereal motion using multiple overlapping waves
+                        const timeScale = 0.08;
+                        const xOffset = (
+                            Math.sin(time * timeScale) * 25 + 
+                            Math.sin(time * timeScale * 0.5) * 15 +
+                            Math.sin(time * timeScale * 0.25) * 10 +
+                            Math.sin(time * timeScale * 0.125) * 5
+                        ) * (0.8 + Math.sin(time * 0.01) * 0.2);
+                        
+                        const yOffset = (
+                            Math.cos(time * timeScale * 0.8) * 25 +
+                            Math.cos(time * timeScale * 0.4) * 15 +
+                            Math.cos(time * timeScale * 0.2) * 10 +
+                            Math.cos(time * timeScale * 0.1) * 5
+                        ) * (0.8 + Math.cos(time * 0.015) * 0.2);
+                        
+                        // Calculate final positions with all ethereal effects
+                        const mainPos = {
+                            x: Math.round(xPos + xOffset),
+                            y: Math.round(yPos + yOffset)
+                        };
+
+                        const eqPos = {
+                            x: Math.round(mainPos.x + Math.sin(time * 0.03) * 2),
+                            y: Math.round(mainPos.y + 116 + Math.sin(time * 0.04) * 2)
+                        };
+                        
+                        const plPos = {
+                            x: Math.round(mainPos.x + Math.sin(time * 0.02) * 2),
+                            y: Math.round(mainPos.y + 232 + Math.sin(time * 0.035) * 2)
+                        };
+
+                        // Update window positions
+                        webampInstance.store.dispatch({
+                            type: 'UPDATE_WINDOW_POSITIONS',
+                            positions: {
+                                main: mainPos,
+                                equalizer: eqPos,
+                                playlist: plPos
+                            },
+                            absolute: true
+                        });
+                    }
+                }
+                
+                // Continue the animation loop
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            // Start the animation
+            animationId = requestAnimationFrame(animate);
+        }
+
+        function stopAnimation() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+
+        // Function to fix cursor issues
+        function fixCursorIssues() {
+            // Override any custom cursor styles on ALL elements
+            document.querySelectorAll('*').forEach(el => {
+                el.style.cursor = 'auto';
+            });
+            
+            // Add a style tag with !important rules
+            const styleTag = document.createElement('style');
+            styleTag.textContent = `
+                * { cursor: auto !important; }
+                .webamp-region, #webamp, .window, .window * { cursor: auto !important; }
+                .playlist-top, .playlist-middle, .playlist-bottom { cursor: auto !important; }
+            `;
+            document.head.appendChild(styleTag);
+        }
+
+        // Main function to initialize Webamp
+        async function initWebamp() {
+            try {
+                // Clean up any previous instances
+                cleanup();
+                
+                // Add transition styles
+                const styleSheet = document.createElement('style');
+                styleSheet.textContent = `
+                    #webamp-container {
+                        opacity: 0;
+                        transition: opacity 1s ease-in-out;
+                    }
+                    #webamp {
+                        zoom: 1.25 !important;
+                        -moz-transform: scale(1.25);
+                        -moz-transform-origin: top left;
+                    }
+                    .webamp-region {
+                        transition: all 0.3s ease-out;
+                    }
+                `;
+                document.head.appendChild(styleSheet);
+
+                // Get the custom skin if needed
+                let skinOption = undefined;
+                
+                if (usesCustomSkin) {
+                    const skinUrl = "GKSkin.wsz";
+                    const skinBase64 = await fetchAndConvertToBase64(skinUrl);
+                    
+                    if (skinBase64) {
+                        skinOption = {
+                            url: `data:application/zip;base64,${skinBase64}`
+                        };
+                    }
+                }
+
+                // First, preload all audio files
+                const tracks = await Promise.all(tracksData.map(async (track) => {
+                    // Create a blob URL for each track
+                    const blobUrl = await preloadAudioFile(track.url);
+                    return {
+                        ...track,
+                        url: blobUrl,
+                        blob: true // Tell Webamp this is a blob URL
+                    };
+                }));
+
+                // Calculate center position
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+                const zoomFactor = 1.25;
+                
+                // Original Webamp dimensions
+                const playerWidth = 275;  // Original size
+                const totalHeight = 500;  // Original size
+                
+                // Adjust the centering calculation to account for the actual visible area
+                const scaledPlayerWidth = playerWidth * zoomFactor;
+                const scaledTotalHeight = totalHeight * zoomFactor;
+                
+                // Divide by zoom factor to get the actual position in the zoomed space
+                const centerX = Math.max(0, Math.floor((windowWidth - scaledPlayerWidth) / 2 / zoomFactor));
+                const centerY = Math.max(0, Math.floor((windowHeight - scaledTotalHeight) / 2 / zoomFactor));
+
+                // Initialize Webamp with preloaded tracks
+                const webampOptions = {
+                    initialTracks: tracks,
+                    initialSkin: skinOption,
+                    zIndex: 100,
+                    enableHotkeys: false,
+                    __initialWindowLayout: {
+                        main: { position: { x: centerX, y: centerY } },
+                        equalizer: { position: { x: centerX, y: centerY + 116 } },
+                        playlist: { 
+                            position: { x: centerX, y: centerY + 232 },
+                            size: [0, 5]
+                        }
+                    }
+                };
+
+                console.log('Initializing Webamp with options:', webampOptions);
+                webampInstance = new Webamp(webampOptions);
+
+                // Render Webamp and set up the player
+                await webampInstance.renderWhenReady(document.getElementById('webamp-container'));
+                
+                // Wait for skin to be loaded
+                await webampInstance.skinIsLoaded();
+
+                // Intercept Redux store to prevent playlist reordering
+                const originalDispatch = webampInstance.store.dispatch;
+                webampInstance.store.dispatch = (action) => {
+                    if (action.type === 'REMOVE_TRACKS' || 
+                        action.type === 'ADD_TRACK_FROM_URL' || 
+                        action.type === 'SET_MEDIA' || 
+                        action.type === 'PLAYLIST_REORDER') {
+                        console.log('Blocked action:', action.type);
+                        return;
+                    }
+                    return originalDispatch(action);
+                };
+
+                // Show the player
+                const container = document.getElementById('webamp-container');
+                container.style.opacity = '1';
+
+                // Initialize background system
+                initBackgroundSystem();
+
+                // Set up track change handler
+                webampInstance.onTrackDidChange(handleTrackChange);
+
+                // Center windows initially since animation is off by default
+                centerWindows();
+
+                // Add essential click handlers
+                const playlistContainer = document.querySelector('#webamp .playlist-window');
+                if (playlistContainer) {
+                    // Prevent right-click
+                    playlistContainer.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }, true);
+
+                    // Handle double-clicks for play
+                    playlistContainer.addEventListener('dblclick', (e) => {
+                        const trackEl = e.target.closest('.playlist-track');
+                        if (trackEl) {
+                            const tracks = document.querySelectorAll('#webamp .playlist-track');
+                            const index = Array.from(tracks).indexOf(trackEl);
+                            if (index !== -1) {
+                                webampInstance.store.dispatch({ 
+                                    type: "SET_CURRENT_TRACK",
+                                    id: index 
+                                });
+                                setTimeout(() => webampInstance.play(), 50);
+                            }
+                        }
+                    });
+                }
+
+                // Fade in the initial background
+                setTimeout(() => {
+                    const currentBg = document.getElementById('current-background');
+                    currentBg.classList.add('active');
+                }, 1000);
+
+                // Fade in the halo and glow effects with a longer delay
+                setTimeout(() => {
+                    const glowOverlay = document.getElementById('glow-overlay');
+                    if (glowOverlay) glowOverlay.style.opacity = '1';
+                }, 3000);
+
+                // Set the title using direct skin data modification
+                try {
+                    // Access the skin data in the Redux store
+                    const state = webampInstance.store.getState();
+                    if (state && state.display && state.display.skinGenLetterWidths) {
+                        // Directly dispatch an action to update the skinInfo which controls the title
+                        webampInstance.store.dispatch({
+                            type: "SET_SKIN_DATA",
+                            data: {
+                                skinInfo: {
+                                    name: "TEST"
+                                }
+                            }
+                        });
+                        
+                        // Also try the window info update as backup
+                        webampInstance.store.dispatch({
+                            type: "UPDATE_WINDOW_INFO",
+                            window: "main",
+                            info: {
+                                title: "TEST"
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error("Error setting title:", e);
+                }
+
+                // Start the animation if enabled (which it isn't by default)
+                if (isAnimationEnabled) {
+                    startHauntedAnimation();
+                }
+
+                // Clean up blob URLs when Webamp closes
+                webampInstance.onWillClose(() => {
+                    tracks.forEach(track => {
+                        if (track.url.startsWith('blob:')) {
+                            URL.revokeObjectURL(track.url);
+                        }
+                    });
+                    cleanup();
+                });
+
+                return webampInstance;
+            } catch (error) {
+                console.error("Error initializing Webamp:", error);
+                return null;
+            }
+        }
+
+        // Function to play first track using Webamp API
+        function playFirstTrack() {
+            if (!webampInstance) {
+                console.error("Webamp not initialized");
+                return;
+            }
+            
+            try {
+                console.log("Playing first track...");
+                
+                // Make sure track is selected first
+                webampInstance.store.dispatch({ 
+                    type: "SET_CURRENT_TRACK",
+                    id: 0 
+                });
+                
+                // Force the play button to be "unpressed" before pressing it again
+                webampInstance.store.dispatch({ type: "STOP" });
+                
+                // Short delay to ensure track is loaded
+                setTimeout(() => {
+                    // Try multiple methods to ensure playback starts
+                    webampInstance.play();
+                    
+                    // Also try the direct Redux action
+                    webampInstance.store.dispatch({ type: "PLAY" });
+                    
+                    console.log("Play commands sent to Webamp");
+                }, 200);
+            } catch (e) {
+                console.error("Error playing track:", e);
+            }
+        }
+
+        // Function to play a specific track by index
+        function playTrackByIndex(index) {
+            if (!webampInstance) return;
+            
+            try {
+                // First select the track
+                webampInstance.store.dispatch({ 
+                    type: "SET_CURRENT_TRACK",
+                    id: index 
+                });
+                
+                // Then play it
+                setTimeout(() => {
+                    webampInstance.play();
+                }, 100);
+            } catch (e) {
+                console.error("Error playing track:", e);
+            }
+        }
+
+        // Set up player controls using official Webamp API
+        function setupPlayerControls() {
+            // Wait a moment to ensure Webamp is fully initialized
+            setTimeout(() => {
+                if (!webampInstance) return;
+
+                // Set up double-click handler using Webamp's API
+                const handleDoubleClick = (e) => {
+                    const trackEl = e.target.closest('.playlist-track');
+                    if (trackEl) {
+                        const tracks = document.querySelectorAll('#webamp .playlist-track');
+                        const index = Array.from(tracks).indexOf(trackEl);
+                        if (index !== -1) {
+                            // Use Webamp's store to change tracks
+                            webampInstance.store.dispatch({ 
+                                type: "SET_CURRENT_TRACK",
+                                id: index 
+                            });
+                            // Play the track
+                            setTimeout(() => webampInstance.play(), 50);
+                        }
+                    }
+                };
+
+                // Add double-click listener to playlist
+                const playlistEl = document.querySelector('#webamp .playlist-window');
+                if (playlistEl) {
+                    playlistEl.addEventListener('dblclick', handleDoubleClick);
+                }
+
+                // Use official Webamp API for track changes
+                webampInstance.onTrackDidChange(trackInfo => {
+                    console.log("Track changed:", trackInfo);
+                    handleTrackChange(trackInfo);
+                });
+            }, 1000);
+        }
+
+        // Add cleanup for background transition timeouts
+        function cleanup() {
+            stopAnimation();
+            
+            if (window.bgTransitionTimeout) {
+                clearTimeout(window.bgTransitionTimeout);
+                window.bgTransitionTimeout = null;
+            }
+            
+            if (eqIntervalId) {
+                clearInterval(eqIntervalId);
+                eqIntervalId = null;
+            }
+            
+            window.eqInitialized = false;
+            
+            if (webampInstance) {
+                try {
+                    webampInstance.close();
+                } catch (e) {}
+                webampInstance = null;
+            }
+            
+            document.getElementById('webamp-container').innerHTML = '';
+        }
+
+        // Function to restart Webamp with a different skin
+        async function restartWithDifferentSkin() {
+            cleanup();
+            usesCustomSkin = !usesCustomSkin;
+            initWebamp();
+        }
+
+        // Password validation function
+        function setupPasswordValidation() {
+            const passwordInput = document.getElementById('password-input');
+            const accessIndicator = document.getElementById('access-indicator');
+            const passwordOverlay = document.getElementById('password-overlay');
+            const correctPassword = ' ';
+            
+            // Show/hide the password label based on input
+            passwordInput.addEventListener('input', function() {
+                const label = document.getElementById('password-label');
+                if (this.value) {
+                    label.style.opacity = '0';
+                } else {
+                    label.style.opacity = '1';
+                }
+                
+                // Add flashing effect when typing
+                this.classList.add('flashing');
+                setTimeout(() => {
+                    this.classList.remove('flashing');
+                }, 500);
+            });
+
+            // Check password on enter key
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkPassword();
+                }
+            });
+
+            // Password validation
+            function checkPassword() {
+                if (passwordInput.value.toLowerCase() === correctPassword) {
+                    // Show success indicator
+                    accessIndicator.classList.add('granted');
+                    
+                    // Initialize Webamp here before showing it
+                    initWebamp().then((instance) => {
+                        // Wait a moment, then fade out the overlay
+                        setTimeout(() => {
+                            passwordOverlay.style.opacity = '0';
+                            passwordOverlay.style.pointerEvents = 'none';
+                            passwordUnlocked = true;
+                            
+                            // After password overlay fades out, start the background fade
+                            setTimeout(() => {
+                                const currentBg = document.getElementById('current-background');
+                                if (currentBg && currentBg.firstChild) {
+                                    // Force a reflow before setting up the transition
+                                    void currentBg.firstChild.offsetHeight;
+                                    
+                                    // Set up the fade-in transition
+                                    currentBg.firstChild.style.transition = `opacity ${trackBackgrounds[0].fadeIn}s ease-in`;
+                                    
+                                    // Start the fade
+                                    requestAnimationFrame(() => {
+                                        currentBg.firstChild.style.opacity = '1';
+                                    });
+                                }
+                                
+                                // Ensure we have a player instance before starting playback
+                                if (webampInstance) {
+                                    playFirstTrack();
+                                }
+                            }, 2000); // Wait for password overlay to fade out
+                        }, 700);
+                    });
+                } else {
+                    // Show failure indication (shake the input)
+                    passwordInput.style.animation = 'none';
+                    void passwordInput.offsetWidth; // Trigger reflow
+                    passwordInput.style.animation = 'shake 0.5s'; 
+                }
+            }
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Start preloading backgrounds immediately
+            preloadBackgrounds();
+            
+            // Setup password validation
+            setupPasswordValidation();
+            
+            // Setup animation toggle - start with inactive state
+            const toggleButton = document.getElementById('animation-toggle');
+            toggleButton.classList.remove('active'); // Set initial inactive state
+            toggleButton.addEventListener('click', toggleAnimation);
+            
+            // Hide the password overlay
+            const passwordOverlay = document.getElementById('password-overlay');
+            if (passwordOverlay) {
+                passwordOverlay.style.opacity = '1';
+                passwordOverlay.style.pointerEvents = 'auto';
+            }
+
+            // Focus on the password input
+            setTimeout(() => {
+                document.getElementById('password-input').focus();
+            }, 500);
+        });
+        
+        // Add shake animation for wrong password
+        document.head.insertAdjacentHTML('beforeend', `
+            <style>
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                    20%, 40%, 60%, 80% { transform: translateX(5px); }
+                }
+                
+                .shake {
+                    animation: shake 0.5s;
+                }
+            </style>
+        `);
+
+        // Add window resize handler to recenter when animation is off
+        window.addEventListener('resize', () => {
+            if (!isAnimationEnabled) {
+                centerWindows();
+            }
+        });
+
+        // Add additional code to prevent playlist reordering
+        const preventPlaylistReorder = () => {
+            const playlistTracks = document.querySelectorAll('#webamp .playlist-track');
+            playlistTracks.forEach(track => {
+                track.draggable = false;
+                track.style.userSelect = 'none';
+                track.addEventListener('mousedown', (e) => {
+                    if (e.button === 0) { // Left click
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }, true);
+                track.addEventListener('dragstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, true);
+            });
+        };
+
+        // Function to continuously ensure playlist is not reorderable
+        const ensureNoReorder = () => {
+            if (webampInstance) {
+                preventPlaylistReorder();
+            }
+            setTimeout(ensureNoReorder, 1000);
+        };
+
+        // Start the ensure process
+        ensureNoReorder();
+    </script>
+</body>
+</html> 
