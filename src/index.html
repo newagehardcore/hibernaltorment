@@ -224,31 +224,7 @@
             opacity: 1;
         }
 
-        /* Replace button styles with floating tilde styles */
-        #animation-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            color: rgba(255, 255, 255, 0.7);
-            font-family: monospace;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-            user-select: none;
-            padding: 10px;
-        }
-
-        #animation-toggle:hover {
-            color: rgba(255, 255, 255, 1);
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-        }
-
-        #animation-toggle.active {
-            color: rgba(255, 255, 255, 1);
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
-        }
+        /* Remove animation toggle button styles */
     </style>
 </head>
 <body>
@@ -274,8 +250,6 @@
     <!-- Candle glow effect overlay -->
     <div id="glow-overlay"></div>
     
-    <!-- Replace button with tilde -->
-    <div id="animation-toggle">~</div>
     <div id="webamp-container"></div>
     
     <!-- Load Webamp from CDN -->
@@ -288,19 +262,11 @@
         let animationId = null;
         let eqIntervalId = null;
         let passwordUnlocked = false;
-        /* Commented out halo-related variables
-        let haloRevealLayerElement = null;
-        let haloBeatLastUpdate = 0;
-        const HALO_BEAT_THROTTLE_MS = 100;
-        let haloRectCombined = null;
-        let haloBlurFilterElement = null;
-        */
-        // Window height constants (MAIN_WINDOW_HEIGHT for EQ is still useful if EQ has fixed height relative to main)
+        let lastKnownPositions = null;
+        
+        // Remove animation toggle state since it's always on
         const MAIN_WINDOW_HEIGHT = 116;
         const EQ_WINDOW_HEIGHT = 116;
-        
-        // Add position tracking
-        let lastKnownPositions = null;
         
         // Function to convert binary data to base64
         async function fetchAndConvertToBase64(url) {
@@ -650,9 +616,6 @@
             }
         }
 
-        // Add animation state variable - set to false by default
-        let isAnimationEnabled = false;
-
         // Function to center windows
         function centerWindows() {
             if (!webampInstance || !webampInstance.store) return;
@@ -709,52 +672,7 @@
             return positions;
         }
 
-        // Function to toggle animation
-        function toggleAnimation() {
-            console.log('Toggle animation called');
-            
-            if (!webampInstance?.store) {
-                console.error('Webamp not ready');
-                return;
-            }
-            
-            // Get current positions
-            const currentPositions = getCurrentWindowPositions();
-            
-            if (!currentPositions || Object.keys(currentPositions).length === 0) {
-                console.error('Could not get current window positions');
-                return;
-            }
-            
-            // Store positions before toggle
-            lastKnownPositions = { ...currentPositions };
-            console.log('Stored positions before toggle:', lastKnownPositions);
-            
-            // Toggle state
-            isAnimationEnabled = !isAnimationEnabled;
-            
-            // Update button state
-            const toggleButton = document.getElementById('animation-toggle');
-            if (isAnimationEnabled) {
-                toggleButton.classList.add('active');
-                startHauntedAnimation();
-            } else {
-                toggleButton.classList.remove('active');
-                stopAnimation();
-                
-                // When stopping animation, restore the last known positions
-                if (lastKnownPositions && Object.keys(lastKnownPositions).length > 0) {
-                    // Dispatch a single action to update all window positions
-                    webampInstance.store.dispatch({
-                        type: 'UPDATE_WINDOW_POSITIONS',
-                        positions: lastKnownPositions,
-                        absolute: true
-                    });
-                }
-            }
-        }
-
-        // Modified animation function
+        // Modified animation function to handle mouse interactions
         function startHauntedAnimation() {
             console.log('Starting haunted animation...');
             
@@ -773,39 +691,56 @@
             }
             
             // Use current positions as base positions
-            const basePositions = { ...currentPositions };
+            let basePositions = { ...currentPositions };
             console.log('Starting animation with base positions:', basePositions);
             
             let time = 0;
-            const ANIMATION_SPEED = 0.015;
+            const ANIMATION_SPEED = 0.2;
             const ANIMATION_RADIUS = 5;
+            const OSCILLATION_FREQUENCY_MODIFIER = 0.1;
+            
+            // Track mouse interaction state
+            let isInteracting = false;
+            
+            // Add mouse interaction handlers
+            const webampElement = document.getElementById('webamp');
+            if (webampElement) {
+                // Pause animation on mouse down
+                webampElement.addEventListener('mousedown', () => {
+                    isInteracting = true;
+                    // Get current positions when interaction starts
+                    const newPositions = getCurrentWindowPositions();
+                    if (newPositions) {
+                        basePositions = { ...newPositions };
+                    }
+                });
+                
+                // Resume animation on mouse up
+                document.addEventListener('mouseup', () => {
+                    isInteracting = false;
+                    // Update base positions after interaction
+                    const newPositions = getCurrentWindowPositions();
+                    if (newPositions) {
+                        basePositions = { ...newPositions };
+                    }
+                });
+            }
             
             function animate() {
-                if (!isAnimationEnabled || !webampInstance?.store) {
+                if (!webampInstance?.store) {
                     cancelAnimationFrame(animationId);
                     animationId = null;
                     return;
                 }
 
-                const state = webampInstance.store.getState();
-                const genWindows = state?.windows?.genWindows;
-                if (!genWindows) return;
-                
-                const isDragging = Object.values(genWindows).some(w => w?.dragging);
-                
-                if (isDragging) {
-                    // Update base positions and last known positions while dragging
-                    const newPositions = getCurrentWindowPositions();
-                    if (newPositions && Object.keys(newPositions).length > 0) {
-                        Object.assign(basePositions, newPositions);
-                        lastKnownPositions = { ...newPositions };
-                    }
-                } else {
+                // Only animate if not interacting
+                if (!isInteracting) {
                     time += ANIMATION_SPEED;
                     
-                    // Calculate new positions
-                    const xOffset = Math.sin(time) * ANIMATION_RADIUS;
-                    const yOffset = Math.cos(time) * ANIMATION_RADIUS;
+                    // Simple, smooth circular motion
+                    const effectiveTime = time * OSCILLATION_FREQUENCY_MODIFIER;
+                    const xOffset = Math.sin(effectiveTime) * ANIMATION_RADIUS;
+                    const yOffset = Math.cos(effectiveTime * 0.9) * ANIMATION_RADIUS;
                     
                     // Create new positions object
                     const newPositions = {};
@@ -830,51 +765,14 @@
             animationId = requestAnimationFrame(animate);
         }
 
-        function stopAnimation() {
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-                animationId = null;
-            }
-        }
-
-        // Function to fix cursor issues
-        function fixCursorIssues() {
-            // Override any custom cursor styles on ALL elements
-            document.querySelectorAll('*').forEach(el => {
-                el.style.cursor = 'auto';
-            });
-            
-            // Add a style tag with !important rules
-            const styleTag = document.createElement('style');
-            styleTag.textContent = `
-                * { cursor: auto !important; }
-                .webamp-region, #webamp, .window, .window * { cursor: auto !important; }
-                .playlist-top, .playlist-middle, .playlist-bottom { cursor: auto !important; }
-            `;
-            document.head.appendChild(styleTag);
-        }
-
         // Main function to initialize Webamp
         async function initWebamp() {
             try {
                 // Clean up any previous instances
                 cleanup();
                 
-                // Initialize animation state
-                isAnimationEnabled = false;
+                // Remove animation toggle button initialization
                 window.basePositions = null;
-                
-                // Set up animation toggle button
-                const animToggleButton = document.getElementById('animation-toggle');
-                if (animToggleButton) {
-                    // Remove any existing listeners
-                    animToggleButton.removeEventListener('click', toggleAnimation);
-                    // Add fresh click listener
-                    animToggleButton.addEventListener('click', toggleAnimation);
-                    // Reset to inactive state
-                    animToggleButton.classList.remove('active');
-                    console.log('Animation toggle button initialized');
-                }
 
                 // Add transition styles
                 const styleSheet = document.createElement('style');
@@ -985,17 +883,11 @@
                 // Set up track change handler
                 webampInstance.onTrackDidChange(handleTrackChange);
 
-                // Center windows initially since animation is off by default
+                // Center windows initially
                 centerWindows();
 
-                // Ensure animation toggle is properly initialized
-                const animationToggleBtn = document.getElementById('animation-toggle');
-                if (animationToggleBtn) {
-                    animationToggleBtn.removeEventListener('click', toggleAnimation);
-                    animationToggleBtn.addEventListener('click', toggleAnimation);
-                    animationToggleBtn.style.display = 'block';
-                    console.log('Animation toggle button re-initialized after Webamp load');
-                }
+                // Start the haunted animation immediately
+                startHauntedAnimation();
 
                 // Add essential click handlers
                 const playlistContainer = document.querySelector('#webamp .playlist-window');
@@ -1175,13 +1067,6 @@
 
         // Add cleanup for background transition timeouts
         function cleanup() {
-            stopAnimation();
-            
-            if (window.bgTransitionTimeout) {
-                clearTimeout(window.bgTransitionTimeout);
-                window.bgTransitionTimeout = null;
-            }
-            
             if (eqIntervalId) {
                 clearInterval(eqIntervalId);
                 eqIntervalId = null;
@@ -1284,7 +1169,7 @@
 
         // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded, setting up animation toggle...');
+            console.log('DOM loaded...');
             
             // Start preloading backgrounds immediately
             preloadBackgrounds();
@@ -1292,21 +1177,8 @@
             // Setup password validation
             setupPasswordValidation();
             
-            // Initialize animation state
-            isAnimationEnabled = false;
+            // Remove animation toggle button setup
             window.basePositions = null;
-            
-            // Setup animation toggle button
-            const animToggleButton = document.getElementById('animation-toggle');
-            if (animToggleButton) {
-                // Remove any existing listeners
-                animToggleButton.removeEventListener('click', toggleAnimation);
-                // Add fresh click listener
-                animToggleButton.addEventListener('click', toggleAnimation);
-                // Reset to inactive state
-                animToggleButton.classList.remove('active');
-                console.log('Animation toggle button initialized');
-            }
 
             // Hide the password overlay
             const passwordOverlay = document.getElementById('password-overlay');
@@ -1321,7 +1193,7 @@
             }, 500);
         });
         
-        // Add shake animation for wrong password
+        // Remove animation toggle related styles
         document.head.insertAdjacentHTML('beforeend', `
             <style>
                 @keyframes shake {
@@ -1336,42 +1208,10 @@
             </style>
         `);
 
-        // Add window resize handler to recenter when animation is off
+        // Modify resize handler to always center if needed
         window.addEventListener('resize', () => {
-            if (!isAnimationEnabled) {
-                centerWindows();
-            }
+            centerWindows();
         });
-
-        // Add additional code to prevent playlist reordering
-        const preventPlaylistReorder = () => {
-            const playlistTracks = document.querySelectorAll('#webamp .playlist-track');
-            playlistTracks.forEach(track => {
-                track.draggable = false;
-                track.style.userSelect = 'none';
-                track.addEventListener('mousedown', (e) => {
-                    if (e.button === 0) { // Left click
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-                }, true);
-                track.addEventListener('dragstart', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }, true);
-            });
-        };
-
-        // Function to continuously ensure playlist is not reorderable
-        const ensureNoReorder = () => {
-            if (webampInstance) {
-                preventPlaylistReorder();
-            }
-            setTimeout(ensureNoReorder, 1000);
-        };
-
-        // Start the ensure process
-        ensureNoReorder();
     </script>
 </body>
 </html> 
