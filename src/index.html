@@ -7,6 +7,10 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 10 L30 50 L50 40 L70 50 Z' fill='%23FFA500'/><path d='M40 50 L50 30 L60 50 L50 70 Z' fill='%23FF8C00'/></svg>">
     <link rel="stylesheet" type="text/css" href="webamp.css">
     <style>
+        :root {
+            --webamp-zoom: 1.1;
+        }
+
         html, body {
             margin: 0;
             padding: 0;
@@ -65,8 +69,8 @@
 
         /* Apply zoom only to Webamp windows */
         #webamp {
-            zoom: 1.05 !important;
-            -moz-transform: scale(1.05);
+            zoom: var(--webamp-zoom) !important;
+            -moz-transform: scale(var(--webamp-zoom));
             -moz-transform-origin: top left;
         }
         
@@ -294,6 +298,9 @@
         // Window height constants (MAIN_WINDOW_HEIGHT for EQ is still useful if EQ has fixed height relative to main)
         const MAIN_WINDOW_HEIGHT = 116;
         const EQ_WINDOW_HEIGHT = 116;
+        
+        // Add position tracking
+        let lastKnownPositions = null;
         
         // Function to convert binary data to base64
         async function fetchAndConvertToBase64(url) {
@@ -652,7 +659,8 @@
 
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
-            const zoomFactor = 1.25;
+            // Get zoom factor from CSS variable
+            const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
             
             // Original Webamp dimensions
             const playerWidth = 275;
@@ -662,162 +670,163 @@
             const centerX = Math.max(0, Math.floor((windowWidth - (playerWidth * zoomFactor)) / 2 / zoomFactor));
             const centerY = Math.max(0, Math.floor((windowHeight - (totalHeight * zoomFactor)) / 2 / zoomFactor));
 
+            // Store these positions for animation reference
+            window.lastKnownPositions = {
+                main: { x: centerX, y: centerY },
+                equalizer: { x: centerX, y: centerY + 116 },
+                playlist: { x: centerX, y: centerY + 232 }
+            };
+
             // Update window positions
             webampInstance.store.dispatch({
                 type: 'UPDATE_WINDOW_POSITIONS',
-                positions: {
-                    main: { x: centerX, y: centerY },
-                    equalizer: { x: centerX, y: centerY + 116 },
-                    playlist: { x: centerX, y: centerY + 232 }
-                },
+                positions: window.lastKnownPositions,
                 absolute: true
             });
         }
 
+        // Function to get current window positions
+        function getCurrentWindowPositions() {
+            const state = webampInstance.store.getState();
+            const genWindows = state?.windows?.genWindows;
+            
+            if (!genWindows) return null;
+            
+            // Extract positions from the nested position objects
+            const positions = {};
+            Object.entries(genWindows).forEach(([windowId, window]) => {
+                if (window?.position?.x != null && window?.position?.y != null) {
+                    positions[windowId] = {
+                        x: Math.round(window.position.x),
+                        y: Math.round(window.position.y)
+                    };
+                }
+            });
+            
+            // Log extracted positions
+            console.log('Extracted positions:', positions);
+            
+            return positions;
+        }
+
         // Function to toggle animation
         function toggleAnimation() {
+            console.log('Toggle animation called');
+            
+            if (!webampInstance?.store) {
+                console.error('Webamp not ready');
+                return;
+            }
+            
+            // Get current positions
+            const currentPositions = getCurrentWindowPositions();
+            
+            if (!currentPositions || Object.keys(currentPositions).length === 0) {
+                console.error('Could not get current window positions');
+                return;
+            }
+            
+            // Store positions before toggle
+            lastKnownPositions = { ...currentPositions };
+            console.log('Stored positions before toggle:', lastKnownPositions);
+            
+            // Toggle state
             isAnimationEnabled = !isAnimationEnabled;
+            
+            // Update button state
             const toggleButton = document.getElementById('animation-toggle');
-            toggleButton.classList.toggle('active');
-
             if (isAnimationEnabled) {
+                toggleButton.classList.add('active');
                 startHauntedAnimation();
             } else {
+                toggleButton.classList.remove('active');
                 stopAnimation();
-                centerWindows();
+                
+                // When stopping animation, restore the last known positions
+                if (lastKnownPositions && Object.keys(lastKnownPositions).length > 0) {
+                    // Dispatch a single action to update all window positions
+                    webampInstance.store.dispatch({
+                        type: 'UPDATE_WINDOW_POSITIONS',
+                        positions: lastKnownPositions,
+                        absolute: true
+                    });
+                }
             }
         }
 
         // Modified animation function
         function startHauntedAnimation() {
+            console.log('Starting haunted animation...');
+            
             // Clean up any existing animation
             if (animationId) {
                 cancelAnimationFrame(animationId);
                 animationId = null;
             }
             
-            // Get the container element for bounds checking
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
-            const zoomFactor = 1.25;
+            // Get initial positions
+            const currentPositions = getCurrentWindowPositions();
             
-            // Base position and animation parameters - explicitly centered
-            const playerWidth = 275;
-            const totalHeight = 500;
-            let xPos = (windowWidth - (playerWidth * zoomFactor)) / 2 / zoomFactor;
-            let yPos = (windowHeight - (totalHeight * zoomFactor)) / 2 / zoomFactor;
+            if (!currentPositions || Object.keys(currentPositions).length === 0) {
+                console.error('Could not get window positions for animation');
+                return;
+            }
             
-            // Ensure we start exactly centered
-            xPos = Math.max(0, xPos);
-            yPos = Math.max(0, yPos);
+            // Use current positions as base positions
+            const basePositions = { ...currentPositions };
+            console.log('Starting animation with base positions:', basePositions);
             
-            // Initialize with gentler starting velocities
-            let xVelocity = 0.05 * (Math.random() > 0.5 ? 1 : -1);
-            let yVelocity = 0.05 * (Math.random() > 0.5 ? 1 : -1);
             let time = 0;
+            const ANIMATION_SPEED = 0.015;
+            const ANIMATION_RADIUS = 5;
             
             function animate() {
-                if (!isAnimationEnabled) {
+                if (!isAnimationEnabled || !webampInstance?.store) {
+                    cancelAnimationFrame(animationId);
                     animationId = null;
                     return;
                 }
 
-                // Only apply animation if webamp exists and no element is being dragged
-                if (webampInstance && webampInstance.store) {
-                    const state = webampInstance.store.getState();
-                    
-                    // Check if any window is being dragged
-                    const windowsState = state.windows || {};
-                    const isDragging = Object.values(windowsState).some(w => w && w.isDragging === true);
-                    
-                    // Only animate if no dragging is happening
-                    if (!isDragging) {
-                        // Use original animation speed
-                        time += 0.0001 * 25;
-                        
-                        // Create haunting velocity changes
-                        xVelocity += Math.sin(time * 0.1) * 0.0002;
-                        yVelocity += Math.cos(time * 0.08) * 0.0002;
-                        
-                        // Constrain velocity for ghostly movement
-                        xVelocity = Math.max(-0.08, Math.min(0.08, xVelocity));
-                        yVelocity = Math.max(-0.08, Math.min(0.08, yVelocity));
-                        
-                        // Update position with velocity and haunting motion
-                        xPos += xVelocity * (1 + Math.sin(time * 0.05) * 0.3);
-                        yPos += yVelocity * (1 + Math.cos(time * 0.03) * 0.3);
-                        
-                        // Boundaries with soft bounce - account for zoom
-                        const maxX = (windowWidth / zoomFactor) - playerWidth;
-                        const maxY = (windowHeight / zoomFactor) - totalHeight;
-                        const edgeBuffer = 50;
-                        
-                        if (xPos <= edgeBuffer) {
-                            xVelocity += (edgeBuffer - xPos) * 0.001;
-                        } else if (xPos >= maxX - edgeBuffer) {
-                            xVelocity -= (xPos - (maxX - edgeBuffer)) * 0.001;
-                        }
-                        
-                        if (yPos <= edgeBuffer) {
-                            yVelocity += (edgeBuffer - yPos) * 0.001;
-                        } else if (yPos >= maxY - edgeBuffer) {
-                            yVelocity -= (yPos - (maxY - edgeBuffer)) * 0.001;
-                        }
-                        
-                        // Keep within absolute bounds
-                        xPos = Math.max(0, Math.min(xPos, maxX));
-                        yPos = Math.max(0, Math.min(yPos, maxY));
-                        
-                        // Create complex ethereal motion using multiple overlapping waves
-                        const timeScale = 0.08;
-                        const xOffset = (
-                            Math.sin(time * timeScale) * 25 + 
-                            Math.sin(time * timeScale * 0.5) * 15 +
-                            Math.sin(time * timeScale * 0.25) * 10 +
-                            Math.sin(time * timeScale * 0.125) * 5
-                        ) * (0.8 + Math.sin(time * 0.01) * 0.2);
-                        
-                        const yOffset = (
-                            Math.cos(time * timeScale * 0.8) * 25 +
-                            Math.cos(time * timeScale * 0.4) * 15 +
-                            Math.cos(time * timeScale * 0.2) * 10 +
-                            Math.cos(time * timeScale * 0.1) * 5
-                        ) * (0.8 + Math.cos(time * 0.015) * 0.2);
-                        
-                        // Calculate final positions with all ethereal effects
-                        const mainPos = {
-                            x: Math.round(xPos + xOffset),
-                            y: Math.round(yPos + yOffset)
-                        };
-
-                        const eqPos = {
-                            x: Math.round(mainPos.x + Math.sin(time * 0.03) * 2),
-                            y: Math.round(mainPos.y + 116 + Math.sin(time * 0.04) * 2)
-                        };
-                        
-                        const plPos = {
-                            x: Math.round(mainPos.x + Math.sin(time * 0.02) * 2),
-                            y: Math.round(mainPos.y + 232 + Math.sin(time * 0.035) * 2)
-                        };
-
-                        // Update window positions
-                        webampInstance.store.dispatch({
-                            type: 'UPDATE_WINDOW_POSITIONS',
-                            positions: {
-                                main: mainPos,
-                                equalizer: eqPos,
-                                playlist: plPos
-                            },
-                            absolute: true
-                        });
+                const state = webampInstance.store.getState();
+                const genWindows = state?.windows?.genWindows;
+                if (!genWindows) return;
+                
+                const isDragging = Object.values(genWindows).some(w => w?.dragging);
+                
+                if (isDragging) {
+                    // Update base positions and last known positions while dragging
+                    const newPositions = getCurrentWindowPositions();
+                    if (newPositions && Object.keys(newPositions).length > 0) {
+                        Object.assign(basePositions, newPositions);
+                        lastKnownPositions = { ...newPositions };
                     }
+                } else {
+                    time += ANIMATION_SPEED;
+                    
+                    // Calculate new positions
+                    const xOffset = Math.sin(time) * ANIMATION_RADIUS;
+                    const yOffset = Math.cos(time) * ANIMATION_RADIUS;
+                    
+                    // Create new positions object
+                    const newPositions = {};
+                    Object.entries(basePositions).forEach(([windowId, basePos]) => {
+                        newPositions[windowId] = {
+                            x: Math.round(basePos.x + xOffset),
+                            y: Math.round(basePos.y + yOffset)
+                        };
+                    });
+                    
+                    // Update all windows at once
+                    webampInstance.store.dispatch({
+                        type: 'UPDATE_WINDOW_POSITIONS',
+                        positions: newPositions,
+                        absolute: true
+                    });
                 }
                 
-                // Continue the animation loop
                 animationId = requestAnimationFrame(animate);
             }
             
-            // Start the animation
             animationId = requestAnimationFrame(animate);
         }
 
@@ -851,6 +860,22 @@
                 // Clean up any previous instances
                 cleanup();
                 
+                // Initialize animation state
+                isAnimationEnabled = false;
+                window.basePositions = null;
+                
+                // Set up animation toggle button
+                const animToggleButton = document.getElementById('animation-toggle');
+                if (animToggleButton) {
+                    // Remove any existing listeners
+                    animToggleButton.removeEventListener('click', toggleAnimation);
+                    // Add fresh click listener
+                    animToggleButton.addEventListener('click', toggleAnimation);
+                    // Reset to inactive state
+                    animToggleButton.classList.remove('active');
+                    console.log('Animation toggle button initialized');
+                }
+
                 // Add transition styles
                 const styleSheet = document.createElement('style');
                 styleSheet.textContent = `
@@ -859,8 +884,8 @@
                         transition: opacity 1s ease-in-out;
                     }
                     #webamp {
-                        zoom: 1.25 !important;
-                        -moz-transform: scale(1.25);
+                        zoom: var(--webamp-zoom) !important;
+                        -moz-transform: scale(var(--webamp-zoom));
                         -moz-transform-origin: top left;
                     }
                     .webamp-region {
@@ -897,7 +922,8 @@
                 // Calculate center position
                 const windowWidth = window.innerWidth;
                 const windowHeight = window.innerHeight;
-                const zoomFactor = 1.25;
+                // Get zoom factor from CSS variable
+                const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
                 
                 // Original Webamp dimensions
                 const playerWidth = 275;  // Original size
@@ -961,6 +987,15 @@
 
                 // Center windows initially since animation is off by default
                 centerWindows();
+
+                // Ensure animation toggle is properly initialized
+                const animationToggleBtn = document.getElementById('animation-toggle');
+                if (animationToggleBtn) {
+                    animationToggleBtn.removeEventListener('click', toggleAnimation);
+                    animationToggleBtn.addEventListener('click', toggleAnimation);
+                    animationToggleBtn.style.display = 'block';
+                    console.log('Animation toggle button re-initialized after Webamp load');
+                }
 
                 // Add essential click handlers
                 const playlistContainer = document.querySelector('#webamp .playlist-window');
@@ -1027,11 +1062,6 @@
                     }
                 } catch (e) {
                     console.error("Error setting title:", e);
-                }
-
-                // Start the animation if enabled (which it isn't by default)
-                if (isAnimationEnabled) {
-                    startHauntedAnimation();
                 }
 
                 // Clean up blob URLs when Webamp closes
@@ -1254,17 +1284,30 @@
 
         // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, setting up animation toggle...');
+            
             // Start preloading backgrounds immediately
             preloadBackgrounds();
             
             // Setup password validation
             setupPasswordValidation();
             
-            // Setup animation toggle - start with inactive state
-            const toggleButton = document.getElementById('animation-toggle');
-            toggleButton.classList.remove('active'); // Set initial inactive state
-            toggleButton.addEventListener('click', toggleAnimation);
+            // Initialize animation state
+            isAnimationEnabled = false;
+            window.basePositions = null;
             
+            // Setup animation toggle button
+            const animToggleButton = document.getElementById('animation-toggle');
+            if (animToggleButton) {
+                // Remove any existing listeners
+                animToggleButton.removeEventListener('click', toggleAnimation);
+                // Add fresh click listener
+                animToggleButton.addEventListener('click', toggleAnimation);
+                // Reset to inactive state
+                animToggleButton.classList.remove('active');
+                console.log('Animation toggle button initialized');
+            }
+
             // Hide the password overlay
             const passwordOverlay = document.getElementById('password-overlay');
             if (passwordOverlay) {
