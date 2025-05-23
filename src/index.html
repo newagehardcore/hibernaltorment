@@ -730,33 +730,14 @@
                     clearTimeout(this.nextMessageTimeout);
                 }
                 
-                // Schedule at least 3 messages per track
-                this.scheduleMessagesForTrack();
-            },
-            
-            scheduleMessagesForTrack() {
-                const minMessages = 3;
-                const trackDuration = this.currentTrackDuration * 1000; // Convert to milliseconds
+                // Schedule one message towards the beginning of the track (within first 30-60 seconds)
+                const earlyMessageDelay = Math.random() * 30000 + 10000; // 10-40 seconds into track
+                setTimeout(() => {
+                    this.showRandomMessage();
+                }, earlyMessageDelay);
                 
-                // Calculate intervals to ensure at least 3 messages
-                const baseInterval = Math.max(15000, trackDuration / (minMessages + 1)); // At least 15 seconds between messages
-                
-                for (let i = 0; i < minMessages; i++) {
-                    const delay = baseInterval * (i + 1) + (Math.random() * 10000 - 5000); // Add some randomness
-                    const clampedDelay = Math.max(5000, Math.min(delay, trackDuration - 10000)); // Ensure it's within track bounds
-                    
-                    setTimeout(() => {
-                        if (this.messageCount < minMessages) {
-                            this.showRandomMessage();
-                            this.messageCount++;
-                        }
-                    }, clampedDelay);
-                }
-                
-                // Schedule additional random messages for longer tracks
-                if (trackDuration > 180000) { // If longer than 3 minutes
-                    this.scheduleNextMessage();
-                }
+                // Resume normal random scheduling for additional messages
+                this.scheduleNextMessage();
             },
             
             scheduleNextMessage() {
