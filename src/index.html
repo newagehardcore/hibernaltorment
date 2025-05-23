@@ -341,18 +341,6 @@
             image-rendering: crisp-edges;
         }
 
-        .deity-message-bottom {
-            width: 100%;
-            height: 20px;
-            background-image: url('/assets/skins/messagebottom.png');
-            background-repeat: no-repeat;
-            background-size: 100% 100%;
-            background-position: center;
-            image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
-        }
-
         .deity-message-content::before {
             content: '';
             position: absolute;
@@ -364,10 +352,29 @@
                 repeating-linear-gradient(
                     0deg,
                     transparent,
-                    transparent 3px,
-                    rgba(0, 0, 0, 0.05) 4px
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.1) 3px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.05) 3px
                 );
             pointer-events: none;
+            mix-blend-mode: multiply;
+        }
+
+        .deity-message-bottom {
+            width: 100%;
+            height: 20px;
+            background-image: url('/assets/skins/messagebottom.png');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-position: center;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
         }
 
         .deity-message-content::after {
@@ -396,6 +403,10 @@
             white-space: nowrap;
             overflow: hidden;
             opacity: 0;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            filter: contrast(1.2) brightness(1.1);
         }
 
         .deity-message-text.typing {
@@ -404,65 +415,139 @@
 
         .deity-message-text::after {
             content: '';
-            animation: blink 1s infinite;
             color: rgba(255, 255, 255, 0.7);
             opacity: 0;
         }
 
-        .deity-message-text.typing::after {
-            content: '_';
-            opacity: 1;
-            animation: blink 0.8s infinite, fadeOutCursor 0.5s ease-out calc(var(--typing-duration) + 1.7s) forwards;
-        }
-
         .typing-ellipses {
-            display: inline-block;
+            position: absolute;
+            right: -30px;
+            top: 0;
+            width: 25px;
+            height: 100%;
+            display: inline-flex;
+            align-items: center;
             opacity: 0;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
         }
 
         .typing-ellipses.show {
             opacity: 1;
-            animation: typingEllipses 1.5s infinite;
+        }
+
+        .typing-ellipses::before {
+            content: '';
+            animation: typingEllipses 1.2s infinite;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 
+                0 0 8px rgba(255, 255, 255, 0.6),
+                0 0 15px rgba(255, 255, 255, 0.3);
         }
 
         @keyframes typingEllipses {
-            0%, 60%, 100% {
-                content: '';
-            }
-            20% {
+            0%, 25% {
                 content: '.';
             }
-            40% {
+            26%, 50% {
                 content: '..';
             }
-            60% {
+            51%, 75% {
                 content: '...';
+            }
+            76%, 100% {
+                content: '';
             }
         }
 
-        .typing-ellipses::after {
-            content: '';
-            animation: typingEllipses 1.5s infinite;
+        .deity-message-window.disappearing {
+            background: rgba(255, 255, 255, 0.95);
+            animation: whiteFlashFill 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
         }
 
         .deity-message-window.disappearing .deity-message-content {
-            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7), rgba(0, 0, 0, 0.1));
-            animation: whiteFlashFill 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+            background: transparent;
+        }
+
+        .deity-message-window.disappearing .deity-message-top,
+        .deity-message-window.disappearing .deity-message-bottom {
+            filter: brightness(3) contrast(2);
         }
 
         @keyframes whiteFlashFill {
             0% {
                 background: #000000;
+                box-shadow: 
+                    0 0 30px rgba(255, 255, 255, 0.4),
+                    0 0 60px rgba(255, 255, 255, 0.2);
             }
             30% {
-                background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.8));
+                background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.6));
+                box-shadow: 
+                    0 0 50px rgba(255, 255, 255, 0.8),
+                    0 0 100px rgba(255, 255, 255, 0.5);
             }
             70% {
-                background: radial-gradient(circle at center, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.2));
+                background: radial-gradient(circle at center, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.3));
+                box-shadow: 
+                    0 0 80px rgba(255, 255, 255, 1),
+                    0 0 150px rgba(255, 255, 255, 0.8);
             }
             100% {
-                background: rgba(255, 255, 255, 0.95);
+                background: rgba(255, 255, 255, 0.98);
+                box-shadow: 
+                    0 0 100px rgba(255, 255, 255, 1),
+                    0 0 200px rgba(255, 255, 255, 0.9),
+                    inset 0 0 50px rgba(255, 255, 255, 0.5);
             }
+        }
+
+        /* Pixelation effect for text content */
+        .deity-message-content {
+            background: #000000;
+            background-image: 
+                url('/assets/skins/messageside.png'),
+                url('/assets/skins/messageside.png');
+            background-repeat: repeat-y, repeat-y;
+            background-position: left center, right center;
+            background-size: 10px auto, 10px auto;
+            padding: 20px 25px;
+            line-height: 1.5;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        .deity-message-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.1) 3px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.05) 3px
+                );
+            pointer-events: none;
+            mix-blend-mode: multiply;
         }
 
         @keyframes typewriter {
