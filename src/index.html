@@ -343,7 +343,7 @@
 
         .deity-message-bottom {
             width: 100%;
-            height: 25px;
+            height: 20px;
             background-image: url('/assets/skins/messagebottom.png');
             background-repeat: no-repeat;
             background-size: 100% 100%;
@@ -395,14 +395,123 @@
             width: 100%;
             white-space: nowrap;
             overflow: hidden;
-            animation: typewriter 1.5s steps(60, end) 1.2s forwards, textGlow 6s ease-in-out infinite alternate 2.7s, subtleFlicker 3s ease-in-out infinite 2.7s;
             opacity: 0;
         }
 
+        .deity-message-text.typing {
+            animation: typewriter var(--typing-duration) steps(var(--typing-steps), end) 1.2s forwards, textGlow 6s ease-in-out infinite alternate calc(var(--typing-duration) + 1.2s), subtleFlicker 3s ease-in-out infinite calc(var(--typing-duration) + 1.2s);
+        }
+
         .deity-message-text::after {
-            content: '_';
-            animation: blink 1s infinite, fadeOutCursor 0.5s ease-out 2.2s forwards;
+            content: '';
+            animation: blink 1s infinite;
             color: rgba(255, 255, 255, 0.7);
+            opacity: 0;
+        }
+
+        .deity-message-text.typing::after {
+            content: '_';
+            opacity: 1;
+            animation: blink 0.8s infinite, fadeOutCursor 0.5s ease-out calc(var(--typing-duration) + 1.7s) forwards;
+        }
+
+        .typing-ellipses {
+            display: inline-block;
+            opacity: 0;
+        }
+
+        .typing-ellipses.show {
+            opacity: 1;
+            animation: typingEllipses 1.5s infinite;
+        }
+
+        @keyframes typingEllipses {
+            0%, 60%, 100% {
+                content: '';
+            }
+            20% {
+                content: '.';
+            }
+            40% {
+                content: '..';
+            }
+            60% {
+                content: '...';
+            }
+        }
+
+        .typing-ellipses::after {
+            content: '';
+            animation: typingEllipses 1.5s infinite;
+        }
+
+        .deity-message-window.disappearing .deity-message-content {
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7), rgba(0, 0, 0, 0.1));
+            animation: whiteFlashFill 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+        }
+
+        @keyframes whiteFlashFill {
+            0% {
+                background: #000000;
+            }
+            30% {
+                background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.8));
+            }
+            70% {
+                background: radial-gradient(circle at center, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.2));
+            }
+            100% {
+                background: rgba(255, 255, 255, 0.95);
+            }
+        }
+
+        @keyframes typewriter {
+            from {
+                clip-path: inset(0 100% 0 0);
+                opacity: 0;
+            }
+            1% {
+                opacity: 1;
+            }
+            to {
+                clip-path: inset(0 0 0 0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes blink {
+            0%, 50% {
+                opacity: 1;
+            }
+            51%, 100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeOutCursor {
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* Static noise effect for TV transitions */
+        @keyframes staticNoise {
+            0%, 100% { 
+                background-position: 0% 0%;
+                opacity: 0.1;
+            }
+            25% { 
+                background-position: 10% 20%;
+                opacity: 0.15;
+            }
+            50% { 
+                background-position: -5% 10%;
+                opacity: 0.08;
+            }
+            75% { 
+                background-position: 15% -10%;
+                opacity: 0.12;
+            }
         }
 
         @keyframes tvTurnOn {
@@ -533,55 +642,6 @@
                 opacity: 0.05;
             }
         }
-
-        @keyframes typewriter {
-            from {
-                clip-path: inset(0 100% 0 0);
-                opacity: 0;
-            }
-            1% {
-                opacity: 1;
-            }
-            to {
-                clip-path: inset(0 0 0 0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes blink {
-            0%, 50% {
-                opacity: 1;
-            }
-            51%, 100% {
-                opacity: 0;
-            }
-        }
-
-        @keyframes fadeOutCursor {
-            to {
-                opacity: 0;
-            }
-        }
-
-        /* Static noise effect for TV transitions */
-        @keyframes staticNoise {
-            0%, 100% { 
-                background-position: 0% 0%;
-                opacity: 0.1;
-            }
-            25% { 
-                background-position: 10% 20%;
-                opacity: 0.15;
-            }
-            50% { 
-                background-position: -5% 10%;
-                opacity: 0.08;
-            }
-            75% { 
-                background-position: 15% -10%;
-                opacity: 0.12;
-            }
-        }
     </style>
 </head>
 <body>
@@ -624,22 +684,34 @@
         // Deity Messages System
         let deityMessageSystem = {
             messages: [
-                "Behold: the rats have learned to weep...",
-                "Spilled wine seeks its bottle...",
-                "Drink deeply from the fountain...",
-                "Sour winds carry no letters...",
-                "Bone windows open backward...",
-                "A shadow walks ahead...",
-                "An empty chalice overflows in silence...",
-                "The candles extinguish themselves at dawn...",
-                "A garden grows beneath the stone...",
-                "As the spiral straightens...",
-                "As the pendelum swings...."
+                "Behold: the rats have learned to weep",
+                "Spilled wine seeks its bottle",
+                "Drink deeply from the fountain",
+                "Sour winds carry no letters",
+                "Bone windows open backward",
+                "An empty chalice overflows",
+                "The candles extinguish themselves at dawn",
+                "A garden grows beneath the stone",
+                "As the spiral straightens",
+                "As the pendelum swings",
+                "Behold: the dust remembers its shape",
+                "Know this: the well is dry but drinks",
+                "A key turns backward in its lock",
+                "The clock strikes thirteen and waits",
+                "Teeth of glass speak brittle truth",
+                "The light is heavy and falls like rain",
+                "The path climbs down to meet you",
+                "In the darkness between the stars",
+                "The chain has no beginning or end",
+                "The wind carries the scent of futures past"
             ],
             usedMessages: new Set(),
             activeWindows: new Set(),
             nextMessageTimeout: null,
             windowCounter: 0,
+            trackStartTime: null,
+            currentTrackDuration: null,
+            messageCount: 0,
             
             init() {
                 // Start with one message for debugging
@@ -651,9 +723,49 @@
                 this.scheduleNextMessage();
             },
             
+            onTrackChange(trackDuration) {
+                // Reset for new track
+                this.trackStartTime = Date.now();
+                this.currentTrackDuration = trackDuration || 180; // Default to 3 minutes if unknown
+                this.messageCount = 0;
+                
+                // Clear existing timeout
+                if (this.nextMessageTimeout) {
+                    clearTimeout(this.nextMessageTimeout);
+                }
+                
+                // Schedule at least 3 messages per track
+                this.scheduleMessagesForTrack();
+            },
+            
+            scheduleMessagesForTrack() {
+                const minMessages = 3;
+                const trackDuration = this.currentTrackDuration * 1000; // Convert to milliseconds
+                
+                // Calculate intervals to ensure at least 3 messages
+                const baseInterval = Math.max(15000, trackDuration / (minMessages + 1)); // At least 15 seconds between messages
+                
+                for (let i = 0; i < minMessages; i++) {
+                    const delay = baseInterval * (i + 1) + (Math.random() * 10000 - 5000); // Add some randomness
+                    const clampedDelay = Math.max(5000, Math.min(delay, trackDuration - 10000)); // Ensure it's within track bounds
+                    
+                    setTimeout(() => {
+                        if (this.messageCount < minMessages) {
+                            this.showRandomMessage();
+                            this.messageCount++;
+                        }
+                    }, clampedDelay);
+                }
+                
+                // Schedule additional random messages for longer tracks
+                if (trackDuration > 180000) { // If longer than 3 minutes
+                    this.scheduleNextMessage();
+                }
+            },
+            
             scheduleNextMessage() {
-                // Random interval between 30-90 seconds for 2-3 messages per 3-4 minute song
-                const interval = Math.random() * 60000 + 30000;
+                // Random interval between 20-60 seconds for additional messages
+                const interval = Math.random() * 40000 + 20000;
                 
                 this.nextMessageTimeout = setTimeout(() => {
                     this.showRandomMessage();
@@ -697,8 +809,14 @@
                     messageWindow.classList.add('appearing');
                 });
                 
-                // Extended random dismiss time: 6-25 seconds for more dramatic lingering
-                const dismissTime = Math.random() * 6000 + 4000;
+                // Start typing animation after TV turn-on effect
+                setTimeout(() => {
+                    this.startTypingAnimation(messageWindow, randomMessage);
+                }, 1200);
+                
+                // Extended random dismiss time: 8-15 seconds after typing completes
+                const typingDuration = this.calculateTypingDuration(randomMessage);
+                const dismissTime = typingDuration + Math.random() * 7000 + 8000;
                 setTimeout(() => {
                     this.dismissMessage(messageWindow);
                 }, dismissTime);
@@ -712,7 +830,7 @@
                 window.innerHTML = `
                     <div class="deity-message-top"></div>
                     <div class="deity-message-content">
-                        <div class="deity-message-text">${message}</div>
+                        <div class="deity-message-text">${message}<span class="typing-ellipses"></span></div>
                     </div>
                     <div class="deity-message-bottom"></div>
                 `;
@@ -721,6 +839,59 @@
                 this.makeDraggable(window);
                 
                 return window;
+            },
+            
+            calculateTypingDuration(message) {
+                // Calculate realistic typing duration with variations
+                const baseSpeed = 80; // Base milliseconds per character
+                const speedVariation = 40; // Variation in speed
+                const pauseChance = 0.15; // 15% chance of pause per character
+                const avgPauseDuration = 200; // Average pause duration
+                
+                let totalDuration = 0;
+                for (let i = 0; i < message.length; i++) {
+                    // Random typing speed per character
+                    const charSpeed = baseSpeed + (Math.random() * speedVariation - speedVariation/2);
+                    totalDuration += charSpeed;
+                    
+                    // Random pauses (like real typing)
+                    if (Math.random() < pauseChance) {
+                        totalDuration += avgPauseDuration + (Math.random() * 300);
+                    }
+                    
+                    // Longer pauses after punctuation
+                    if (message[i] === ',' || message[i] === ':') {
+                        totalDuration += 150 + (Math.random() * 200);
+                    }
+                }
+                
+                return Math.max(2000, totalDuration); // Minimum 2 seconds
+            },
+            
+            startTypingAnimation(messageWindow, message) {
+                const textElement = messageWindow.querySelector('.deity-message-text');
+                const ellipsesElement = messageWindow.querySelector('.typing-ellipses');
+                
+                // Calculate dynamic typing parameters
+                const typingDuration = this.calculateTypingDuration(message);
+                const typingSteps = message.length + 3; // +3 for the ellipses
+                
+                // Set CSS custom properties for the animation
+                textElement.style.setProperty('--typing-duration', `${typingDuration}ms`);
+                textElement.style.setProperty('--typing-steps', typingSteps);
+                
+                // Start typing animation
+                textElement.classList.add('typing');
+                
+                // Show ellipses animation after text completes
+                setTimeout(() => {
+                    ellipsesElement.classList.add('show');
+                }, typingDuration + 1200);
+                
+                // Hide ellipses after a short time
+                setTimeout(() => {
+                    ellipsesElement.classList.remove('show');
+                }, typingDuration + 3000);
             },
             
             positionRandomly(element) {
@@ -996,7 +1167,7 @@
                 fadeOut: 0     // no fade out
             },
             1: {  // Track 2 - Two Travelers
-                url: "assets/loops/02Loop.gif",
+                url: "assets/loops/02Loop-1.gif",
                 preloadedImage: null,
                 fadeIn: 0,   // 0.2 seconds fade in
                 fadeOut: .3   // 0.2 seconds fade out
@@ -1114,8 +1285,14 @@
                     });
                 }
                 
-                if (trackIndex !== -1 && trackBackgrounds[trackIndex]) {
-                    switchBackground(trackIndex);
+                // Get track duration and notify deity message system
+                if (trackIndex !== -1) {
+                    const trackDuration = tracksData[trackIndex]?.duration || 180;
+                    deityMessageSystem.onTrackChange(trackDuration);
+                    
+                    if (trackBackgrounds[trackIndex]) {
+                        switchBackground(trackIndex);
+                    }
                 }
             });
         }
