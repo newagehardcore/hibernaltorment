@@ -25,8 +25,6 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-  console.log(`Request: ${req.url}`);
-  
   // Parse the URL properly
   const parsedUrl = url.parse(req.url);
   
@@ -45,9 +43,6 @@ const server = http.createServer((req, res) => {
     filePath = path.join(__dirname, pathname.startsWith('/src/') ? pathname : path.join('src', pathname));
   }
   
-  // Log the file path to help debug
-  console.log(`Looking for file: ${filePath}`);
-  
   // Get the file extension
   const extname = path.extname(filePath);
   
@@ -62,7 +57,7 @@ const server = http.createServer((req, res) => {
   };
   
   // Special handling for binary files (mp3, wsz, gif)
-  const isBinary = ['.mp3', '.wsz', '.woff', '.ttf', '.eot', '.otf', '.gif'].includes(extname);
+  const isBinary = ['.mp3', '.wsz', '.woff', '.ttf', '.eot', '.otf', '.gif', '.png', '.jpg', '.jpeg'].includes(extname);
   
   // Check if file exists before trying to read it
   fs.access(filePath, fs.constants.F_OK, (err) => {
