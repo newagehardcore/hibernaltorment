@@ -459,9 +459,8 @@
         }
 
         .deity-message-text.typing::after {
-            content: '_';
-            opacity: 1;
-            animation: blink 0.8s infinite, fadeOutCursor 0.5s ease-out calc(var(--typing-duration) + 1.7s) forwards;
+            content: '';
+            opacity: 0;
         }
 
         .typing-ellipses::after {
@@ -891,15 +890,12 @@
                         
                         setTimeout(typeNextCharacter, delay);
                     } else {
-                        // Typing completed, show ellipses
+                        // Typing completed, show ellipses and keep them until window disappears
                         setTimeout(() => {
                             ellipses.classList.add('show');
+                            // Store reference to ellipses for cleanup
+                            messageWindow.ellipsesElement = ellipses;
                         }, 500);
-                        
-                        // Hide ellipses after a short time
-                        setTimeout(() => {
-                            ellipses.classList.remove('show');
-                        }, 2500);
                     }
                 };
                 
@@ -991,6 +987,11 @@
             
             dismissMessage(messageWindow) {
                 if (!this.activeWindows.has(messageWindow)) return;
+                
+                // Stop ellipses animation if it's running
+                if (messageWindow.ellipsesElement) {
+                    messageWindow.ellipsesElement.classList.remove('show');
+                }
                 
                 // Remove from active set
                 this.activeWindows.delete(messageWindow);
