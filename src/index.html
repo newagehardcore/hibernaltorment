@@ -333,6 +333,7 @@
             position: relative;
             overflow: hidden;
             min-height: 50px;
+            max-height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -398,31 +399,19 @@
             overflow: hidden;
             opacity: 0;
             line-height: 1.4;
-            /* Pixelation effect */
-            filter: contrast(1.2) saturate(1.1);
-            image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
-            /* Custom pixelation using CSS transforms */
-            transform: scale(1);
         }
 
         .deity-message-text.typing {
             animation: typewriter var(--typing-duration) steps(var(--typing-steps), end) 1.2s forwards, textGlow 6s ease-in-out infinite alternate calc(var(--typing-duration) + 1.2s), subtleFlicker 3s ease-in-out infinite calc(var(--typing-duration) + 1.2s);
         }
 
-        .deity-message-text::after {
-            content: '';
-            display: none; /* Remove cursor completely */
-        }
-
         .typing-ellipses {
-            display: inline-block;
-            width: 24px; /* Fixed width to prevent layout shift */
-            text-align: left;
-            opacity: 0;
-            vertical-align: baseline;
             position: relative;
+            display: inline-block;
+            width: 30px;
+            height: 1em;
+            vertical-align: baseline;
+            opacity: 0;
         }
 
         .typing-ellipses.show {
@@ -433,66 +422,44 @@
             content: '';
             position: absolute;
             left: 0;
-            animation: typingEllipses 1.5s infinite;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            animation: none;
         }
 
-        @keyframes typingEllipses {
-            0%, 25% {
+        .typing-ellipses.show::before {
+            animation: typingEllipsesFlow 1.8s infinite;
+        }
+
+        @keyframes typingEllipsesFlow {
+            0%, 16.66% {
                 content: '.';
             }
-            26%, 50% {
+            33.33%, 49.99% {
                 content: '..';
             }
-            51%, 75% {
+            66.66%, 83.32% {
                 content: '...';
             }
-            76%, 100% {
+            100% {
                 content: '';
             }
         }
 
-        /* Enhanced pixelation effect for the entire text area including glow */
-        .deity-message-content .deity-message-text {
-            filter: 
-                contrast(1.3) 
-                saturate(1.2) 
-                drop-shadow(0 0 1px rgba(255, 255, 255, 0.8))
-                drop-shadow(0 0 2px rgba(255, 255, 255, 0.6))
-                drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
-            /* Pixelation through scaling and rendering */
-            transform: scale(0.95);
-            transform-origin: center;
-            image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
+        .deity-message-text::after {
+            content: '';
+            opacity: 0;
         }
 
-        /* Additional pixelation overlay effect */
-        .deity-message-content::before {
+        .deity-message-text.typing::after {
+            content: '_';
+            opacity: 1;
+            animation: blink 0.8s infinite, fadeOutCursor 0.5s ease-out calc(var(--typing-duration) + 1.7s) forwards;
+        }
+
+        .typing-ellipses::after {
             content: '';
-            position: absolute;
-            top: 0;
-            left: 25px;
-            right: 25px;
-            bottom: 0;
-            background: 
-                repeating-linear-gradient(
-                    0deg,
-                    transparent,
-                    transparent 1px,
-                    rgba(0, 0, 0, 0.02) 1px,
-                    rgba(0, 0, 0, 0.02) 2px
-                ),
-                repeating-linear-gradient(
-                    90deg,
-                    transparent,
-                    transparent 1px,
-                    rgba(0, 0, 0, 0.02) 1px,
-                    rgba(0, 0, 0, 0.02) 2px
-                );
-            pointer-events: none;
-            z-index: 3;
-            mix-blend-mode: multiply;
         }
 
         .deity-message-window.disappearing .deity-message-content {
@@ -877,13 +844,10 @@
                 window.className = 'deity-message-window';
                 window.id = `deity-message-${++this.windowCounter}`;
                 
-                // Add non-breaking space before ellipses to prevent orphaning
-                const messageWithEllipses = message + '\u00A0'; // Add non-breaking space
-                
                 window.innerHTML = `
                     <div class="deity-message-top"></div>
                     <div class="deity-message-content">
-                        <div class="deity-message-text">${messageWithEllipses}<span class="typing-ellipses"></span></div>
+                        <div class="deity-message-text">${message}<span class="typing-ellipses"></span></div>
                     </div>
                     <div class="deity-message-bottom"></div>
                 `;
@@ -927,7 +891,7 @@
                 
                 // Calculate dynamic typing parameters
                 const typingDuration = this.calculateTypingDuration(message);
-                const typingSteps = message.length + 3; // +3 for the ellipses
+                const typingSteps = message.length;
                 
                 // Set CSS custom properties for the animation
                 textElement.style.setProperty('--typing-duration', `${typingDuration}ms`);
