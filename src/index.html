@@ -402,7 +402,13 @@
         }
 
         .deity-message-text.typing {
-            animation: typewriter var(--typing-duration) steps(var(--typing-steps), end) 1.2s forwards, textGlow 6s ease-in-out infinite alternate calc(var(--typing-duration) + 1.2s), subtleFlicker 3s ease-in-out infinite calc(var(--typing-duration) + 1.2s);
+            opacity: 1;
+            animation: textGlow 6s ease-in-out infinite alternate var(--typing-duration), subtleFlicker 3s ease-in-out infinite var(--typing-duration);
+        }
+
+        .deity-message-text::after {
+            content: '';
+            opacity: 0;
         }
 
         .typing-ellipses {
@@ -482,34 +488,7 @@
             }
         }
 
-        @keyframes typewriter {
-            from {
-                clip-path: inset(0 100% 0 0);
-                opacity: 0;
-            }
-            1% {
-                opacity: 1;
-            }
-            to {
-                clip-path: inset(0 0 0 0);
-                opacity: 1;
-            }
-        }
 
-        @keyframes blink {
-            0%, 50% {
-                opacity: 1;
-            }
-            51%, 100% {
-                opacity: 0;
-            }
-        }
-
-        @keyframes fadeOutCursor {
-            to {
-                opacity: 0;
-            }
-        }
 
         /* Static noise effect for TV transitions */
         @keyframes staticNoise {
@@ -801,7 +780,15 @@
             },
             
             showRandomMessage() {
-                // Don't show too many messages at once
+                // Much stricter control over simultaneous messages - only 5% chance if one is already active
+                if (this.activeWindows.size >= 1) {
+                    // Only 5% chance to show a second message when one is already active
+                    if (Math.random() > 0.05) {
+                        return;
+                    }
+                }
+                
+                // Never allow more than 2 messages
                 if (this.activeWindows.size >= 2) {
                     return;
                 }
@@ -847,7 +834,7 @@
                 window.innerHTML = `
                     <div class="deity-message-top"></div>
                     <div class="deity-message-content">
-                        <div class="deity-message-text">${message}<span class="typing-ellipses"></span></div>
+                        <div class="deity-message-text"><span class="typing-ellipses"></span></div>
                     </div>
                     <div class="deity-message-bottom"></div>
                 `;
@@ -889,26 +876,54 @@
                 const textElement = messageWindow.querySelector('.deity-message-text');
                 const ellipsesElement = messageWindow.querySelector('.typing-ellipses');
                 
-                // Calculate dynamic typing parameters
-                const typingDuration = this.calculateTypingDuration(message);
-                const typingSteps = message.length;
+                // Clear any existing content
+                textElement.innerHTML = '<span class="typing-ellipses"></span>';
+                const ellipses = textElement.querySelector('.typing-ellipses');
                 
-                // Set CSS custom properties for the animation
-                textElement.style.setProperty('--typing-duration', `${typingDuration}ms`);
-                textElement.style.setProperty('--typing-steps', typingSteps);
+                // Create a span for the typed text
+                const typedTextSpan = document.createElement('span');
+                textElement.insertBefore(typedTextSpan, ellipses);
                 
                 // Start typing animation
                 textElement.classList.add('typing');
                 
-                // Show ellipses animation after text completes
-                setTimeout(() => {
-                    ellipsesElement.classList.add('show');
-                }, typingDuration + 1200);
+                let currentIndex = 0;
+                const characters = message.split('');
                 
-                // Hide ellipses after a short time
-                setTimeout(() => {
-                    ellipsesElement.classList.remove('show');
-                }, typingDuration + 3000);
+                const typeNextCharacter = () => {
+                    if (currentIndex < characters.length) {
+                        typedTextSpan.textContent += characters[currentIndex];
+                        currentIndex++;
+                        
+                        // Calculate delay for next character
+                        let delay = 60 + Math.random() * 40; // Base delay with variation
+                        
+                        // Random pauses
+                        if (Math.random() < 0.15) {
+                            delay += 200 + Math.random() * 300;
+                        }
+                        
+                        // Longer pauses after punctuation
+                        if (characters[currentIndex - 1] === ',' || characters[currentIndex - 1] === ':') {
+                            delay += 150 + Math.random() * 200;
+                        }
+                        
+                        setTimeout(typeNextCharacter, delay);
+                    } else {
+                        // Typing completed, show ellipses
+                        setTimeout(() => {
+                            ellipses.classList.add('show');
+                        }, 500);
+                        
+                        // Hide ellipses after a short time
+                        setTimeout(() => {
+                            ellipses.classList.remove('show');
+                        }, 2500);
+                    }
+                };
+                
+                // Start typing
+                setTimeout(typeNextCharacter, 500);
             },
             
             positionRandomly(element) {
