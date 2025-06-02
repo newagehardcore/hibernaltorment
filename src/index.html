@@ -9,6 +9,11 @@
     <style>
         :root {
             --webamp-zoom: 1.1;
+            /* Deity message font - italic bold Times New Roman with tight kerning */
+            --deity-font: 'Times New Roman', serif;
+            --deity-font-style: italic;
+            --deity-font-weight: bold;
+            --deity-letter-spacing: -0.02em; /* -20 kerning approximation */
         }
 
         html, body {
@@ -76,15 +81,15 @@
         
         /* Adjust positioning for scaled elements */
         #webamp .window {
-            filter: 
+            /* filter: 
                 drop-shadow(-4px 2px 4px rgba(0, 0, 0, 0.95))
                 drop-shadow(-6px 4px 8px rgba(0, 0, 0, 0.85))
                 drop-shadow(-8px 8px 15px rgba(0, 0, 0, 0.75))
-                drop-shadow(-10px 12px 25px rgba(0, 0, 0, 0.65));
+                drop-shadow(-10px 12px 25px rgba(0, 0, 0, 0.65)); */
             will-change: filter, transform;
             position: relative;
             z-index: 2;
-            animation: rotatingShadow 20s linear infinite;
+            /* animation: rotatingShadow 20s linear infinite; */
         }
         
         /* Additional glow effect for windows */
@@ -228,39 +233,39 @@
         /* Adjust positioning for scaled elements */
         @keyframes rotatingShadow {
             0% {
-                filter: 
+                /* filter: 
                     drop-shadow(-4px 2px 4px rgba(0, 0, 0, 0.95))
                     drop-shadow(-6px 4px 8px rgba(0, 0, 0, 0.85))
                     drop-shadow(-8px 8px 15px rgba(0, 0, 0, 0.75))
-                    drop-shadow(-10px 12px 25px rgba(0, 0, 0, 0.65));
+                    drop-shadow(-10px 12px 25px rgba(0, 0, 0, 0.65)); */
             }
             25% {
-                filter: 
+                /* filter: 
                     drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.95))
                     drop-shadow(0px 6px 8px rgba(0, 0, 0, 0.85))
                     drop-shadow(0px 8px 15px rgba(0, 0, 0, 0.75))
-                    drop-shadow(0px 12px 25px rgba(0, 0, 0, 0.65));
+                    drop-shadow(0px 12px 25px rgba(0, 0, 0, 0.65)); */
             }
             50% {
-                filter: 
+                /* filter: 
                     drop-shadow(4px 2px 4px rgba(0, 0, 0, 0.95))
                     drop-shadow(6px 4px 8px rgba(0, 0, 0, 0.85))
                     drop-shadow(8px 8px 15px rgba(0, 0, 0, 0.75))
-                    drop-shadow(10px 12px 25px rgba(0, 0, 0, 0.65));
+                    drop-shadow(10px 12px 25px rgba(0, 0, 0, 0.65)); */
             }
             75% {
-                filter: 
+                /* filter: 
                     drop-shadow(0px -2px 4px rgba(0, 0, 0, 0.95))
                     drop-shadow(0px -4px 8px rgba(0, 0, 0, 0.85))
                     drop-shadow(0px -6px 15px rgba(0, 0, 0, 0.75))
-                    drop-shadow(0px -8px 25px rgba(0, 0, 0, 0.65));
+                    drop-shadow(0px -8px 25px rgba(0, 0, 0, 0.65)); */
             }
             100% {
-                filter: 
+                /* filter: 
                     drop-shadow(-4px 2px 4px rgba(0, 0, 0, 0.95))
                     drop-shadow(-6px 4px 8px rgba(0, 0, 0, 0.85))
                     drop-shadow(-8px 8px 15px rgba(0, 0, 0, 0.75))
-                    drop-shadow(-10px 12px 25px rgba(0, 0, 0, 0.65));
+                    drop-shadow(-10px 12px 25px rgba(0, 0, 0, 0.65)); */
             }
         }
 
@@ -274,25 +279,30 @@
         /* Deity Message Windows */
         .deity-message-window {
             position: fixed;
-            width: 350px;
+            width: 315px; /* Scaled down 10% from 350px */
             min-height: 120px;
             background: #000000;
             border: none;
             border-radius: 0;
-            font-family: 'Georgia', 'Times New Roman', serif;
+            font-family: var(--deity-font);
+            font-style: var(--deity-font-style);
+            font-weight: var(--deity-font-weight);
+            letter-spacing: var(--deity-letter-spacing);
             font-size: 16px;
-            font-weight: bold;
             color: #ffffff;
             z-index: 1001;
             cursor: move;
-            box-shadow: 
-                0 0 30px rgba(255, 255, 255, 0.4),
-                0 0 60px rgba(255, 255, 255, 0.2);
+            filter: 
+                drop-shadow(-4px 2px 4px rgba(0, 0, 0, 0.95))
+                drop-shadow(-6px 4px 8px rgba(0, 0, 0, 0.85))
+                drop-shadow(-8px 8px 15px rgba(0, 0, 0, 0.75))
+                drop-shadow(-10px 12px 25px rgba(0, 0, 0, 0.65));
+            will-change: filter, transform;
+            animation: float 8s ease-in-out infinite;
             user-select: none;
             opacity: 0;
             transform: scale(0.1);
             transition: none;
-            animation: float 8s ease-in-out infinite;
             image-rendering: pixelated;
             image-rendering: -moz-crisp-edges;
             image-rendering: crisp-edges;
@@ -317,16 +327,34 @@
             image-rendering: pixelated;
             image-rendering: -moz-crisp-edges;
             image-rendering: crisp-edges;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .deity-message-top:hover {
+            filter: brightness(1.1);
+        }
+
+        .deity-close-button {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            z-index: 10;
+            /* Invisible but clickable area over the X */
+            background: transparent;
+        }
+
+        .deity-close-button:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .deity-message-content {
             background: #000000;
-            background-image: 
-                url('/assets/skins/messageside.png'),
-                url('/assets/skins/messageside.png');
-            background-repeat: repeat-y, repeat-y;
-            background-position: left center, right center;
-            background-size: 10px auto, 10px auto;
+            border-left: 2px dotted rgba(255, 255, 255, 0.8);
+            border-right: 2px dotted rgba(255, 255, 255, 0.8);
             padding: 20px 25px;
             line-height: 1.5;
             text-align: center;
@@ -337,24 +365,41 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
         }
 
         .deity-message-bottom {
             width: 100%;
-            height: 20px;
-            background-image: url('/assets/skins/messagebottom.png');
-            background-repeat: no-repeat;
-            background-size: 100% 100%;
-            background-position: center;
-            image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
+            height: 2px;
+            border-bottom: 2px dotted rgba(255, 255, 255, 0.8);
+            background: transparent;
+            position: relative;
         }
 
+        .deity-message-bottom::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            border-bottom: 2px dotted rgba(255, 255, 255, 0.8);
+        }
+
+        /* Create double dotted line effect for deity message side borders - matching bottom style */
         .deity-message-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 2px;
+            right: 2px;
+            bottom: 0;
+            border-left: 2px dotted rgba(255, 255, 255, 0.8);
+            border-right: 2px dotted rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .deity-message-content .scanlines::before {
             content: '';
             position: absolute;
             top: 0;
@@ -368,6 +413,16 @@
                     transparent 3px,
                     rgba(0, 0, 0, 0.05) 4px
                 );
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .deity-message-content .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             pointer-events: none;
         }
 
@@ -399,6 +454,25 @@
             overflow: hidden;
             opacity: 0;
             line-height: 1.4;
+            display: inline-block;
+            text-align: center;
+            /* Pixelated/broken text effects */
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            font-variant-ligatures: none;
+            text-rendering: geometricPrecision;
+            /* Subtle broken/distant feeling */
+            filter: contrast(1.1) brightness(0.95);
+            /* Slightly irregular character spacing for broken feel */
+            word-spacing: 0.1em;
+            /* Add subtle pixelated text shadow for depth */
+            text-shadow: 
+                0 0 2px rgba(255, 255, 255, 0.9),
+                1px 0 0px rgba(255, 255, 255, 0.7),
+                0 1px 0px rgba(255, 255, 255, 0.7),
+                0 0 10px rgba(255, 255, 255, 0.6),
+                0 0 20px rgba(255, 255, 255, 0.3);
         }
 
         .deity-message-text.typing {
@@ -418,7 +492,16 @@
             height: 1em;
             vertical-align: baseline;
             opacity: 0;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
+        
+        /* Prevent ellipses from being alone on a line */
+        .typed-text {
+            display: inline;
+        }
+        
+        /* Keep ellipses with last word using non-breaking space */
 
         .typing-ellipses.show {
             opacity: 1;
@@ -435,7 +518,7 @@
         }
 
         .typing-ellipses.show::before {
-            animation: typingEllipsesFlow 1.8s infinite;
+            animation: typingEllipsesFlow 0.8s infinite;
         }
 
         @keyframes typingEllipsesFlow {
@@ -637,6 +720,42 @@
                 opacity: 0.05;
             }
         }
+
+        #legendarium-logo-link {
+            position: fixed;
+            right: 2vw;
+            bottom: 2vh;
+            z-index: 2000;
+            display: block;
+            width: 10vw;
+            max-width: 110px;
+            min-width: 60px;
+            height: auto;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #legendarium-logo-link.visible {
+            opacity: 0.92;
+        }
+        #legendarium-logo-link:hover {
+            opacity: 1;
+        }
+        #legendarium-logo {
+            width: 100%;
+            height: auto;
+            display: block;
+            pointer-events: none;
+            will-change: transform;
+            filter: drop-shadow(0 2px 8px #000a);
+            image-rendering: auto;
+            transition: transform 0.3s ease-out; /* Add smooth transition */
+        }
+        
+        /* Add hover state for the link */
+        #legendarium-logo-link:hover #legendarium-logo {
+            transform: scale(1.15) rotateY(0deg) !important; /* Scale up and face forward */
+        }
     </style>
 </head>
 <body>
@@ -679,26 +798,15 @@
         // Deity Messages System
         let deityMessageSystem = {
             messages: [
-                "Behold: the rats have learned to weep",
-                "Spilled wine seeks its bottle",
-                "Drink deeply from the fountain",
-                "Sour winds carry no letters",
-                "Bone windows open backward",
-                "An empty chalice overflows",
-                "The candles extinguish themselves at dawn",
-                "A garden grows beneath the stone",
+                "The rats have learned to speak",
+                "Drink deeply from my fountain",
+                "Ill winds carry no lutes",
+                "A garden grows in my storm",
                 "As the spiral straightens",
                 "As the pendelum swings",
-                "Behold: the dust remembers its shape",
-                "Know this: the well is dry but drinks",
-                "A key turns backward in its lock",
-                "The clock strikes thirteen and waits",
-                "Teeth of glass speak brittle truth",
-                "The light is heavy and falls like rain",
-                "The path climbs down to meet you",
-                "In the darkness between the stars",
-                "The chain has no beginning or end",
-                "The wind carries the scent of futures past"
+                "The dust remembers you",
+                "A path climbs down to meet you",
+                "In the darkness between the stars"
             ],
             usedMessages: new Set(),
             activeWindows: new Set(),
@@ -709,13 +817,34 @@
             messageCount: 0,
             
             init() {
-                // Start with one message for debugging
+                // Start with "welcome" message
                 setTimeout(() => {
-                    this.showRandomMessage();
+                    this.showWelcomeMessage();
                 }, 3000);
                 
                 // Schedule periodic messages
                 this.scheduleNextMessage();
+            },
+            
+            showWelcomeMessage() {
+                const messageWindow = this.createMessageWindow("welcome");
+                document.body.appendChild(messageWindow);
+                
+                // Position randomly on screen
+                this.positionRandomly(messageWindow);
+                
+                // Add to active windows
+                this.activeWindows.add(messageWindow);
+                
+                // Show with TV turn-on effect
+                requestAnimationFrame(() => {
+                    messageWindow.classList.add('appearing');
+                });
+                
+                // Start typing animation after TV turn-on effect
+                setTimeout(() => {
+                    this.startTypingAnimation(messageWindow, "welcome");
+                }, 1200);
             },
             
             onTrackChange(trackDuration) {
@@ -798,12 +927,7 @@
                     this.startTypingAnimation(messageWindow, randomMessage);
                 }, 1200);
                 
-                // Extended random dismiss time: 8-15 seconds after typing completes
-                const typingDuration = this.calculateTypingDuration(randomMessage);
-                const dismissTime = typingDuration + Math.random() * 7000 + 8000;
-                setTimeout(() => {
-                    this.dismissMessage(messageWindow);
-                }, dismissTime);
+                // Don't schedule dismissal here - it will be scheduled after typing actually completes
             },
             
             createMessageWindow(message) {
@@ -812,8 +936,11 @@
                 window.id = `deity-message-${++this.windowCounter}`;
                 
                 window.innerHTML = `
-                    <div class="deity-message-top"></div>
+                    <div class="deity-message-top">
+                        <div class="deity-close-button"></div>
+                    </div>
                     <div class="deity-message-content">
+                        <div class="scanlines"></div>
                         <div class="deity-message-text"><span class="typing-ellipses"></span></div>
                     </div>
                     <div class="deity-message-bottom"></div>
@@ -821,6 +948,13 @@
                 
                 // Make draggable
                 this.makeDraggable(window);
+                
+                // Add click handler to close button (X area only)
+                const closeButton = window.querySelector('.deity-close-button');
+                closeButton.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent drag from triggering
+                    this.dismissMessage(window);
+                });
                 
                 return window;
             },
@@ -856,13 +990,10 @@
                 const textElement = messageWindow.querySelector('.deity-message-text');
                 const ellipsesElement = messageWindow.querySelector('.typing-ellipses');
                 
-                // Clear any existing content
-                textElement.innerHTML = '<span class="typing-ellipses"></span>';
+                // Clear any existing content and set up the structure
+                textElement.innerHTML = '<span class="typed-text"></span>&nbsp;<span class="typing-ellipses show"></span>';
+                const typedTextSpan = textElement.querySelector('.typed-text');
                 const ellipses = textElement.querySelector('.typing-ellipses');
-                
-                // Create a span for the typed text
-                const typedTextSpan = document.createElement('span');
-                textElement.insertBefore(typedTextSpan, ellipses);
                 
                 // Start typing animation
                 textElement.classList.add('typing');
@@ -872,15 +1003,31 @@
                 
                 const typeNextCharacter = () => {
                     if (currentIndex < characters.length) {
-                        typedTextSpan.textContent += characters[currentIndex];
+                        const char = characters[currentIndex];
+                        
+                        // Create individual character span with subtle variations for broken feel
+                        const charSpan = document.createElement('span');
+                        charSpan.textContent = char;
+                        
+                        // Add subtle random variations to make text feel more broken/distant
+                        const variation = Math.random();
+                        if (variation < 0.05) { // 5% chance for slight character variations
+                            charSpan.style.opacity = '0.85';
+                        } else if (variation < 0.1) { // Another 5% for slight position shift
+                            charSpan.style.transform = `translateY(${Math.random() * 0.5 - 0.25}px)`;
+                        } else if (variation < 0.15) { // Another 5% for slight scaling
+                            charSpan.style.transform = `scale(${0.95 + Math.random() * 0.1})`;
+                        }
+                        
+                        typedTextSpan.appendChild(charSpan);
                         currentIndex++;
                         
                         // Calculate delay for next character
                         let delay = 60 + Math.random() * 40; // Base delay with variation
                         
-                        // Random pauses
-                        if (Math.random() < 0.15) {
-                            delay += 200 + Math.random() * 300;
+                        // Random pauses for more broken/stuttering effect
+                        if (Math.random() < 0.18) { // Slightly more frequent pauses
+                            delay += 200 + Math.random() * 400; // Longer pauses occasionally
                         }
                         
                         // Longer pauses after punctuation
@@ -890,17 +1037,21 @@
                         
                         setTimeout(typeNextCharacter, delay);
                     } else {
-                        // Typing completed, show ellipses and keep them until window disappears
+                        // Typing completed - schedule dismissal 2-5 seconds from now
+                        const readingTime = 2000 + Math.random() * 3000; // 2-5 seconds after typing completes
                         setTimeout(() => {
-                            ellipses.classList.add('show');
-                            // Store reference to ellipses for cleanup
-                            messageWindow.ellipsesElement = ellipses;
-                        }, 500);
+                            this.dismissMessage(messageWindow);
+                        }, readingTime);
+                        
+                        // Store reference to ellipses for cleanup in dismissMessage
+                        messageWindow.ellipsesElement = ellipses;
                     }
                 };
                 
-                // Start typing
-                setTimeout(typeNextCharacter, 500);
+                // Add a longer, randomized pause before typing begins
+                // Base delay of 1.2s (current TV turn-on effect) + random delay between 0.8s and 3.2s
+                const initialDelay = 1200 + Math.random() * 2400;
+                setTimeout(typeNextCharacter, initialDelay);
             },
             
             positionRandomly(element) {
@@ -909,7 +1060,7 @@
                 const maxY = window.innerHeight - element.offsetHeight - margin;
                 
                 // Ensure we have valid dimensions
-                const elementWidth = 350; // Use our known width since offsetWidth might be 0 initially
+                const elementWidth = 315; // Updated to match new scaled width
                 const elementHeight = 120; // Estimated height
                 
                 const x = Math.max(margin, Math.random() * (window.innerWidth - elementWidth - margin));
@@ -989,8 +1140,9 @@
                 if (!this.activeWindows.has(messageWindow)) return;
                 
                 // Stop ellipses animation if it's running
-                if (messageWindow.ellipsesElement) {
-                    messageWindow.ellipsesElement.classList.remove('show');
+                const ellipses = messageWindow.querySelector('.typing-ellipses');
+                if (ellipses) {
+                    ellipses.classList.remove('show');
                 }
                 
                 // Remove from active set
@@ -1181,7 +1333,7 @@
                 fadeOut: 0     // no fade out
             },
             1: {  // Track 2 - Two Travelers
-                url: "assets/loops/02Loop-1.gif",
+                url: "assets/loops/02Loop.gif",
                 preloadedImage: null,
                 fadeIn: 0,   // 0.2 seconds fade in
                 fadeOut: .3   // 0.2 seconds fade out
@@ -1204,10 +1356,34 @@
                 fadeIn: 1,     // instant fade in
                 fadeOut: 0     // instant fade out
             },
+            5: {  // Track 6 - Entrusted to Fools
+                url: "assets/loops/06Loop.gif",
+                preloadedImage: null,
+                fadeIn: 3,     // instant fade in
+                fadeOut: 0     // instant fade out
+            },
             6: {  // Track 7 - Stale Biscuits
                 url: "assets/loops/07Loop.gif",
                 preloadedImage: null,
                 fadeIn: 0,     // instant fade in
+                fadeOut: 0     // instant fade out
+            },
+            8: {  // Track 9 - Ill Wind
+                url: "assets/loops/08Loop.gif",
+                preloadedImage: null,
+                fadeIn: 1,     // instant fade in
+                fadeOut: 0     // instant fade out
+            },
+            10: {  // Track 11 - Taste of my Chime
+                url: "assets/loops/11Loop.gif",
+                preloadedImage: null,
+                fadeIn: 0,     // instant fade in
+                fadeOut: 0     // instant fade out
+            },
+            12: {  // Track 13 - Bone Window
+                url: "assets/loops/13Loop.gif",
+                preloadedImage: null,
+                fadeIn: 3,     // instant fade in
                 fadeOut: 0     // instant fade out
             }
         };
@@ -1371,22 +1547,21 @@
 
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
-            // Get zoom factor from CSS variable
             const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
             
-            // Original Webamp dimensions
-            const playerWidth = 275;
-            const totalHeight = 500;
+            // Calculate position in top-left quadrant
+            const leftOffset = Math.floor(windowWidth * 0.14);
+            const topOffset = Math.floor(windowHeight * 0.15);
             
-            // Calculate center position
-            const centerX = Math.max(0, Math.floor((windowWidth - (playerWidth * zoomFactor)) / 2 / zoomFactor));
-            const centerY = Math.max(0, Math.floor((windowHeight - (totalHeight * zoomFactor)) / 2 / zoomFactor));
+            // Divide by zoom factor to get the actual position in the zoomed space
+            const posX = Math.max(0, Math.floor(leftOffset / zoomFactor));
+            const posY = Math.max(0, Math.floor(topOffset / zoomFactor));
 
             // Store these positions for animation reference
             window.lastKnownPositions = {
-                main: { x: centerX, y: centerY },
-                equalizer: { x: centerX, y: centerY + 116 },
-                playlist: { x: centerX, y: centerY + 232 }
+                main: { x: posX, y: posY },
+                equalizer: { x: posX, y: posY + 116 },
+                playlist: { x: posX, y: posY + 232 }
             };
 
             // Update window positions
@@ -1442,7 +1617,7 @@
             const ANIMATION_SPEED = 0.5;  // Slower base speed for smoother motion
             // Base radius that will be modified by audio
             const BASE_RADIUS = 2;    // Slight increase in base radius
-            const MAX_RADIUS = 180;    // Larger maximum radius for more dramatic swirls
+            const MAX_RADIUS = 50;    // Larger maximum radius for more dramatic swirls
             // Slow down the actual movement speed
             const OSCILLATION_FREQUENCY_MODIFIER = 0.0008;  // Much slower base oscillation
             
@@ -1628,15 +1803,21 @@
                 
                 // Create the dynamic shadow filter
                 const shadowFilter = `
-                    drop-shadow(${xOffset * pulse}px ${yOffset * pulse}px ${blur1}px rgba(0, 0, 0, 0.95))
+                    /* drop-shadow(${xOffset * pulse}px ${yOffset * pulse}px ${blur1}px rgba(0, 0, 0, 0.95))
                     drop-shadow(${xOffset * 1.5 * pulse}px ${yOffset * 1.5 * pulse}px ${blur2}px rgba(0, 0, 0, 0.85))
                     drop-shadow(${xOffset * 2 * pulse}px ${yOffset * 2 * pulse}px ${spread1}px rgba(0, 0, 0, 0.75))
-                    drop-shadow(${xOffset * 2.5 * pulse}px ${yOffset * 2.5 * pulse}px ${spread2}px rgba(0, 0, 0, 0.65))
+                    drop-shadow(${xOffset * 2.5 * pulse}px ${yOffset * 2.5 * pulse}px ${spread2}px rgba(0, 0, 0, 0.65)) */
                 `;
                 
-                // Apply the shadow to all windows
+                // Apply the shadow to all webamp windows
                 windows.forEach(window => {
                     window.classList.add('dynamic-shadow');
+                    window.style.filter = shadowFilter;
+                });
+                
+                // Apply the same shadow to all deity message windows
+                const deityWindows = document.querySelectorAll('.deity-message-window');
+                deityWindows.forEach(window => {
                     window.style.filter = shadowFilter;
                 });
             }
@@ -1795,7 +1976,7 @@
                     };
                 }));
 
-                // Calculate center position
+                // Calculate position for top-left quadrant placement
                 const windowWidth = window.innerWidth;
                 const windowHeight = window.innerHeight;
                 // Get zoom factor from CSS variable
@@ -1805,13 +1986,13 @@
                 const playerWidth = 275;  // Original size
                 const totalHeight = 500;  // Original size
                 
-                // Adjust the centering calculation to account for the actual visible area
-                const scaledPlayerWidth = playerWidth * zoomFactor;
-                const scaledTotalHeight = totalHeight * zoomFactor;
+                // Position in top-left quadrant - approximately 20% from left edge and 15% from top
+                const leftOffset = Math.floor(windowWidth * 0.20);
+                const topOffset = Math.floor(windowHeight * 0.15);
                 
                 // Divide by zoom factor to get the actual position in the zoomed space
-                const centerX = Math.max(0, Math.floor((windowWidth - scaledPlayerWidth) / 2 / zoomFactor));
-                const centerY = Math.max(0, Math.floor((windowHeight - scaledTotalHeight) / 2 / zoomFactor));
+                const posX = Math.max(0, Math.floor(leftOffset / zoomFactor));
+                const posY = Math.max(0, Math.floor(topOffset / zoomFactor));
 
                 // Initialize Webamp with preloaded tracks
                 const webampOptions = {
@@ -1820,10 +2001,10 @@
                     zIndex: 100,
                     enableHotkeys: false,
                     __initialWindowLayout: {
-                        main: { position: { x: centerX, y: centerY } },
-                        equalizer: { position: { x: centerX, y: centerY + 116 } },
+                        main: { position: { x: posX, y: posY } },
+                        equalizer: { position: { x: posX, y: posY + 116 } },
                         playlist: { 
-                            position: { x: centerX, y: centerY + 232 },
+                            position: { x: posX, y: posY + 232 },
                             size: [0, 5]
                         }
                     }
@@ -1869,6 +2050,33 @@
 
                 // Center windows initially
                 centerWindows();
+
+                // Focus the playlist window to bring it to the foreground
+                setTimeout(() => {
+                    if (webampInstance && webampInstance.store) {
+                        webampInstance.store.dispatch({
+                            type: 'SET_FOCUSED_WINDOW',
+                            window: 'playlist'
+                        });
+                        
+                        // Try multiple approaches to set visualizer to oscilloscope
+                        // Approach 1: Try TOGGLE_VISUALIZER_STYLE (might cycle between modes)
+                        webampInstance.store.dispatch({
+                            type: 'TOGGLE_VISUALIZER_STYLE'
+                        });
+                    }
+                }, 100);
+                
+                // Try another approach after a short delay
+                setTimeout(() => {
+                    if (webampInstance && webampInstance.store) {
+                        // Approach 2: Try clicking on the visualizer area programmatically
+                        const visualizerElement = document.querySelector('#webamp .visualizer');
+                        if (visualizerElement) {
+                            visualizerElement.click();
+                        }
+                    }
+                }, 500);
 
                 // Start the haunted animation immediately
                 startHauntedAnimation();
@@ -2139,28 +2347,29 @@
                             setTimeout(() => {
                                 const currentBg = document.getElementById('current-background');
                                 if (currentBg && currentBg.firstChild) {
-                                    // Force a reflow before setting up the transition
                                     void currentBg.firstChild.offsetHeight;
-                                    
-                                    // Set up the fade-in transition
                                     currentBg.firstChild.style.transition = `opacity ${trackBackgrounds[0].fadeIn}s ease-in`;
-                                    
-                                    // Start the fade
                                     requestAnimationFrame(() => {
                                         currentBg.firstChild.style.opacity = '1';
                                     });
                                 }
-                                
-                                // Ensure we have a player instance before starting playback
                                 if (webampInstance) {
                                     playFirstTrack();
                                 }
-                                
-                                // Initialize deity message system after everything is set up
+                                // Fade in the logo and start animation
+                                const logoLink = document.getElementById('legendarium-logo-link');
+                                if (logoLink) {
+                                    logoLink.classList.add('visible');
+                                    // Start animation after visible (if not already started)
+                                    if (!window.legendariumLogoAnimStarted) {
+                                        window.legendariumLogoAnimStarted = true;
+                                        startLegendariumLogoAnimation();
+                                    }
+                                }
                                 setTimeout(() => {
                                     deityMessageSystem.init();
-                                }, 5000); // Wait 5 seconds after music starts
-                            }, 2000); // Wait for password overlay to fade out
+                                }, 5000);
+                            }, 2000);
                         }, 700);
                     });
                 } else {
@@ -2257,6 +2466,38 @@
             }
         }
 
+        // Legendarium logo orbiting animation
+        function startLegendariumLogoAnimation() {
+            const logo = document.getElementById('legendarium-logo');
+            if (!logo) return;
+            let start = null;
+            let isHovered = false;
+
+            // Add hover listeners
+            const logoLink = document.getElementById('legendarium-logo-link');
+            logoLink.addEventListener('mouseenter', () => isHovered = true);
+            logoLink.addEventListener('mouseleave', () => isHovered = false);
+
+            function animate(ts) {
+                if (!start) start = ts;
+                const t = (ts - start) / 1000;
+                
+                if (!isHovered) {
+                    // Only orbit and spin when not hovered
+                    const orbitRadiusX = 4; // px
+                    const orbitRadiusY = 2; // px
+                    const orbitSpeed = 0.15; // radians/sec
+                    const angle = t * orbitSpeed;
+                    const x = Math.cos(angle) * orbitRadiusX;
+                    const y = Math.sin(angle) * orbitRadiusY;
+                    const spin = Math.sin(t * 0.25) * 90; // -90deg to +90deg
+                    logo.style.transform = `translate(${x}px, ${y}px) rotateY(${spin}deg)`;
+                }
+                requestAnimationFrame(animate);
+            }
+            requestAnimationFrame(animate);
+        }
+
         // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', () => {
             // Start preloading backgrounds immediately
@@ -2279,6 +2520,12 @@
             setTimeout(() => {
                 document.getElementById('password-input').focus();
             }, 500);
+
+            // Call the animation function if needed
+            if (!window.legendariumLogoAnimStarted) {
+                window.legendariumLogoAnimStarted = true;
+                startLegendariumLogoAnimation();
+            }
         });
         
         // Remove animation toggle related styles
@@ -2301,5 +2548,8 @@
             centerWindows();
         });
     </script>
+    <a id="legendarium-logo-link" href="https://legendarium.nyc" target="_blank" rel="noopener">
+        <img id="legendarium-logo" src="assets/images/Legendarium-Logo-Trans-1.png" alt="Legendarium Logo">
+    </a>
 </body>
 </html> 
