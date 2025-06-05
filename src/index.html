@@ -227,7 +227,88 @@
         }
 
         .background-gif.active {
-            opacity: 1;
+            opacity: 0.5; /* 50% transparency */
+        }
+
+        /* Add styles for video loops (replacing GIFs) */
+        .background-video, .viewer-video {
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            object-fit: cover;
+            object-position: center;
+            will-change: opacity;
+        }
+
+        .background-video.active {
+            opacity: 0.5; /* 50% transparency */
+        }
+
+        .viewer-video.active {
+            opacity: 1; /* Full opacity in viewer */
+        }
+
+        /* Add audio-reactive flicker overlay */
+        .background-flicker-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            mix-blend-mode: overlay;
+            pointer-events: none;
+            opacity: 0;
+            will-change: opacity, filter;
+            transition: opacity 0.05s ease-out;
+        }
+
+        /* Create a separate vignette overlay for better post-processing */
+        .background-vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.7) 100%);
+            pointer-events: none;
+            opacity: 0.7;
+            mix-blend-mode: multiply;
+            z-index: 1;
+            will-change: opacity;
+        }
+
+        /* Add grain texture for film-like quality */
+        .background-grain {
+            position: absolute;
+            inset: 0;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWx0ZXI9InVybCgjYSkiIG9wYWNpdHk9Ii4wNSIvPjwvc3ZnPg==');
+            opacity: 0.12;
+            mix-blend-mode: overlay;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Add a subtle light bloom effect container */
+        .background-bloom {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 70%);
+            pointer-events: none;
+            opacity: 0;
+            mix-blend-mode: screen;
+            z-index: 3;
+            will-change: opacity, background;
+            filter: blur(10px);
+        }
+
+        /* Add a white flash overlay for intense moments */
+        .background-flash {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.7);
+            pointer-events: none;
+            opacity: 0;
+            mix-blend-mode: overlay;
+            z-index: 4;
+            will-change: opacity;
         }
 
         /* Adjust positioning for scaled elements */
@@ -756,14 +837,251 @@
         #legendarium-logo-link:hover #legendarium-logo {
             transform: scale(1.15) rotateY(0deg) !important; /* Scale up and face forward */
         }
+
+        /* Viewer Window Styles */
+        #viewer-window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            aspect-ratio: 1/1; /* Default to square shape */
+            background: #000000;
+            border: none;
+            border-radius: 0;
+            z-index: 5; /* Above glow overlay, below webamp and deity messages */
+            cursor: move;
+            filter: none; /* Remove shadow */
+            will-change: transform;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            max-height: 95vh; /* Almost full height */
+            max-width: 95vw; /* Almost full width */
+            min-height: 600px;
+            min-width: 600px;
+            width: 90vmin; /* Use vmin for square default - will be the smaller of vw or vh */
+            height: 90vmin; /* Use vmin for square default - will be the smaller of vw or vh */
+            opacity: 0; /* Initially hidden */
+            transition: opacity 0.8s ease-in-out;
+            resize: both; /* Enable native resizing */
+            overflow: hidden; /* Required for resize to work */
+        }
+
+        /* Add resize handle */
+        .viewer-resize-handle {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 15px;
+            height: 15px;
+            cursor: nwse-resize;
+            z-index: 7;
+            background: transparent;
+        }
+
+        .viewer-resize-handle::after {
+            content: "◢";
+            position: absolute;
+            right: 3px;
+            bottom: 1px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 10px;
+        }
+        
+        #viewer-window.visible {
+            opacity: 1;
+        }
+
+        .viewer-header {
+            width: 100%;
+            height: 25px;
+            background-image: url('assets/skins/viewerHeader.png');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-position: center;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            cursor: move;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .viewer-close-button, .viewer-fullscreen-button {
+            position: absolute;
+            top: 0;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            z-index: 10;
+            background: transparent;
+        }
+
+        .viewer-close-button {
+            right: 0; /* Position at the right edge */
+        }
+
+        .viewer-close-button::after {
+            content: "×";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+        }
+
+        .viewer-fullscreen-button {
+            right: 0;
+        }
+
+        .viewer-fullscreen-button::after {
+            content: "▣";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .viewer-close-button:hover, .viewer-fullscreen-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .viewer-content {
+            flex: 1;
+            background: #000000;
+            border-left: 2px dotted rgba(255, 255, 255, 0.8);
+            border-right: 2px dotted rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .viewer-loop-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .viewer-loop {
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            object-fit: cover; /* Cover instead of contain to avoid black bars */
+            object-position: center;
+            will-change: opacity;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .viewer-loop.active {
+            opacity: 1;
+        }
+
+        .viewer-bottom {
+            width: 100%;
+            height: 2px;
+            border-bottom: 2px dotted rgba(255, 255, 255, 0.8);
+            background: transparent;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .viewer-bottom::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            border-bottom: 2px dotted rgba(255, 255, 255, 0.8);
+        }
+
+        /* Create double dotted line effect for viewer side borders - matching bottom style */
+        .viewer-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 2px;
+            right: 2px;
+            bottom: 0;
+            border-left: 2px dotted rgba(255, 255, 255, 0.8);
+            border-right: 2px dotted rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Fullscreen exit button */
+        #exit-fullscreen-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px dotted rgba(255, 255, 255, 0.8);
+            color: white;
+            cursor: pointer;
+            z-index: 20; /* Above most other elements when in fullscreen mode */
+            font-family: var(--deity-font);
+            font-style: var(--deity-font-style);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        #exit-fullscreen-button:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+            border-color: rgba(255, 255, 255, 1);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* When in fullscreen mode */
+        body.fullscreen-mode #viewer-window {
+            display: none;
+        }
+
+        body.fullscreen-mode #background-container {
+            z-index: 3; /* Above glow overlay */
+        }
+
+        body.fullscreen-mode #exit-fullscreen-button {
+            display: block !important;
+        }
     </style>
 </head>
 <body>
     <!-- Background container for GIFs -->
     <div id="background-container">
         <div id="current-background" class="background-gif"></div>
+        <div class="background-flicker-overlay"></div>
+        <div class="background-vignette"></div>
+        <div class="background-grain"></div>
+        <div class="background-bloom"></div>
+        <div class="background-flash"></div>
     </div>
 
+    <!-- Viewer window for loops -->
+    <div id="viewer-window" class="window-draggable">
+        <div class="viewer-header">
+            <div class="viewer-close-button"></div>
+        </div>
+        <div class="viewer-content">
+            <div class="viewer-loop-container"></div>
+        </div>
+        <div class="viewer-bottom"></div>
+        <div class="viewer-resize-handle"></div>
+    </div>
         
     <!-- Password protection overlay -->
     <div id="password-overlay">
@@ -794,6 +1112,7 @@
         let eqIntervalId = null;
         let passwordUnlocked = false;
         let lastKnownPositions = null;
+        // Remove isFullscreenMode variable since we're removing fullscreen functionality
         
         // Deity Messages System
         let deityMessageSystem = {
@@ -1327,62 +1646,62 @@
         // Background GIF mapping for each track with preloaded images
         const trackBackgrounds = {
             0: {  // Track 1 - Gross Excelations
-                url: "assets/loops/01Loop.gif",
-                preloadedImage: null,
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153489/01Loop.mp4",
+                preloadedVideo: null,
                 fadeIn: 10,    // 10 seconds fade in
                 fadeOut: 0     // no fade out
             },
             1: {  // Track 2 - Two Travelers
-                url: "assets/loops/02Loop.gif",
-                preloadedImage: null,
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153493/02Loop.mp4",
+                preloadedVideo: null,
                 fadeIn: 0,   // 0.2 seconds fade in
                 fadeOut: .3   // 0.2 seconds fade out
             },
             2: {  // Track 3 - Chambers of the Starwatcher
-                url: "assets/loops/03Loop.gif",
-                preloadedImage: null,
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153497/03Loop.mp4",
+                preloadedVideo: null,
                 fadeIn: 2,     // 2 seconds fade in
                 fadeOut: 0   // 0.2 seconds fade out
             },
             3: {  // Track 4 - Hibernal Torment
-                url: "assets/loops/04Loop.gif",
-                preloadedImage: null,
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153509/04Loop.mp4",
+                preloadedVideo: null,
                 fadeIn: 0,     // 2 seconds fade in
                 fadeOut: 0   // 0.2 seconds fade out
             },
             4: {  // Track 5 - Rats
-                url: "assets/loops/05Loop.gif",
-                preloadedImage: null,
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153513/05Loop.mp4",
+                preloadedVideo: null,
                 fadeIn: 1,     // instant fade in
                 fadeOut: 0     // instant fade out
             },
             5: {  // Track 6 - Entrusted to Fools
-                url: "assets/loops/06Loop.gif",
-                preloadedImage: null,
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153517/06Loop.mp4",
+                preloadedVideo: null,
                 fadeIn: 3,     // instant fade in
                 fadeOut: 0     // instant fade out
             },
             6: {  // Track 7 - Stale Biscuits
-                url: "assets/loops/07Loop.gif",
-                preloadedImage: null,
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153521/07Loop.mp4",
+                preloadedVideo: null,
                 fadeIn: 0,     // instant fade in
                 fadeOut: 0     // instant fade out
             },
             8: {  // Track 9 - Ill Wind
-                url: "assets/loops/08Loop.gif",
-                preloadedImage: null,
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153526/09Loop.mp4",
+                preloadedVideo: null,
                 fadeIn: 1,     // instant fade in
                 fadeOut: 0     // instant fade out
             },
             10: {  // Track 11 - Taste of my Chime
-                url: "assets/loops/11Loop.gif",
-                preloadedImage: null,
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153531/11Loop.mp4",
+                preloadedVideo: null,
                 fadeIn: 0,     // instant fade in
                 fadeOut: 0     // instant fade out
             },
             12: {  // Track 13 - Bone Window
-                url: "assets/loops/13Loop.gif",
-                preloadedImage: null,
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153534/13Loop.mp4",
+                preloadedVideo: null,
                 fadeIn: 3,     // instant fade in
                 fadeOut: 0     // instant fade out
             }
@@ -1397,42 +1716,263 @@
         // Function to initialize background system
         function initBackgroundSystem() {
             const currentBg = document.getElementById('current-background');
+            const viewerContainer = document.querySelector('.viewer-loop-container');
+            const flickerOverlay = document.querySelector('.background-flicker-overlay');
             
             if (trackBackgrounds[0]) {
-                const img = new Image();
-                img.className = 'background-gif';
+                // Create video for both viewer and background
+                const video = document.createElement('video');
+                video.className = 'background-video';
+                video.loop = true;
+                video.muted = true;
+                video.playsInline = true;
+                video.autoplay = true;
                 
-                // Ensure image starts completely invisible with no transition
-                img.style.transition = 'none';
-                img.style.opacity = '0';
+                // Ensure video starts completely invisible with no transition
+                video.style.transition = 'none';
+                video.style.opacity = '0';
                 
-                img.onload = () => {
+                video.onloadeddata = () => {
+                    // Start playing the video
+                    video.play().catch(err => console.error("Video autoplay failed:", err));
+                    
+                    // Add to background (fullscreen mode)
                     currentBg.innerHTML = '';
-                    currentBg.appendChild(img);
+                    currentBg.appendChild(video);
+                    
+                    // Add to viewer
+                    if (viewerContainer) {
+                        const viewerVideo = video.cloneNode(true);
+                        viewerVideo.className = 'viewer-video';
+                        viewerVideo.style.objectFit = 'cover'; // Ensure cover is applied
+                        viewerContainer.innerHTML = '';
+                        viewerContainer.appendChild(viewerVideo);
+                        
+                        // Start playing the viewer video
+                        viewerVideo.play().catch(err => console.error("Viewer video autoplay failed:", err));
+                    }
                 };
                 
-                img.onerror = (error) => {
-                    console.error('Error loading initial background:', error);
+                video.onerror = (error) => {
+                    console.error('Error loading initial background video:', error);
+                    console.log('Attempted to load:', trackBackgrounds[0].url);
                 };
                 
-                img.src = trackBackgrounds[0].url;
+                video.src = trackBackgrounds[0].url;
+                console.log('Loading initial video from:', trackBackgrounds[0].url);
             }
+            
+            // Make the viewer window draggable
+            makeViewerDraggable();
+            
+            // Set up viewer buttons
+            setupViewerControls();
+            
+            // Set up the audio-reactive background flicker
+            setupBackgroundFlicker();
         }
 
-        // Function to preload all background GIFs
-        function preloadBackgrounds() {
-            // Preload all backgrounds
-            Object.values(trackBackgrounds).forEach((background, index) => {
-                const img = new Image();
-                img.onload = () => {
-                    background.preloadedImage = img;  // Store the preloaded image
-                };
-                img.onerror = (error) => {
-                    console.error(`Error preloading background ${index + 1}:`, error);
-                };
-                img.src = background.url;
+        // Function to make the viewer window draggable
+        function makeViewerDraggable() {
+            const viewerWindow = document.getElementById('viewer-window');
+            
+            if (!viewerWindow) return;
+            
+            let isDragging = false;
+            let startX = 0;
+            let startY = 0;
+            let startLeft = 0;
+            let startTop = 0;
+            
+            // Use the header as the drag handle
+            const dragHandle = viewerWindow.querySelector('.viewer-header');
+            
+            if (dragHandle) {
+                dragHandle.addEventListener('mousedown', dragStart, { passive: false });
+                document.addEventListener('mousemove', drag, { passive: false });
+                document.addEventListener('mouseup', dragEnd, { passive: false });
+            }
+            
+            function dragStart(e) {
+                // Ignore if clicking on buttons
+                if (e.target.closest('.viewer-close-button')) {
+                    return;
+                }
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                // Get current position
+                const rect = viewerWindow.getBoundingClientRect();
+                startLeft = rect.left;
+                startTop = rect.top;
+                
+                // Make sure transform is none for proper dragging
+                if (viewerWindow.style.transform === 'translate(-50%, -50%)') {
+                    viewerWindow.style.transform = 'none';
+                    
+                    // Center it if first drag after initialization
+                    const rect = viewerWindow.getBoundingClientRect();
+                    viewerWindow.style.top = `${(window.innerHeight - rect.height) / 2}px`;
+                    viewerWindow.style.left = `${(window.innerWidth - rect.width) / 2}px`;
+                }
+                
+                dragHandle.style.cursor = 'grabbing';
+                viewerWindow.style.zIndex = '6'; // Bring to front while dragging
+            }
+            
+            function drag(e) {
+                if (!isDragging) return;
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                
+                let newLeft = startLeft + deltaX;
+                let newTop = startTop + deltaY;
+                
+                // Constrain to screen bounds with some flexibility
+                const rect = viewerWindow.getBoundingClientRect();
+                const elementWidth = rect.width;
+                const elementHeight = rect.height;
+                
+                // Allow more flexibility - only constrain when completely off-screen
+                newLeft = Math.max(-elementWidth + 100, Math.min(window.innerWidth - 50, newLeft));
+                newTop = Math.max(-50, Math.min(window.innerHeight - 50, newTop));
+                
+                viewerWindow.style.left = newLeft + 'px';
+                viewerWindow.style.top = newTop + 'px';
+            }
+            
+            function dragEnd(e) {
+                if (!isDragging) return;
+                
+                isDragging = false;
+                dragHandle.style.cursor = 'move';
+                viewerWindow.style.zIndex = '5'; // Reset z-index
+            }
+            
+            // Prevent text selection during drag
+            viewerWindow.addEventListener('selectstart', (e) => {
+                if (isDragging) e.preventDefault();
             });
         }
+
+        // Function to preload all background videos
+        function preloadBackgrounds() {
+            const preloadPromises = [];
+            const preloadProgress = {
+                total: Object.keys(trackBackgrounds).length,
+                loaded: 0,
+                failed: 0
+            };
+
+            // Create a preload manager
+            const preloadManager = {
+                onProgress: null,
+                onComplete: null,
+                onError: null
+            };
+
+            // Preload all backgrounds
+            Object.entries(trackBackgrounds).forEach(([index, background]) => {
+                const preloadPromise = new Promise((resolve, reject) => {
+                    const video = document.createElement('video');
+                    video.muted = true;
+                    video.playsInline = true;
+                    video.preload = 'auto'; // Changed from 'metadata' to 'auto' for full preload
+                    
+                    // Track loading progress
+                    video.addEventListener('progress', () => {
+                        if (video.buffered.length > 0) {
+                            const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+                            const duration = video.duration;
+                            if (duration > 0) {
+                                const progress = (bufferedEnd / duration) * 100;
+                                console.log(`Preloading video ${index}: ${progress.toFixed(1)}%`);
+                            }
+                        }
+                    });
+
+                    video.onloadeddata = () => {
+                        background.preloadedVideo = video;
+                        preloadProgress.loaded++;
+                        console.log(`Successfully preloaded video ${index}: ${background.url}`);
+                        
+                        // Update progress
+                        if (preloadManager.onProgress) {
+                            preloadManager.onProgress(preloadProgress);
+                        }
+                        
+                        resolve(video);
+                    };
+                    
+                    video.onerror = (error) => {
+                        preloadProgress.failed++;
+                        console.error(`Error preloading background ${index}:`, error);
+                        console.log('Attempted to load:', background.url);
+                        
+                        // Update progress
+                        if (preloadManager.onProgress) {
+                            preloadManager.onProgress(preloadProgress);
+                        }
+                        
+                        // Retry loading after a delay
+                        setTimeout(() => {
+                            console.log(`Retrying preload for video ${index}...`);
+                            video.src = background.url;
+                        }, 2000);
+                        
+                        reject(error);
+                    };
+                    
+                    video.src = background.url;
+                });
+                
+                preloadPromises.push(preloadPromise);
+            });
+
+            // Handle overall preload completion
+            Promise.allSettled(preloadPromises).then((results) => {
+                const successCount = results.filter(r => r.status === 'fulfilled').length;
+                console.log(`Preload complete. Successfully loaded ${successCount} of ${preloadProgress.total} videos`);
+                
+                if (preloadManager.onComplete) {
+                    preloadManager.onComplete({
+                        successCount,
+                        total: preloadProgress.total,
+                        failed: preloadProgress.failed
+                    });
+                }
+            });
+
+            return preloadManager;
+        }
+
+        // Initialize preloading immediately when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const preloadManager = preloadBackgrounds();
+            
+            // Optional: Add loading indicator
+            preloadManager.onProgress = (progress) => {
+                const percent = ((progress.loaded + progress.failed) / progress.total) * 100;
+                console.log(`Preload progress: ${percent.toFixed(1)}%`);
+            };
+            
+            preloadManager.onComplete = (result) => {
+                console.log('All videos preloaded:', result);
+            };
+            
+            preloadManager.onError = (error) => {
+                console.error('Preload error:', error);
+            };
+        });
 
         // Modified track change handler with detailed logging
         function handleTrackChange(trackInfo) {
@@ -1487,57 +2027,205 @@
             });
         }
 
+        // Set up viewer controls
+        function setupViewerControls() {
+            const viewerWindow = document.getElementById('viewer-window');
+            const closeButton = viewerWindow.querySelector('.viewer-close-button');
+            
+            // Close button - hides the viewer
+            if (closeButton) {
+                closeButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    viewerWindow.classList.remove('visible');
+                });
+            }
+            
+            // Position the viewer window in the center initially
+            // Initial position - will be draggable after
+            requestAnimationFrame(() => {
+                // Reset transform to use absolute positioning
+                viewerWindow.style.transform = 'none';
+                
+                // Get square size based on viewport (90% of smaller viewport dimension)
+                const squareSize = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+                
+                // Center it on screen
+                viewerWindow.style.top = `${(window.innerHeight - squareSize) / 2}px`;
+                viewerWindow.style.left = `${(window.innerWidth - squareSize) / 2}px`;
+                viewerWindow.style.width = `${squareSize}px`;
+                viewerWindow.style.height = `${squareSize}px`;
+            });
+            
+            // Make the viewer resizable manually in addition to native resize
+            const resizeHandle = viewerWindow.querySelector('.viewer-resize-handle');
+            if (resizeHandle) {
+                let isResizing = false;
+                let startX, startY;
+                let startWidth, startHeight;
+                
+                resizeHandle.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    isResizing = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    // Get the current dimensions
+                    const rect = viewerWindow.getBoundingClientRect();
+                    startWidth = rect.width;
+                    startHeight = rect.height;
+                    
+                    // When user starts resizing, remove the aspect-ratio constraint
+                    viewerWindow.style.aspectRatio = 'unset';
+                    
+                    // Add event listeners
+                    document.addEventListener('mousemove', handleResize);
+                    document.addEventListener('mouseup', stopResize);
+                });
+                
+                function handleResize(e) {
+                    if (!isResizing) return;
+                    
+                    // Calculate new dimensions
+                    const newWidth = startWidth + (e.clientX - startX);
+                    const newHeight = startHeight + (e.clientY - startY);
+                    
+                    // Enforce minimum size but no maximum size
+                    const minSize = 300;
+                    
+                    // Allow non-square proportions based on user dragging
+                    const width = Math.max(minSize, newWidth);
+                    const height = Math.max(minSize, newHeight);
+                    
+                    // Apply new dimensions
+                    viewerWindow.style.width = `${width}px`;
+                    viewerWindow.style.height = `${height}px`;
+                }
+                
+                function stopResize() {
+                    isResizing = false;
+                    document.removeEventListener('mousemove', handleResize);
+                    document.removeEventListener('mouseup', stopResize);
+                }
+            }
+        }
+        
+        // Function to switch between fullscreen and window mode
+        function setFullscreenMode(enabled) {
+            const body = document.body;
+            const viewerWindow = document.getElementById('viewer-window');
+            const exitButton = document.getElementById('exit-fullscreen-button');
+            
+            if (enabled) {
+                body.classList.add('fullscreen-mode');
+                
+                // Show exit button
+                if (exitButton) {
+                    exitButton.classList.remove('hidden');
+                }
+            } else {
+                body.classList.remove('fullscreen-mode');
+                
+                // Hide exit button
+                if (exitButton) {
+                    exitButton.classList.add('hidden');
+                }
+                
+                // Make viewer visible
+                if (viewerWindow) {
+                    viewerWindow.classList.add('visible');
+                }
+            }
+        }
+
         // Function to handle background transitions
         function switchBackground(trackIndex) {
             const currentBg = document.getElementById('current-background');
+            const viewerContainer = document.querySelector('.viewer-loop-container');
             const backgroundConfig = trackBackgrounds[trackIndex];
 
             if (!backgroundConfig) {
+                console.warn('No background configuration for track index:', trackIndex);
                 return;
             }
 
-            // Create new image or use preloaded one
-            const newImage = backgroundConfig.preloadedImage ? 
-                backgroundConfig.preloadedImage.cloneNode(true) : 
-                new Image();
+            console.log(`Switching to background for track ${trackIndex}: ${backgroundConfig.url}`);
+
+            // Create new video or use preloaded one
+            const newVideo = backgroundConfig.preloadedVideo ? 
+                backgroundConfig.preloadedVideo.cloneNode(true) : 
+                document.createElement('video');
             
-            newImage.className = 'background-gif';
+            if (!backgroundConfig.preloadedVideo) {
+                newVideo.loop = true;
+                newVideo.muted = true;
+                newVideo.playsInline = true;
+                newVideo.autoplay = true;
+                newVideo.src = backgroundConfig.url;
+            }
+            
+            newVideo.className = 'background-video';
             
             // Set initial state
-            newImage.style.transition = 'none';
-            newImage.style.opacity = '0';
+            newVideo.style.transition = 'none';
+            newVideo.style.opacity = '0';
 
-            const handleImageReady = () => {
+            const handleVideoReady = () => {
                 // Clear any existing content and timeouts
                 if (window.bgTransitionTimeout) {
                     clearTimeout(window.bgTransitionTimeout);
                 }
                 
-                // Remove any existing images
+                // Start playing
+                newVideo.play().catch(err => console.error("Video play failed:", err));
+                
+                // Remove any existing videos from background
                 currentBg.innerHTML = '';
                 
-                // Add new image
-                currentBg.appendChild(newImage);
+                // Add new video to background
+                currentBg.appendChild(newVideo);
+                
+                // Create viewer video
+                if (viewerContainer) {
+                    const viewerVideo = newVideo.cloneNode(true);
+                    viewerVideo.className = 'viewer-video';
+                    viewerVideo.style.objectFit = 'cover'; // Ensure cover is applied
+                    viewerContainer.innerHTML = '';
+                    viewerContainer.appendChild(viewerVideo);
+                    
+                    // Start playing
+                    viewerVideo.play().catch(err => console.error("Viewer video play failed:", err));
+                }
                 
                 // Force reflow
-                void newImage.offsetHeight;
+                void newVideo.offsetHeight;
                 
-                // Set up fade in
+                // Set up fade in for background
                 requestAnimationFrame(() => {
-                    newImage.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
-                    newImage.style.opacity = '1';
+                    newVideo.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
+                    newVideo.style.opacity = '0.5'; // Match the 0.5 opacity from CSS
+                    
+                    // Also fade in viewer video
+                    if (viewerContainer && viewerContainer.querySelector('.viewer-video')) {
+                        const viewerVideo = viewerContainer.querySelector('.viewer-video');
+                        viewerVideo.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
+                        viewerVideo.style.opacity = '1';
+                    }
                 });
             };
 
-            // Handle image loading
-            if (backgroundConfig.preloadedImage) {
-                handleImageReady();
+            // Handle video loading
+            if (backgroundConfig.preloadedVideo) {
+                // If we have a preloaded video, use it immediately
+                handleVideoReady();
             } else {
-                newImage.onload = handleImageReady;
-                newImage.onerror = (error) => {
-                    console.error('Error loading background image:', error);
+                // Otherwise wait for the video to load
+                newVideo.onloadeddata = handleVideoReady;
+                newVideo.onerror = (error) => {
+                    console.error('Error loading background video:', error);
+                    console.log('Attempted to load:', backgroundConfig.url);
                 };
-                newImage.src = backgroundConfig.url;
             }
         }
 
@@ -2282,6 +2970,25 @@
                 deityMessageSystem.cleanup();
             }
             
+            // Reset viewer window
+            const viewerWindow = document.getElementById('viewer-window');
+            if (viewerWindow) {
+                viewerWindow.classList.remove('visible');
+                const viewerContainer = viewerWindow.querySelector('.viewer-loop-container');
+                if (viewerContainer) {
+                    viewerContainer.innerHTML = '';
+                }
+            }
+            
+            // Reset fullscreen mode
+            document.body.classList.remove('fullscreen-mode');
+            
+            // Hide exit button
+            const exitButton = document.getElementById('exit-fullscreen-button');
+            if (exitButton) {
+                exitButton.classList.add('hidden');
+            }
+            
             if (webampInstance) {
                 try {
                     webampInstance.close();
@@ -2343,6 +3050,10 @@
                             passwordOverlay.style.pointerEvents = 'none';
                             passwordUnlocked = true;
                             
+                            // Show the viewer window
+                            const viewerWindow = document.getElementById('viewer-window');
+                            viewerWindow.classList.add('visible');
+                            
                             // After password overlay fades out, start the background fade
                             setTimeout(() => {
                                 const currentBg = document.getElementById('current-background');
@@ -2353,6 +3064,17 @@
                                         currentBg.firstChild.style.opacity = '1';
                                     });
                                 }
+                                
+                                // Also fade in the viewer loop
+                                const viewerLoop = document.querySelector('.viewer-loop');
+                                if (viewerLoop) {
+                                    void viewerLoop.offsetHeight;
+                                    viewerLoop.style.transition = `opacity ${trackBackgrounds[0].fadeIn}s ease-in`;
+                                    requestAnimationFrame(() => {
+                                        viewerLoop.style.opacity = '1';
+                                    });
+                                }
+                                
                                 if (webampInstance) {
                                     playFirstTrack();
                                 }
@@ -2547,6 +3269,326 @@
         window.addEventListener('resize', () => {
             centerWindows();
         });
+
+        // Add function to handle background flickering effects
+        function setupBackgroundFlicker() {
+            if (!webampInstance) {
+                // If analyzer isn't ready yet, try again later
+                setTimeout(setupBackgroundFlicker, 1000);
+                return;
+            }
+            
+            const flickerOverlay = document.querySelector('.background-flicker-overlay');
+            const vignetteOverlay = document.querySelector('.background-vignette');
+            const bloomEffect = document.querySelector('.background-bloom');
+            const flashEffect = document.querySelector('.background-flash');
+            
+            if (!flickerOverlay || !vignetteOverlay || !bloomEffect || !flashEffect) {
+                console.error('Missing overlay elements for audio effects');
+                return;
+            }
+            
+            let lastUpdate = 0;
+            let lastAudioLevel = 0;
+            
+            // Beat detection state
+            let beatState = {
+                energyHistory: new Array(30).fill(0),
+                historyIndex: 0,
+                lastBeatTime: 0,
+                beatThreshold: 1.5, // How much energy increase triggers a beat
+                minBeatInterval: 200, // Minimum ms between beats (300ms = 200bpm max)
+                beatDetected: false,
+                beatCount: 0,
+                beatDecay: 0,
+                pulsePhase: 0,
+                vignetteIntensity: 0.7,
+                currentMode: 'dark'
+            };
+            
+            // Simple darker modes
+            const darkMode = {
+                baseColor: 'rgba(0, 0, 0, 0.7)',
+                mixBlendMode: 'multiply'
+            };
+            
+            // Brighter mode for higher intensity
+            const brightMode = {
+                baseColor: 'rgba(255, 255, 255, 0.3)',
+                mixBlendMode: 'screen'
+            };
+            
+            // Start with dark mode
+            flickerOverlay.style.backgroundColor = darkMode.baseColor;
+            flickerOverlay.style.mixBlendMode = darkMode.mixBlendMode;
+            
+            function updateFlickerEffect(timestamp) {
+                // Update at 60fps
+                if (timestamp - lastUpdate < 16) {
+                    requestAnimationFrame(updateFlickerEffect);
+                    return;
+                }
+                lastUpdate = timestamp;
+                
+                try {
+                    // Get current audio level (0-1)
+                    const audioLevel = getAudioLevel();
+                    
+                    // Calculate time delta and update pulse phase
+                    const deltaTime = timestamp - (beatState.lastTime || timestamp);
+                    beatState.lastTime = timestamp;
+                    beatState.pulsePhase += deltaTime * 0.001 * (0.3 + audioLevel * 2);
+                    
+                    // Smooth transitions between audio levels with minimal smoothing
+                    // Use faster response for increasing levels to catch peaks
+                    const isIncreasing = audioLevel > lastAudioLevel + 0.05;
+                    const smoothingFactor = isIncreasing ? 0.6 : 0.2; // Faster response to increases
+                    const smoothedAudioLevel = lastAudioLevel + (audioLevel - lastAudioLevel) * smoothingFactor;
+                    lastAudioLevel = smoothedAudioLevel;
+                    
+                    // ------------------------
+                    // Beat detection algorithm
+                    // ------------------------
+                    // Store current energy level in history
+                    beatState.energyHistory[beatState.historyIndex] = audioLevel;
+                    beatState.historyIndex = (beatState.historyIndex + 1) % beatState.energyHistory.length;
+                    
+                    // Calculate average energy over recent history
+                    const recentAverage = beatState.energyHistory.reduce((sum, val) => sum + val, 0) / 
+                                          beatState.energyHistory.length;
+                    
+                    // Beat is detected when current level exceeds average by threshold
+                    // AND enough time has passed since last beat
+                    const beatTimeThreshold = timestamp - beatState.lastBeatTime > beatState.minBeatInterval;
+                    const energyThreshold = audioLevel > recentAverage * beatState.beatThreshold;
+                    const newBeat = beatTimeThreshold && energyThreshold && audioLevel > 0.15;
+                    
+                    if (newBeat && !beatState.beatDetected) {
+                        beatState.beatDetected = true;
+                        beatState.lastBeatTime = timestamp;
+                        beatState.beatCount++;
+                        beatState.beatDecay = 1.0; // Full intensity
+                        
+                        // Flash more intensely on beat
+                        flashBeat(audioLevel);
+                    } else {
+                        beatState.beatDetected = false;
+                        
+                        // Decay the beat effect rapidly
+                        beatState.beatDecay *= 0.85;
+                    }
+                    
+                    // Determine if we should switch modes based on audio intensity
+                    const threshold = 0.6; // Threshold for switching to bright mode
+                    const newMode = smoothedAudioLevel > threshold ? 'bright' : 'dark';
+                    
+                    if (newMode !== beatState.currentMode) {
+                        beatState.currentMode = newMode;
+                        
+                        // Apply the new mode to the overlay
+                        if (newMode === 'bright') {
+                            flickerOverlay.style.backgroundColor = brightMode.baseColor;
+                            flickerOverlay.style.mixBlendMode = brightMode.mixBlendMode;
+                        } else {
+                            flickerOverlay.style.backgroundColor = darkMode.baseColor;
+                            flickerOverlay.style.mixBlendMode = darkMode.mixBlendMode;
+                        }
+                    }
+                    
+                    // Calculate flicker value based on audio level and beat
+                    let flickerValue;
+                    
+                    if (smoothedAudioLevel < 0.3) {
+                        // Subtle, slow pulse at low levels with beat enhancement
+                        flickerValue = 0.3 + 0.1 * Math.sin(beatState.pulsePhase * 0.3) + beatState.beatDecay * 0.2;
+                    } else if (smoothedAudioLevel < 0.6) {
+                        // More dynamic pulse with faster response
+                        const pulseBase = 0.4 + 0.2 * Math.sin(beatState.pulsePhase * 0.7);
+                        const secondaryPulse = 0.1 * Math.sin(beatState.pulsePhase * 1.3);
+                        const randomComponent = 0.1 * (Math.random() - 0.5) * smoothedAudioLevel * 3;
+                        const beatComponent = beatState.beatDecay * 0.4; // Strong beat influence
+                        flickerValue = pulseBase + secondaryPulse + randomComponent + beatComponent;
+                    } else {
+                        // Strong pulsing for high levels with stuttering
+                        const stutterFactor = Math.floor(timestamp / (20 + Math.random() * 30)) % 2;
+                        const hardPulse = Math.sin(beatState.pulsePhase * 4) > 0.2 ? 1 : 0.7;
+                        const beatComponent = beatState.beatDecay * 0.5; // Very strong beat influence
+                        
+                        flickerValue = 0.6 + 
+                            0.3 * smoothedAudioLevel + 
+                            0.3 * hardPulse * stutterFactor +
+                            beatComponent;
+                    }
+                    
+                    // Add randomness proportional to audio level
+                    flickerValue += (Math.random() - 0.5) * 0.15 * smoothedAudioLevel;
+                    
+                    // Clamp values
+                    flickerValue = Math.max(0, Math.min(1, flickerValue));
+                    
+                    // Apply the flicker effect
+                    flickerOverlay.style.opacity = flickerValue;
+                    
+                    // Update vignette based on audio level (inverse relationship)
+                    // Stronger vignette during quiet, lighter during loud parts
+                    const targetVignette = 0.7 - (smoothedAudioLevel * 0.4) - (beatState.beatDecay * 0.2);
+                    beatState.vignetteIntensity += (targetVignette - beatState.vignetteIntensity) * 0.1;
+                    vignetteOverlay.style.opacity = Math.max(0.2, Math.min(0.8, beatState.vignetteIntensity));
+                    
+                    // Update bloom effect
+                    // Only show bloom at higher audio levels
+                    let bloomOpacity = 0;
+                    if (smoothedAudioLevel > 0.4) {
+                        // Scale normalized level to reasonable bloom opacity
+                        const normalizedBloom = (smoothedAudioLevel - 0.4) / 0.6;
+                        // Add beat influence to bloom
+                        bloomOpacity = (Math.pow(normalizedBloom, 1.5) * 0.9) + (beatState.beatDecay * 0.4);
+                        
+                        // Add color variance based on intensity
+                        const r = 255;
+                        const g = Math.floor(220 + normalizedBloom * 35); // 220-255
+                        const b = Math.floor(180 + normalizedBloom * 75); // 180-255
+                        
+                        // Create bloom gradient with appropriate size
+                        // Larger during beats
+                        const size = 30 + normalizedBloom * 40 + (beatState.beatDecay * 20); // 30-70% size + beat expansion
+                        const rgbColor = `rgba(${r}, ${g}, ${b}, ${0.5 + normalizedBloom * 0.5})`;
+                        bloomEffect.style.background = `radial-gradient(circle at center, ${rgbColor} 0%, rgba(255, 255, 255, 0) ${size}%)`;
+                        bloomEffect.style.filter = `blur(${5 + Math.floor(normalizedBloom * 15)}px)`;
+                    }
+                    
+                    // Apply bloom with immediate response for visibility
+                    bloomEffect.style.opacity = Math.min(1, bloomOpacity);
+                    
+                } catch (e) {
+                    console.error('Error in background flicker effect:', e);
+                }
+                
+                requestAnimationFrame(updateFlickerEffect);
+            }
+            
+            // Function to create a flash on beat detection
+            function flashBeat(intensity) {
+                // Check if we're in a full frequency moment for more intense flashes
+                const isFullFrequency = detectFullFrequency();
+                
+                // Base flash intensity on audio level and whether it's a full spectrum moment
+                const flashIntensity = isFullFrequency ? intensity * 1.4 : intensity;
+                
+                // Apply flash with rapid fade
+                flashEffect.style.opacity = Math.min(1, flashIntensity * 0.8);
+                
+                // Quick falloff for the flash
+                setTimeout(() => {
+                    flashEffect.style.opacity = Math.min(0.5, flashIntensity * 0.4);
+                    
+                    setTimeout(() => {
+                        flashEffect.style.opacity = '0';
+                    }, 60);
+                }, 60);
+            }
+            
+            // Helper function to detect full frequency spectrum activity
+            function detectFullFrequency() {
+                try {
+                    if (!webampInstance?.analyzer || !webampInstance?.audioData) {
+                        return false;
+                    }
+                    
+                    // Get frequency data
+                    webampInstance.analyzer.getByteFrequencyData(webampInstance.audioData);
+                    
+                    // Analyze key frequency bands
+                    let bassSum = 0, midsSum = 0, highsSum = 0;
+                    
+                    // Check specific frequency bands (bass: 0-4, mids: 5-20, highs: 21+)
+                    for (let i = 0; i < 5; i++) {
+                        bassSum += webampInstance.audioData[i] || 0;
+                    }
+                    
+                    for (let i = 5; i < 21; i++) {
+                        midsSum += webampInstance.audioData[i] || 0;
+                    }
+                    
+                    for (let i = 21; i < 40; i++) {
+                        highsSum += webampInstance.audioData[i] || 0;
+                    }
+                    
+                    // Normalize to 0-1 scale
+                    const bassLevel = bassSum / (5 * 255);
+                    const midsLevel = midsSum / (16 * 255);
+                    const highsLevel = highsSum / (19 * 255);
+                    
+                    // Check if all frequency bands are active (with appropriate thresholds)
+                    return (bassLevel > 0.25 && midsLevel > 0.3 && highsLevel > 0.25);
+                    
+                } catch (e) {
+                    console.error('Error detecting full frequency:', e);
+                    return false;
+                }
+            }
+            
+            // Start the effect
+            requestAnimationFrame(updateFlickerEffect);
+            
+            // Log that we started the effect
+            console.log('Audio-reactive background effects initialized with beat detection');
+        }
+
+        // Simplified function to get audio level - more reliable
+        function getAudioLevel() {
+            // Get the current state from Webamp
+            const state = webampInstance?.store?.getState();
+            const media = state?.media;
+            
+            if (!media) return 0;
+            
+            // Check if we're actually playing
+            const isPlaying = media.status === "PLAYING" && !media.waiting;
+            if (!isPlaying) {
+                return 0;
+            }
+            
+            let audioLevel = 0;
+            
+            // Try to get data from analyzer if available
+            if (webampInstance?.analyzer && webampInstance?.audioData) {
+                try {
+                    // Get frequency data
+                    webampInstance.analyzer.getByteFrequencyData(webampInstance.audioData);
+                    
+                    // Use a simple average of frequency data for reliability
+                    let sum = 0;
+                    const count = Math.min(webampInstance.audioData.length, 128); // Use first 128 bins or less
+                    
+                    for (let i = 0; i < count; i++) {
+                        sum += webampInstance.audioData[i];
+                    }
+                    
+                    // Normalize to 0-1 range
+                    audioLevel = sum / (count * 255);
+                    
+                    // Apply a slight curve for better visualization
+                    audioLevel = Math.pow(audioLevel, 1.2);
+                    
+                } catch (e) {
+                    console.error('Error getting audio data:', e);
+                    // Fall back to volume-based method
+                    audioLevel = 0;
+                }
+            }
+            
+            // If analyzer failed or isn't available, fallback to volume
+            if (audioLevel === 0) {
+                // Get the volume from the state and normalize it
+                const volume = state.media.volume || 0;
+                const normalizedVolume = volume / 100;
+                audioLevel = normalizedVolume * 0.7; // Scale down a bit for fallback
+            }
+            
+            // Ensure reasonable bounds and add a minimum level to ensure some activity
+            return Math.max(0.05, Math.min(1, audioLevel));
+        }
     </script>
     <a id="legendarium-logo-link" href="https://legendarium.nyc" target="_blank" rel="noopener">
         <img id="legendarium-logo" src="assets/images/Legendarium-Logo-Trans-1.png" alt="Legendarium Logo">
