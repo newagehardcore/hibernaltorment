@@ -69,8 +69,7 @@ ehthumbs.db
 Thumbs.db
 
 # Large asset files
-src/assets/loops/*.gif
-src/assets/loops/low/
+src/assets/loops/*.mp4
 src/assets/music/*.mp3
 src/assets/skins/D-A-S-H-a-m-p_by_Fred_Mitchell.wsz
 

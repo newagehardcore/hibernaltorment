@@ -27,6 +27,25 @@ async function uploadVideo(videoPath, options = {}) {
 }
 
 /**
+ * Upload an audio file to Cloudinary
+ * @param {string} audioPath - Path to the audio file
+ * @param {Object} options - Upload options
+ * @returns {Promise<Object>} - Upload result
+ */
+async function uploadAudio(audioPath, options = {}) {
+  try {
+    const result = await cloudinary.uploader.upload(audioPath, {
+      resource_type: "auto",
+      ...options
+    });
+    return result;
+  } catch (error) {
+    console.error('Error uploading audio to Cloudinary:', error);
+    throw error;
+  }
+}
+
+/**
  * Get video URL with specific transformations
  * @param {string} publicId - Cloudinary public ID
  * @param {Object} options - Transformation options
@@ -39,7 +58,22 @@ function getVideoUrl(publicId, options = {}) {
   });
 }
 
+/**
+ * Get audio URL with specific transformations
+ * @param {string} publicId - Cloudinary public ID
+ * @param {Object} options - Transformation options
+ * @returns {string} - Transformed audio URL
+ */
+function getAudioUrl(publicId, options = {}) {
+  return cloudinary.url(publicId, {
+    resource_type: "auto",
+    ...options
+  });
+}
+
 module.exports = {
   uploadVideo,
-  getVideoUrl
+  uploadAudio,
+  getVideoUrl,
+  getAudioUrl
 }; 

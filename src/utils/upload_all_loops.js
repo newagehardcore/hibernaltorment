@@ -1,69 +1,64 @@
 require('dotenv').config();
 const path = require('path');
-const fs = require('fs');
-const { uploadVideo } = require('./cloudinary');
+const fs = require('fs').promises;
+const { uploadVideo, getVideoUrl } = require('./cloudinary');
 
-const loopsDir = path.join(__dirname, '../assets/loops');
+const LOOPS_DIR = path.join(__dirname, '../assets/loops');
+const OUTPUT_FILE = path.join(__dirname, '../assets/cloudinary_loop_urls.json');
 
 async function uploadAllLoops() {
-  const files = fs.readdirSync(loopsDir).filter(f => f.endsWith('.mp4'));
-  console.log(`Found ${files.length} MP4 files to upload`);
-  
-  const results = [];
-  let successCount = 0;
-  let failCount = 0;
+  try {
+    // Read all MP4 files from the loops directory
+    const files = await fs.readdir(LOOPS_DIR);
+    const mp4Files = files.filter(file => file.endsWith('.mp4'));
 
-  for (const file of files) {
-    const filePath = path.join(loopsDir, file);
-    console.log(`\nUploading ${file}...`);
-    try {
-      const result = await uploadVideo(filePath, { 
-        public_id: path.parse(file).name,
-        resource_type: "video",
-        chunk_size: 6000000, // 6MB chunks
-        eager: [
-          { format: "mp4", quality: "auto" },
-          { format: "webm", quality: "auto" }
-        ],
-        eager_async: true
-      });
+    console.log(`Found ${mp4Files.length} loop files to upload`);
+
+    // Upload each loop and collect results
+    const results = {};
+    for (const file of mp4Files) {
+      const filePath = path.join(LOOPS_DIR, file);
+      console.log(`Uploading ${file}...`);
       
-      console.log(`✅ Successfully uploaded: ${file}`);
-      console.log(`   URL: ${result.secure_url}`);
-      console.log(`   Public ID: ${result.public_id}`);
-      console.log(`   Format: ${result.format}`);
-      console.log(`   Size: ${(result.bytes / 1024 / 1024).toFixed(2)}MB`);
-      
-      results.push({
-        file,
-        status: 'success',
-        url: result.secure_url,
-        public_id: result.public_id
-      });
-      successCount++;
-    } catch (err) {
-      console.error(`❌ Failed to upload ${file}:`, err.message);
-      results.push({
-        file,
-        status: 'failed',
-        error: err.message
-      });
-      failCount++;
+      try {
+        const result = await uploadVideo(filePath, {
+          folder: 'hibernal-torment/loops',
+          public_id: path.parse(file).name,
+          resource_type: 'video',
+          chunk_size: 6000000, // 6MB chunks
+          eager: [
+            { format: "mp4", quality: "auto" },
+            { format: "webm", quality: "auto" }
+          ],
+          eager_async: true
+        });
+
+        results[file] = {
+          url: getVideoUrl(result.public_id),
+          public_id: result.public_id
+        };
+
+        console.log(`Successfully uploaded ${file}`);
+      } catch (error) {
+        console.error(`Failed to upload ${file}:`, error);
+      }
     }
+
+    // Save results to JSON file
+    await fs.writeFile(OUTPUT_FILE, JSON.stringify(results, null, 2));
+    console.log(`\nUpload complete! Results saved to ${OUTPUT_FILE}`);
+
+    // Print summary
+    console.log('\nUpload Summary:');
+    console.log('---------------');
+    Object.keys(results).forEach(file => {
+      console.log(`${file}: ${results[file].url}`);
+    });
+
+  } catch (error) {
+    console.error('Error in upload process:', error);
   }
-
-  // Print summary
-  console.log('\n=== Upload Summary ===');
-  console.log(`Total files: ${files.length}`);
-  console.log(`Successful: ${successCount}`);
-  console.log(`Failed: ${failCount}`);
-  
-  // Save results to a JSON file
-  const resultsPath = path.join(__dirname, '../assets/cloudinary_urls.json');
-  fs.writeFileSync(resultsPath, JSON.stringify(results, null, 2));
-  console.log(`\nResults saved to: ${resultsPath}`);
-
-  return results;
 }
 
-uploadAllLoops().catch(console.error); 
+// Run the upload process
+uploadAllLoops(); 
