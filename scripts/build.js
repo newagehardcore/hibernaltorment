@@ -17,6 +17,12 @@ async function build() {
       }
     });
 
+    // Copy webamp.css to root of dist
+    const webampCss = path.join(srcDir, 'webamp.css');
+    if (await fs.pathExists(webampCss)) {
+      await fs.copy(webampCss, path.join(distDir, 'webamp.css'));
+    }
+
     // Copy root files
     const rootFiles = ['package.json', 'README.md'];
     for (const file of rootFiles) {

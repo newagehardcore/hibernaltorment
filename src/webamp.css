@@ -1,0 +1,46 @@
+/* Webamp custom styles */
+#webamp {
+    z-index: 100;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Ensure buttons are clickable */
+#webamp button,
+#webamp .actions button,
+#webamp .media-info button,
+#webamp .windows button {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure windows are draggable */
+#webamp .window-title {
+    cursor: move !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure sliders are draggable */
+#webamp .slider {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure text is selectable */
+#webamp .text-selectable {
+    cursor: text !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure resize handles are draggable */
+#webamp .resize-handle {
+    cursor: se-resize !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure scroll bars are draggable */
+#webamp .scrollbar-handle {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+} 
