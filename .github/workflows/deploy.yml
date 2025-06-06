@@ -17,10 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -29,25 +26,46 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'npm'
           
       - name: Install Dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm list fs-extra || npm install fs-extra --save-dev
         
+      - name: Debug Directory
+        run: |
+          pwd
+          ls -la
+          
       - name: Build
-        run: npm run build
+        run: |
+          mkdir -p dist
+          node scripts/build.js
         env:
           CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
           
-      - name: Upload artifact
+      - name: Debug Build Output
+        run: |
+          ls -la dist/
+          
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          path: './dist'
-          
+          path: dist
+
+  deploy:
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2 
