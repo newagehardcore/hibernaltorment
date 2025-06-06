@@ -401,7 +401,7 @@
         .deity-message-top {
             width: 100%;
             height: 25px;
-            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/v1/hibernal-torment/skins/messagetop.png');
+            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/hibernal-torment/skins/messageHeader.png');
             background-repeat: no-repeat;
             background-size: 100% 100%;
             background-position: center;
@@ -895,10 +895,8 @@
         .viewer-header {
             height: 20px;
             width: 100%;
-            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/v1/hibernal-torment/skins/viewerHeaderL.png');
-            background-repeat: no-repeat;
-            background-size: 100% 100%;
-            background-position: center;
+            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/hibernal-torment/skins/viewerHeader.png');
+            background-size: cover;
             cursor: grab;
             position: relative;
             z-index: 2;
@@ -1059,7 +1057,7 @@
         .message-header {
             height: 20px;
             width: 100%;
-            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/v1/hibernal-torment/skins/messagetop.png');
+            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/hibernal-torment/skins/messageHeader.png');
             background-size: cover;
             cursor: grab;
             position: relative;
@@ -1653,61 +1651,61 @@
         // Background GIF mapping for each track with preloaded images
         const trackBackgrounds = {
             0: {  // Track 1 - Gross Excelations
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153489/01Loop.mp4",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/hibernal-torment/loops/01Loop.mp4",
                 preloadedVideo: null,
                 fadeIn: 10,    // 10 seconds fade in
                 fadeOut: 0     // no fade out
             },
             1: {  // Track 2 - Two Travelers
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153493/02Loop.mp4",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/hibernal-torment/loops/02Loop.mp4",
                 preloadedVideo: null,
                 fadeIn: 0,   // 0.2 seconds fade in
                 fadeOut: .3   // 0.2 seconds fade out
             },
             2: {  // Track 3 - Chambers of the Starwatcher
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153497/03Loop.mp4",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/hibernal-torment/loops/03Loop.mp4",
                 preloadedVideo: null,
                 fadeIn: 2,     // 2 seconds fade in
                 fadeOut: 0   // 0.2 seconds fade out
             },
             3: {  // Track 4 - Hibernal Torment
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153509/04Loop.mp4",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/hibernal-torment/loops/04Loop.mp4",
                 preloadedVideo: null,
                 fadeIn: 0,     // 2 seconds fade in
                 fadeOut: 0   // 0.2 seconds fade out
             },
             4: {  // Track 5 - Rats
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153513/05Loop.mp4",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/hibernal-torment/loops/05Loop.mp4",
                 preloadedVideo: null,
                 fadeIn: 1,     // instant fade in
                 fadeOut: 0     // instant fade out
             },
             5: {  // Track 6 - Entrusted to Fools
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153517/06Loop.mp4",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/hibernal-torment/loops/06Loop.mp4",
                 preloadedVideo: null,
                 fadeIn: 3,     // instant fade in
                 fadeOut: 0     // instant fade out
             },
             6: {  // Track 7 - Stale Biscuits
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153521/07Loop.mp4",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/hibernal-torment/loops/07Loop.mp4",
                 preloadedVideo: null,
                 fadeIn: 0,     // instant fade in
                 fadeOut: 0     // instant fade out
             },
             8: {  // Track 9 - Ill Wind
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153526/09Loop.mp4",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/hibernal-torment/loops/09Loop.mp4",
                 preloadedVideo: null,
                 fadeIn: 1,     // instant fade in
                 fadeOut: 0     // instant fade out
             },
             10: {  // Track 11 - Taste of my Chime
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153531/11Loop.mp4",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/hibernal-torment/loops/11Loop.mp4",
                 preloadedVideo: null,
                 fadeIn: 0,     // instant fade in
                 fadeOut: 0     // instant fade out
             },
             12: {  // Track 13 - Bone Window
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153534/13Loop.mp4",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/hibernal-torment/loops/13Loop.mp4",
                 preloadedVideo: null,
                 fadeIn: 3,     // instant fade in
                 fadeOut: 0     // instant fade out
@@ -1721,169 +1719,143 @@
         }
 
         // Function to initialize background system
-        function initBackgroundSystem() {
-            const currentBg = document.getElementById('current-background');
-            const viewerContainer = document.querySelector('.viewer-loop-container');
-            const flickerOverlay = document.querySelector('.background-flicker-overlay');
-            
-            console.log('Initializing background system');
-            
-            // Clean any existing videos first
-            while (currentBg && currentBg.firstChild) {
-                currentBg.removeChild(currentBg.firstChild);
+function initBackgroundSystem() {
+    const currentBg = document.getElementById('current-background');
+    const viewerContainer = document.querySelector('.viewer-loop-container');
+    const flickerOverlay = document.querySelector('.background-flicker-overlay');
+    
+    console.log("Initializing background system...");
+    
+    // Clear any existing videos
+    while (currentBg.firstChild) {
+        currentBg.removeChild(currentBg.firstChild);
+    }
+    
+    while (viewerContainer.firstChild) {
+        viewerContainer.removeChild(viewerContainer.firstChild);
+    }
+    
+    // Preload all videos
+    Object.entries(trackBackgrounds).forEach(([index, background]) => {
+        const video = document.createElement('video');
+        video.className = 'background-video';
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.autoplay = false; // Don't autoplay initially
+        video.src = background.url;
+        video.style.display = 'none'; // Hide initially
+        video.dataset.trackIndex = index; // Store track index for reference
+        
+        console.log(`Creating background video for track ${index}: ${background.url}`);
+        
+        // Store the preloaded video
+        trackBackgrounds[index].preloadedVideo = video;
+        
+        // Add to background container
+        currentBg.appendChild(video);
+        
+        // Create separate video for viewer (not a clone)
+        if (viewerContainer) {
+            const viewerVideo = document.createElement('video');
+            viewerVideo.className = 'viewer-video';
+            viewerVideo.loop = true;
+            viewerVideo.muted = true;
+            viewerVideo.playsInline = true;
+            viewerVideo.autoplay = false;
+            viewerVideo.src = background.url;
+            viewerVideo.style.display = 'none';
+            viewerVideo.style.objectFit = 'cover';
+            viewerVideo.dataset.trackIndex = index; // Store track index for reference
+            viewerContainer.appendChild(viewerVideo);
+        }
+        
+        // Start loading the video
+        video.load();
+        });
+        
+        // Show the first video
+        if (trackBackgrounds[0]) {
+            const firstVideo = trackBackgrounds[0].preloadedVideo;
+            const firstViewerVideo = viewerContainer.querySelector('.viewer-video');
+            if (firstVideo) {
+                firstVideo.style.display = 'block';
+                firstVideo.classList.add('active');
+                firstVideo.play().catch(err => console.error("Video autoplay failed:", err));
             }
-            
-            if (viewerContainer) {
-                while (viewerContainer.firstChild) {
-                    viewerContainer.removeChild(viewerContainer.firstChild);
-                }
+            if (firstViewerVideo) {
+                firstViewerVideo.style.display = 'block';
+                firstViewerVideo.classList.add('active');
+                firstViewerVideo.play().catch(err => console.error("Viewer video autoplay failed:", err));
             }
-            
-            // Create initial videos directly
-            if (trackBackgrounds[0]) {
-                console.log('Setting up initial background video:', trackBackgrounds[0].url);
-                
-                // Create background video
-                const bgVideo = document.createElement('video');
-                bgVideo.className = 'background-video';
-                bgVideo.loop = true;
-                bgVideo.muted = true;
-                bgVideo.playsInline = true;
-                bgVideo.autoplay = true;
-                bgVideo.crossOrigin = "anonymous";
-                bgVideo.src = trackBackgrounds[0].url;
-                bgVideo.style.opacity = '0';
-                currentBg.appendChild(bgVideo);
-                
-                // Create viewer video
-                const viewerVideo = document.createElement('video');
-                viewerVideo.className = 'viewer-video';
-                viewerVideo.loop = true;
-                viewerVideo.muted = true;
-                viewerVideo.playsInline = true;
-                viewerVideo.autoplay = true;
-                viewerVideo.crossOrigin = "anonymous";
-                viewerVideo.src = trackBackgrounds[0].url;
-                viewerVideo.style.objectFit = 'cover';
-                viewerVideo.style.opacity = '0';
-                
-                if (viewerContainer) {
-                    viewerContainer.appendChild(viewerVideo);
-                }
-                
-                // Load and play videos
-                bgVideo.load();
-                viewerVideo.load();
-                
-                // When videos are ready, display them
-                const handleVideosReady = () => {
-                    console.log('Initial videos ready, starting playback');
-                    
-                    // Play background video
-                    bgVideo.play().catch(err => {
-                        console.error("Initial background video play failed:", err);
-                        // Retry after a short delay
-                        setTimeout(() => bgVideo.play().catch(e => console.error("Retry failed:", e)), 500);
-                    });
-                    
-                    // Play viewer video
-                    viewerVideo.play().catch(err => {
-                        console.error("Initial viewer video play failed:", err);
-                        // Retry after a short delay
-                        setTimeout(() => viewerVideo.play().catch(e => console.error("Retry failed:", e)), 500);
-                    });
-                    
-                    // Fade in the videos
-                    setTimeout(() => {
-                        bgVideo.style.transition = `opacity ${trackBackgrounds[0].fadeIn}s ease-in`;
-                        bgVideo.style.opacity = '0.5';
-                        
-                        viewerVideo.style.transition = `opacity ${trackBackgrounds[0].fadeIn}s ease-in`;
-                        viewerVideo.style.opacity = '1';
-                        
-                        // Make viewer window visible
-                        const viewerWindow = document.getElementById('viewer-window');
-                        if (viewerWindow) {
-                            viewerWindow.classList.add('visible');
-                        }
-                    }, 100);
-                };
-                
-                // Check if videos are loaded
-                let bgVideoLoaded = false;
-                let viewerVideoLoaded = false;
-                
-                bgVideo.addEventListener('loadeddata', () => {
-                    console.log('Initial background video loaded');
-                    bgVideoLoaded = true;
-                    if (bgVideoLoaded && viewerVideoLoaded) {
-                        handleVideosReady();
-                    }
-                });
-                
-                viewerVideo.addEventListener('loadeddata', () => {
-                    console.log('Initial viewer video loaded');
-                    viewerVideoLoaded = true;
-                    if (bgVideoLoaded && viewerVideoLoaded) {
-                        handleVideosReady();
-                    }
-                });
-                
-                // Handle errors
-                bgVideo.addEventListener('error', (e) => {
-                    console.error('Initial background video error:', e);
-                });
-                
-                viewerVideo.addEventListener('error', (e) => {
-                    console.error('Initial viewer video error:', e);
-                });
-                
-                // Fallback timeout
-                setTimeout(() => {
-                    if (!bgVideoLoaded || !viewerVideoLoaded) {
-                        console.warn('Initial video loading timeout - proceeding anyway');
-                        handleVideosReady();
-                    }
-                }, 5000);
-            }
+        }
+        
+        // Make viewer window visible
+        const viewerWindow = document.getElementById('viewer-window');
+        if (viewerWindow) {
+            viewerWindow.classList.add('visible');
+        }
         }
 
         // Function to handle track changes
-        function handleTrackChange(trackInfo) {
-            const trackIndex = trackInfo.id;
-            console.log('Track changed to index:', trackIndex);
-            
-            // Log the current video states
-            const currentBg = document.getElementById('current-background');
-            const viewerContainer = document.querySelector('.viewer-loop-container');
-            
-            if (currentBg) {
-                const bgVideos = currentBg.querySelectorAll('video');
-                console.log('Current background videos:', bgVideos.length);
-                bgVideos.forEach((v, i) => console.log(`Background video ${i} playing:`, !v.paused, 'currentTime:', v.currentTime, 'src:', v.src));
-            }
-            
-            if (viewerContainer) {
-                const viewerVideos = viewerContainer.querySelectorAll('video');
-                console.log('Current viewer videos:', viewerVideos.length);
-                viewerVideos.forEach((v, i) => console.log(`Viewer video ${i} playing:`, !v.paused, 'currentTime:', v.currentTime, 'src:', v.src));
-            }
-            
-            // Check if track has a background configuration
-            if (trackBackgrounds[trackIndex]) {
-                console.log(`Found background config for track ${trackIndex}:`, trackBackgrounds[trackIndex]);
-                // Use the switchBackground function to handle the transition
-                switchBackground(trackIndex);
-            } else {
-                console.warn(`No background configuration found for track ${trackIndex}`);
-            }
-            
-            // Notify deity message system about track change (if it's defined)
-            if (typeof deityMessageSystem !== 'undefined' && deityMessageSystem.onTrackChange) {
-                const trackDuration = tracksData[trackIndex]?.duration || 180;
-                deityMessageSystem.onTrackChange(trackDuration);
+function handleTrackChange(trackInfo) {
+    const currentBg = document.getElementById('current-background');
+    const viewerContainer = document.querySelector('.viewer-loop-container');
+    
+    if (!currentBg || !viewerContainer) return;
+    
+    const trackIndex = trackInfo.id;
+    const background = trackBackgrounds[trackIndex];
+    
+    if (background && background.preloadedVideo) {
+        console.log(`Changing to track ${trackIndex} with video: ${background.url}`);
+        
+        // Hide all videos
+        currentBg.querySelectorAll('.background-video').forEach(video => {
+            video.style.display = 'none';
+            video.pause();
+        });
+        viewerContainer.querySelectorAll('.viewer-video').forEach(video => {
+            video.style.display = 'none';
+            video.pause();
+        });
+        
+        // Show and play the new videos
+        const mainVideo = background.preloadedVideo;
+        
+        // Find the corresponding viewer video - needs to match the current track
+        const viewerVideos = viewerContainer.querySelectorAll('.viewer-video');
+        let viewerVideo = null;
+        
+        // Find the viewer video with the same source as the main video
+        for (let i = 0; i < viewerVideos.length; i++) {
+            if (viewerVideos[i].src === background.url) {
+                viewerVideo = viewerVideos[i];
+                break;
             }
         }
+        
+        if (mainVideo) {
+            console.log(`Playing main video: ${mainVideo.src}`);
+            mainVideo.style.display = 'block';
+            mainVideo.classList.add('active');
+            mainVideo.currentTime = 0;
+            mainVideo.play().catch(err => console.error("Video play failed:", err));
+        }
+        
+        if (viewerVideo) {
+            console.log(`Playing viewer video: ${viewerVideo.src}`);
+            viewerVideo.style.display = 'block';
+            viewerVideo.classList.add('active');
+            viewerVideo.currentTime = 0;
+            viewerVideo.play().catch(err => console.error("Viewer video play failed:", err));
+        } else {
+            console.error(`No matching viewer video found for track ${trackIndex}`);
+        }
+    } else {
+        console.error(`No background found for track ${trackIndex}`);
+    }
+}
 
         // Function to make the viewer window draggable
         function makeViewerDraggable() {
@@ -2212,34 +2184,24 @@
 
             console.log(`Switching to background for track ${trackIndex}: ${backgroundConfig.url}`);
 
-            // Create new videos - don't rely on preloaded ones which might not be properly initialized
-            const newVideo = document.createElement('video');
-            newVideo.loop = true;
-            newVideo.muted = true;
-            newVideo.playsInline = true;
-            newVideo.autoplay = true;
-            newVideo.src = backgroundConfig.url;
+            // Create new video or use preloaded one
+            const newVideo = backgroundConfig.preloadedVideo ? 
+                backgroundConfig.preloadedVideo.cloneNode(true) : 
+                document.createElement('video');
+            
+            if (!backgroundConfig.preloadedVideo) {
+                newVideo.loop = true;
+                newVideo.muted = true;
+                newVideo.playsInline = true;
+                newVideo.autoplay = true;
+                newVideo.src = backgroundConfig.url;
+            }
+            
             newVideo.className = 'background-video';
-            newVideo.crossOrigin = "anonymous"; // Add for CORS support
             
             // Set initial state
             newVideo.style.transition = 'none';
             newVideo.style.opacity = '0';
-            
-            // Create viewer video separately with same attributes
-            const viewerVideo = document.createElement('video');
-            viewerVideo.loop = true;
-            viewerVideo.muted = true;
-            viewerVideo.playsInline = true;
-            viewerVideo.autoplay = true;
-            viewerVideo.src = backgroundConfig.url;
-            viewerVideo.className = 'viewer-video';
-            viewerVideo.style.objectFit = 'cover'; // Ensure cover is applied
-            viewerVideo.style.transition = 'none';
-            viewerVideo.style.opacity = '0';
-            viewerVideo.crossOrigin = "anonymous"; // Add for CORS support
-
-            console.log(`Created new video elements. Background video src: ${newVideo.src}, Viewer video src: ${viewerVideo.src}`);
 
             const handleVideoReady = () => {
                 // Clear any existing content and timeouts
@@ -2247,161 +2209,56 @@
                     clearTimeout(window.bgTransitionTimeout);
                 }
                 
-                console.log('Video loaded and ready to play');
+                // Start playing
+                newVideo.play().catch(err => console.error("Video play failed:", err));
                 
                 // Remove any existing videos from background
-                while (currentBg.firstChild) {
-                    currentBg.removeChild(currentBg.firstChild);
-                }
+                currentBg.innerHTML = '';
                 
                 // Add new video to background
                 currentBg.appendChild(newVideo);
                 
-                // Clear and update viewer container
+                // Create viewer video
                 if (viewerContainer) {
-                    while (viewerContainer.firstChild) {
-                        viewerContainer.removeChild(viewerContainer.firstChild);
-                    }
+                    const viewerVideo = newVideo.cloneNode(true);
+                    viewerVideo.className = 'viewer-video';
+                    viewerVideo.style.objectFit = 'cover'; // Ensure cover is applied
+                    viewerContainer.innerHTML = '';
                     viewerContainer.appendChild(viewerVideo);
                     
-                    // Ensure both videos start at the beginning and are muted
-                    newVideo.currentTime = 0;
-                    viewerVideo.currentTime = 0;
-                    newVideo.muted = true;
-                    viewerVideo.muted = true;
-                    
-                    // Make sure videos are visible before playing
-                    newVideo.style.display = 'block';
-                    viewerVideo.style.display = 'block';
-                    
-                    // Start playing both videos with retry mechanism
-                    console.log('Attempting to play videos...');
-                    
-                    const playBackgroundVideo = () => {
-                        return newVideo.play()
-                            .then(() => {
-                                console.log("Background video playing successfully");
-                                return true;
-                            })
-                            .catch(err => {
-                                console.error("Background video play failed:", err);
-                                console.log("Retrying background video play in 100ms...");
-                                return new Promise(resolve => {
-                                    setTimeout(() => {
-                                        newVideo.play()
-                                            .then(() => resolve(true))
-                                            .catch(e => {
-                                                console.error("Background retry failed:", e);
-                                                resolve(false);
-                                            });
-                                    }, 100);
-                                });
-                            });
-                    };
-                    
-                    const playViewerVideo = () => {
-                        return viewerVideo.play()
-                            .then(() => {
-                                console.log("Viewer video playing successfully");
-                                return true;
-                            })
-                            .catch(err => {
-                                console.error("Viewer video play failed:", err);
-                                console.log("Retrying viewer video play in 100ms...");
-                                return new Promise(resolve => {
-                                    setTimeout(() => {
-                                        viewerVideo.play()
-                                            .then(() => resolve(true))
-                                            .catch(e => {
-                                                console.error("Viewer retry failed:", e);
-                                                resolve(false);
-                                            });
-                                    }, 100);
-                                });
-                            });
-                    };
-                    
-                    // Play videos sequentially to improve success rate
-                    playBackgroundVideo()
-                        .then(() => playViewerVideo())
-                        .then(() => {
-                            console.log("Videos started successfully, setting up fade transition");
-                            
-                            // Force reflow
-                            void newVideo.offsetHeight;
-                            void viewerVideo.offsetHeight;
-                            
-                            // Set up fade in for both videos
-                            requestAnimationFrame(() => {
-                                // Background video fade
-                                newVideo.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
-                                newVideo.style.opacity = '0.5'; // Match the 0.5 opacity from CSS
-                                
-                                // Viewer video fade
-                                viewerVideo.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
-                                viewerVideo.style.opacity = '1';
-                                
-                                // Make viewer window visible if not already
-                                const viewerWindow = document.getElementById('viewer-window');
-                                if (viewerWindow && !viewerWindow.classList.contains('visible')) {
-                                    viewerWindow.classList.add('visible');
-                                }
-                            });
-                        })
-                        .catch(err => {
-                            console.error("Final video playback error:", err);
-                        });
+                    // Start playing
+                    viewerVideo.play().catch(err => console.error("Viewer video play failed:", err));
                 }
+                
+                // Force reflow
+                void newVideo.offsetHeight;
+                
+                // Set up fade in for background
+                requestAnimationFrame(() => {
+                    newVideo.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
+                    newVideo.style.opacity = '0.5'; // Match the 0.5 opacity from CSS
+                    
+                    // Also fade in viewer video
+                    if (viewerContainer && viewerContainer.querySelector('.viewer-video')) {
+                        const viewerVideo = viewerContainer.querySelector('.viewer-video');
+                        viewerVideo.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
+                        viewerVideo.style.opacity = '1';
+                    }
+                });
             };
 
-            // Load the videos
-            let bgVideoLoaded = false;
-            let viewerVideoLoaded = false;
-            
-            newVideo.addEventListener('loadeddata', () => {
-                console.log('Background video loaded');
-                bgVideoLoaded = true;
-                if (bgVideoLoaded && viewerVideoLoaded) {
-                    handleVideoReady();
-                }
-            });
-            
-            viewerVideo.addEventListener('loadeddata', () => {
-                console.log('Viewer video loaded');
-                viewerVideoLoaded = true;
-                if (bgVideoLoaded && viewerVideoLoaded) {
-                    handleVideoReady();
-                }
-            });
-            
-            // Add error handlers
-            newVideo.addEventListener('error', (e) => {
-                console.error('Background video load error:', e);
-                // Try to proceed anyway if at least one video loads
-                if (!bgVideoLoaded && viewerVideoLoaded) {
-                    handleVideoReady();
-                }
-            });
-            
-            viewerVideo.addEventListener('error', (e) => {
-                console.error('Viewer video load error:', e);
-                // Try to proceed anyway if at least one video loads
-                if (bgVideoLoaded && !viewerVideoLoaded) {
-                    handleVideoReady();
-                }
-            });
-            
-            // Set a timeout in case videos take too long to load
-            setTimeout(() => {
-                if (!bgVideoLoaded || !viewerVideoLoaded) {
-                    console.warn('Video loading timeout - proceeding anyway');
-                    handleVideoReady();
-                }
-            }, 5000);
-            
-            // Start loading the videos
-            newVideo.load();
-            viewerVideo.load();
+            // Handle video loading
+            if (backgroundConfig.preloadedVideo) {
+                // If we have a preloaded video, use it immediately
+                handleVideoReady();
+            } else {
+                // Otherwise wait for the video to load
+                newVideo.onloadeddata = handleVideoReady;
+                newVideo.onerror = (error) => {
+                    console.error('Error loading background video:', error);
+                    console.log('Attempted to load:', backgroundConfig.url);
+                };
+            }
         }
 
         // Function to center windows
