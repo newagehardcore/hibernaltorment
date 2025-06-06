@@ -1,0 +1,3597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATEKEEPER - HIBERNAL TORMENT - 2025</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 10 L30 50 L50 40 L70 50 Z' fill='%23FFA500'/><path d='M40 50 L50 30 L60 50 L50 70 Z' fill='%23FF8C00'/></svg>">
+    <link rel="stylesheet" type="text/css" href="webamp.css">
+    <style>
+        :root {
+            --webamp-zoom: 1.1;
+            /* Deity message font - italic bold Times New Roman with tight kerning */
+            --deity-font: 'Times New Roman', serif;
+            --deity-font-style: italic;
+            --deity-font-weight: bold;
+            --deity-letter-spacing: -0.02em; /* -20 kerning approximation */
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            font-family: Arial, sans-serif;
+            cursor: auto !important;
+            /* Prevent scrolling */
+            position: fixed;
+            background-color: #000; /* Ensure body background is black */
+        }
+        
+        /* Overlay for the glow effect - kept for now, adjust z-index */
+        #glow-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255, 150, 50, 0.15), rgba(0, 0, 0, 0.3));
+            pointer-events: none;
+            z-index: 1; /* Below halo-reveal-layer */
+            animation: flicker 5s infinite alternate;
+            opacity: 0; /* Start with no opacity */
+            transition: opacity 10s cubic-bezier(0.4, 0, 0.2, 1); /* Super gradual 10 second fade in */
+        }
+        
+        /* Candle flicker animation */
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                opacity: 0.6;
+            }
+            20%, 24%, 55% {
+                opacity: 0.4;
+            }
+            40%, 42% {
+                opacity: 0.5;
+            }
+            60%, 80%, 85% {
+                opacity: 0.7;
+            }
+            90%, 95% {
+                opacity: 0.8;
+            }
+        }
+        
+        #webamp-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;  /* Above background */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        /* Apply zoom only to Webamp windows */
+        #webamp {
+            zoom: var(--webamp-zoom) !important;
+            -moz-transform: scale(var(--webamp-zoom));
+            -moz-transform-origin: top left;
+        }
+        
+        /* Adjust positioning for scaled elements */
+        #webamp .window {
+            /* filter: 
+                drop-shadow(-4px 2px 4px rgba(0, 0, 0, 0.95))
+                drop-shadow(-6px 4px 8px rgba(0, 0, 0, 0.85))
+                drop-shadow(-8px 8px 15px rgba(0, 0, 0, 0.75))
+                drop-shadow(-10px 12px 25px rgba(0, 0, 0, 0.65)); */
+            will-change: filter, transform;
+            position: relative;
+            z-index: 2;
+            /* animation: rotatingShadow 20s linear infinite; */
+        }
+        
+        /* Additional glow effect for windows */
+        #webamp .window::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Remove loading text styles */
+        #loading {
+            display: none;
+        }
+        
+        /* Override ALL cursor styles */
+        * {
+            cursor: auto !important;
+        }
+        /* Ensure cursor stays normal on all parts of Webamp */
+        .window, .webamp-region, #webamp, #webamp * {
+            cursor: auto !important;
+        }
+
+        /* Password protection overlay */
+        #password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 2s ease-out;
+        }
+
+        #password-container {
+            position: relative;
+            width: 300px;
+        }
+
+        #password-label {
+            position: absolute;
+            font-family: monospace;
+            color: #222;
+            font-size: 10px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-transform: uppercase;
+            pointer-events: none;
+            letter-spacing: 0px;
+        }
+
+        #password-input {
+            width: 100%;
+            padding: 15px;
+            background-color: #111;
+            border: 1px solid #333;
+            color: #f00;
+            font-family: monospace;
+            font-size: 14px;
+            letter-spacing: 0px;
+            text-align: center;
+            outline: none;
+            transition: border 0.3s ease-in-out;
+        }
+
+        #password-input:focus {
+            border-color: #555;
+        }
+
+        @keyframes flash-red {
+            0% { color: #ff0000; }
+            50% { color: #a00000; }
+            100% { color: #ff0000; }
+        }
+
+        .flashing {
+            animation: flash-red 0.5s infinite;
+        }
+
+        #access-indicator {
+            margin-top: 15px;
+            height: 2px;
+            background-color: #222;
+            transform-origin: left;
+            transform: scaleX(0);
+            transition: transform 0.5s ease-in-out, background-color 0.5s ease-in-out;
+        }
+
+        .granted {
+            transform: scaleX(1) !important;
+            background-color: rgb(255, 0, 0) !important;
+        }
+
+        #background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        #current-background, #next-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .background-gif {
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            object-fit: cover;
+            object-position: center;
+            will-change: opacity;
+        }
+
+        .background-gif.active {
+            opacity: 0.5; /* 50% transparency */
+        }
+
+        /* Add styles for video loops (replacing GIFs) */
+        .background-video, .viewer-video {
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            object-fit: cover;
+            object-position: center;
+            will-change: opacity;
+        }
+
+        .background-video.active {
+            opacity: 0.5; /* 50% transparency */
+        }
+
+        .viewer-video.active {
+            opacity: 1; /* Full opacity in viewer */
+        }
+
+        /* Add audio-reactive flicker overlay */
+        .background-flicker-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            mix-blend-mode: overlay;
+            pointer-events: none;
+            opacity: 0;
+            will-change: opacity, filter;
+            transition: opacity 0.05s ease-out;
+        }
+
+        /* Create a separate vignette overlay for better post-processing */
+        .background-vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.7) 100%);
+            pointer-events: none;
+            opacity: 0.7;
+            mix-blend-mode: multiply;
+            z-index: 1;
+            will-change: opacity;
+        }
+
+        /* Add grain texture for film-like quality */
+        .background-grain {
+            position: absolute;
+            inset: 0;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWx0ZXI9InVybCgjYSkiIG9wYWNpdHk9Ii4wNSIvPjwvc3ZnPg==');
+            opacity: 0.12;
+            mix-blend-mode: overlay;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Add a subtle light bloom effect container */
+        .background-bloom {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 70%);
+            pointer-events: none;
+            opacity: 0;
+            mix-blend-mode: screen;
+            z-index: 3;
+            will-change: opacity, background;
+            filter: blur(10px);
+        }
+
+        /* Add a white flash overlay for intense moments */
+        .background-flash {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.7);
+            pointer-events: none;
+            opacity: 0;
+            mix-blend-mode: overlay;
+            z-index: 4;
+            will-change: opacity;
+        }
+
+        /* Adjust positioning for scaled elements */
+        @keyframes rotatingShadow {
+            0% {
+                /* filter: 
+                    drop-shadow(-4px 2px 4px rgba(0, 0, 0, 0.95))
+                    drop-shadow(-6px 4px 8px rgba(0, 0, 0, 0.85))
+                    drop-shadow(-8px 8px 15px rgba(0, 0, 0, 0.75))
+                    drop-shadow(-10px 12px 25px rgba(0, 0, 0, 0.65)); */
+            }
+            25% {
+                /* filter: 
+                    drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.95))
+                    drop-shadow(0px 6px 8px rgba(0, 0, 0, 0.85))
+                    drop-shadow(0px 8px 15px rgba(0, 0, 0, 0.75))
+                    drop-shadow(0px 12px 25px rgba(0, 0, 0, 0.65)); */
+            }
+            50% {
+                /* filter: 
+                    drop-shadow(4px 2px 4px rgba(0, 0, 0, 0.95))
+                    drop-shadow(6px 4px 8px rgba(0, 0, 0, 0.85))
+                    drop-shadow(8px 8px 15px rgba(0, 0, 0, 0.75))
+                    drop-shadow(10px 12px 25px rgba(0, 0, 0, 0.65)); */
+            }
+            75% {
+                /* filter: 
+                    drop-shadow(0px -2px 4px rgba(0, 0, 0, 0.95))
+                    drop-shadow(0px -4px 8px rgba(0, 0, 0, 0.85))
+                    drop-shadow(0px -6px 15px rgba(0, 0, 0, 0.75))
+                    drop-shadow(0px -8px 25px rgba(0, 0, 0, 0.65)); */
+            }
+            100% {
+                /* filter: 
+                    drop-shadow(-4px 2px 4px rgba(0, 0, 0, 0.95))
+                    drop-shadow(-6px 4px 8px rgba(0, 0, 0, 0.85))
+                    drop-shadow(-8px 8px 15px rgba(0, 0, 0, 0.75))
+                    drop-shadow(-10px 12px 25px rgba(0, 0, 0, 0.65)); */
+            }
+        }
+
+        /* Add dynamic shadow class that will be controlled by JS */
+        #webamp .window.dynamic-shadow {
+            transition: filter 0.1s ease-out;
+        }
+
+        /* Remove animation toggle button styles */
+        
+        /* Deity Message Windows */
+        .deity-message-window {
+            position: fixed;
+            width: 315px; /* Scaled down 10% from 350px */
+            min-height: 120px;
+            background: #000000;
+            border: none;
+            border-radius: 0;
+            font-family: var(--deity-font);
+            font-style: var(--deity-font-style);
+            font-weight: var(--deity-font-weight);
+            letter-spacing: var(--deity-letter-spacing);
+            font-size: 16px;
+            color: #ffffff;
+            z-index: 1001;
+            cursor: move;
+            filter: 
+                drop-shadow(-4px 2px 4px rgba(0, 0, 0, 0.95))
+                drop-shadow(-6px 4px 8px rgba(0, 0, 0, 0.85))
+                drop-shadow(-8px 8px 15px rgba(0, 0, 0, 0.75))
+                drop-shadow(-10px 12px 25px rgba(0, 0, 0, 0.65));
+            will-change: filter, transform;
+            animation: float 8s ease-in-out infinite;
+            user-select: none;
+            opacity: 0;
+            transform: scale(0.1);
+            transition: none;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            backdrop-filter: blur(1px);
+        }
+
+        .deity-message-window.appearing {
+            animation: tvTurnOn 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards, float 8s ease-in-out infinite 1.2s;
+        }
+
+        .deity-message-window.disappearing {
+            animation: tvTurnOff 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+        }
+
+        .deity-message-top {
+            width: 100%;
+            height: 25px;
+            background-image: url('assets/skins/messagetop.png');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-position: center;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .deity-message-top:hover {
+            filter: brightness(1.1);
+        }
+
+        .deity-close-button {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            z-index: 10;
+            /* Invisible but clickable area over the X */
+            background: transparent;
+        }
+
+        .deity-close-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .deity-message-content {
+            background: #000000;
+            border-left: 2px dotted rgba(255, 255, 255, 0.8);
+            border-right: 2px dotted rgba(255, 255, 255, 0.8);
+            padding: 20px 25px;
+            line-height: 1.5;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 50px;
+            max-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .deity-message-bottom {
+            width: 100%;
+            height: 2px;
+            border-bottom: 2px dotted rgba(255, 255, 255, 0.8);
+            background: transparent;
+            position: relative;
+        }
+
+        .deity-message-bottom::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            border-bottom: 2px dotted rgba(255, 255, 255, 0.8);
+        }
+
+        /* Create double dotted line effect for deity message side borders - matching bottom style */
+        .deity-message-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 2px;
+            right: 2px;
+            bottom: 0;
+            border-left: 2px dotted rgba(255, 255, 255, 0.8);
+            border-right: 2px dotted rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .deity-message-content .scanlines::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 3px,
+                    rgba(0, 0, 0, 0.05) 4px
+                );
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .deity-message-content .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+        .deity-message-content::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+            animation: etherealPulse 12s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .deity-message-text {
+            position: relative;
+            z-index: 2;
+            text-shadow: 
+                0 0 10px rgba(255, 255, 255, 0.8),
+                0 0 20px rgba(255, 255, 255, 0.4),
+                0 0 30px rgba(255, 255, 255, 0.2);
+            font-style: italic;
+            letter-spacing: 0.5px;
+            width: 100%;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow: hidden;
+            opacity: 0;
+            line-height: 1.4;
+            display: inline-block;
+            text-align: center;
+            /* Pixelated/broken text effects */
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            font-variant-ligatures: none;
+            text-rendering: geometricPrecision;
+            /* Subtle broken/distant feeling */
+            filter: contrast(1.1) brightness(0.95);
+            /* Slightly irregular character spacing for broken feel */
+            word-spacing: 0.1em;
+            /* Add subtle pixelated text shadow for depth */
+            text-shadow: 
+                0 0 2px rgba(255, 255, 255, 0.9),
+                1px 0 0px rgba(255, 255, 255, 0.7),
+                0 1px 0px rgba(255, 255, 255, 0.7),
+                0 0 10px rgba(255, 255, 255, 0.6),
+                0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .deity-message-text.typing {
+            opacity: 1;
+            animation: textGlow 6s ease-in-out infinite alternate var(--typing-duration), subtleFlicker 3s ease-in-out infinite var(--typing-duration);
+        }
+
+        .deity-message-text::after {
+            content: '';
+            opacity: 0;
+        }
+
+        .typing-ellipses {
+            position: relative;
+            display: inline-block;
+            width: 30px;
+            height: 1em;
+            vertical-align: baseline;
+            opacity: 0;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        /* Prevent ellipses from being alone on a line */
+        .typed-text {
+            display: inline;
+        }
+        
+        /* Keep ellipses with last word using non-breaking space */
+
+        .typing-ellipses.show {
+            opacity: 1;
+        }
+
+        .typing-ellipses::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            animation: none;
+        }
+
+        .typing-ellipses.show::before {
+            animation: typingEllipsesFlow 0.8s infinite;
+        }
+
+        @keyframes typingEllipsesFlow {
+            0%, 16.66% {
+                content: '.';
+            }
+            33.33%, 49.99% {
+                content: '..';
+            }
+            66.66%, 83.32% {
+                content: '...';
+            }
+            100% {
+                content: '';
+            }
+        }
+
+        .deity-message-text::after {
+            content: '';
+            opacity: 0;
+        }
+
+        .deity-message-text.typing::after {
+            content: '';
+            opacity: 0;
+        }
+
+        .typing-ellipses::after {
+            content: '';
+        }
+
+        .deity-message-window.disappearing .deity-message-content {
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7), rgba(0, 0, 0, 0.1));
+            animation: whiteFlashFill 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+        }
+
+        @keyframes whiteFlashFill {
+            0% {
+                background: #000000;
+            }
+            30% {
+                background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.8));
+            }
+            70% {
+                background: radial-gradient(circle at center, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.2));
+            }
+            100% {
+                background: rgba(255, 255, 255, 0.95);
+            }
+        }
+
+
+
+        /* Static noise effect for TV transitions */
+        @keyframes staticNoise {
+            0%, 100% { 
+                background-position: 0% 0%;
+                opacity: 0.1;
+            }
+            25% { 
+                background-position: 10% 20%;
+                opacity: 0.15;
+            }
+            50% { 
+                background-position: -5% 10%;
+                opacity: 0.08;
+            }
+            75% { 
+                background-position: 15% -10%;
+                opacity: 0.12;
+            }
+        }
+
+        @keyframes tvTurnOn {
+            0% {
+                opacity: 0;
+                transform: scaleY(0.01) scaleX(0.8);
+                filter: brightness(15) contrast(8) saturate(0);
+            }
+            15% {
+                opacity: 0.8;
+                transform: scaleY(0.01) scaleX(0.8);
+                filter: brightness(10) contrast(5) saturate(0.3);
+            }
+            30% {
+                transform: scaleY(0.3) scaleX(0.9);
+                filter: brightness(6) contrast(3) saturate(0.7);
+            }
+            50% {
+                transform: scaleY(0.9) scaleX(1.02);
+                filter: brightness(2) contrast(2) saturate(1.1);
+            }
+            70% {
+                transform: scaleY(1.05) scaleX(1.01);
+                filter: brightness(1.3) contrast(1.3) saturate(1.2);
+            }
+            85% {
+                transform: scaleY(0.98) scaleX(1.005);
+                filter: brightness(1.1) contrast(1.1) saturate(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: scaleY(1) scaleX(1);
+                filter: brightness(1) contrast(1) saturate(1);
+            }
+        }
+
+        @keyframes tvTurnOff {
+            0% {
+                opacity: 1;
+                transform: scaleY(1) scaleX(1);
+                filter: brightness(1) contrast(1) saturate(1);
+            }
+            15% {
+                transform: scaleY(1.02) scaleX(1.01);
+                filter: brightness(1.5) contrast(1.5) saturate(0.9);
+            }
+            35% {
+                transform: scaleY(0.9) scaleX(0.95);
+                filter: brightness(3) contrast(3) saturate(0.5);
+            }
+            55% {
+                transform: scaleY(0.3) scaleX(0.85);
+                filter: brightness(8) contrast(8) saturate(0.1);
+            }
+            75% {
+                transform: scaleY(0.05) scaleX(0.7);
+                filter: brightness(15) contrast(15) saturate(0);
+            }
+            90% {
+                opacity: 0.3;
+                transform: scaleY(0.01) scaleX(0.5);
+                filter: brightness(20) contrast(20) saturate(0);
+            }
+            100% {
+                opacity: 0;
+                transform: scaleY(0) scaleX(0);
+                filter: brightness(0) contrast(0) saturate(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            20% {
+                transform: translate(3px, -4px) rotate(0.8deg);
+            }
+            40% {
+                transform: translate(-2px, -6px) rotate(0.2deg);
+            }
+            60% {
+                transform: translate(-4px, 2px) rotate(-0.5deg);
+            }
+            80% {
+                transform: translate(1px, 4px) rotate(-0.2deg);
+            }
+        }
+
+        @keyframes textGlow {
+            0% {
+                text-shadow: 
+                    0 0 10px rgba(255, 255, 255, 0.8),
+                    0 0 20px rgba(255, 255, 255, 0.4),
+                    0 0 30px rgba(255, 255, 255, 0.2);
+            }
+            100% {
+                text-shadow: 
+                    0 0 15px rgba(255, 255, 255, 1),
+                    0 0 30px rgba(255, 255, 255, 0.6),
+                    0 0 45px rgba(255, 255, 255, 0.3),
+                    0 0 60px rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        @keyframes subtleFlicker {
+            0%, 90%, 100% {
+                opacity: 1;
+            }
+            93%, 97% {
+                opacity: 0.92;
+            }
+            95% {
+                opacity: 0.98;
+            }
+        }
+
+        @keyframes etherealPulse {
+            0%, 100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 0.03;
+            }
+            33% {
+                transform: scale(1.1) rotate(120deg);
+                opacity: 0.08;
+            }
+            66% {
+                transform: scale(0.9) rotate(240deg);
+                opacity: 0.05;
+            }
+        }
+
+        #legendarium-logo-link {
+            position: fixed;
+            right: 2vw;
+            bottom: 2vh;
+            z-index: 2000;
+            display: block;
+            width: 10vw;
+            max-width: 110px;
+            min-width: 60px;
+            height: auto;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #legendarium-logo-link.visible {
+            opacity: 0.92;
+        }
+        #legendarium-logo-link:hover {
+            opacity: 1;
+        }
+        #legendarium-logo {
+            width: 100%;
+            height: auto;
+            display: block;
+            pointer-events: none;
+            will-change: transform;
+            filter: drop-shadow(0 2px 8px #000a);
+            image-rendering: auto;
+            transition: transform 0.3s ease-out; /* Add smooth transition */
+        }
+        
+        /* Add hover state for the link */
+        #legendarium-logo-link:hover #legendarium-logo {
+            transform: scale(1.15) rotateY(0deg) !important; /* Scale up and face forward */
+        }
+
+        /* Viewer Window Styles */
+        #viewer-window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            aspect-ratio: 1/1; /* Default to square shape */
+            background: #000000;
+            border: none;
+            border-radius: 0;
+            z-index: 5; /* Above glow overlay, below webamp and deity messages */
+            cursor: move;
+            filter: none; /* Remove shadow */
+            will-change: transform;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            max-height: 95vh; /* Almost full height */
+            max-width: 95vw; /* Almost full width */
+            min-height: 600px;
+            min-width: 600px;
+            width: 90vmin; /* Use vmin for square default - will be the smaller of vw or vh */
+            height: 90vmin; /* Use vmin for square default - will be the smaller of vw or vh */
+            opacity: 0; /* Initially hidden */
+            transition: opacity 0.8s ease-in-out;
+            resize: both; /* Enable native resizing */
+            overflow: hidden; /* Required for resize to work */
+        }
+
+        /* Add resize handle */
+        .viewer-resize-handle {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 15px;
+            height: 15px;
+            cursor: nwse-resize;
+            z-index: 7;
+            background: transparent;
+        }
+
+        .viewer-resize-handle::after {
+            content: "◢";
+            position: absolute;
+            right: 3px;
+            bottom: 1px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 10px;
+        }
+        
+        #viewer-window.visible {
+            opacity: 1;
+        }
+
+        .viewer-header {
+            width: 100%;
+            height: 25px;
+            background-image: url('assets/skins/viewerHeader.png');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-position: center;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            cursor: move;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .viewer-close-button, .viewer-fullscreen-button {
+            position: absolute;
+            top: 0;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            z-index: 10;
+            background: transparent;
+        }
+
+        .viewer-close-button {
+            right: 0; /* Position at the right edge */
+        }
+
+        .viewer-close-button::after {
+            content: "×";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+        }
+
+        .viewer-fullscreen-button {
+            right: 0;
+        }
+
+        .viewer-fullscreen-button::after {
+            content: "▣";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .viewer-close-button:hover, .viewer-fullscreen-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .viewer-content {
+            flex: 1;
+            background: #000000;
+            border-left: 2px dotted rgba(255, 255, 255, 0.8);
+            border-right: 2px dotted rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .viewer-loop-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .viewer-loop {
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            object-fit: cover; /* Cover instead of contain to avoid black bars */
+            object-position: center;
+            will-change: opacity;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .viewer-loop.active {
+            opacity: 1;
+        }
+
+        .viewer-bottom {
+            width: 100%;
+            height: 2px;
+            border-bottom: 2px dotted rgba(255, 255, 255, 0.8);
+            background: transparent;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .viewer-bottom::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            border-bottom: 2px dotted rgba(255, 255, 255, 0.8);
+        }
+
+        /* Create double dotted line effect for viewer side borders - matching bottom style */
+        .viewer-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 2px;
+            right: 2px;
+            bottom: 0;
+            border-left: 2px dotted rgba(255, 255, 255, 0.8);
+            border-right: 2px dotted rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Fullscreen exit button */
+        #exit-fullscreen-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px dotted rgba(255, 255, 255, 0.8);
+            color: white;
+            cursor: pointer;
+            z-index: 20; /* Above most other elements when in fullscreen mode */
+            font-family: var(--deity-font);
+            font-style: var(--deity-font-style);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        #exit-fullscreen-button:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+            border-color: rgba(255, 255, 255, 1);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* When in fullscreen mode */
+        body.fullscreen-mode #viewer-window {
+            display: none;
+        }
+
+        body.fullscreen-mode #background-container {
+            z-index: 3; /* Above glow overlay */
+        }
+
+        body.fullscreen-mode #exit-fullscreen-button {
+            display: block !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background container for GIFs -->
+    <div id="background-container">
+        <div id="current-background" class="background-gif"></div>
+        <div class="background-flicker-overlay"></div>
+        <div class="background-vignette"></div>
+        <div class="background-grain"></div>
+        <div class="background-bloom"></div>
+        <div class="background-flash"></div>
+    </div>
+
+    <!-- Viewer window for loops -->
+    <div id="viewer-window" class="window-draggable">
+        <div class="viewer-header">
+            <div class="viewer-close-button"></div>
+        </div>
+        <div class="viewer-content">
+            <div class="viewer-loop-container"></div>
+        </div>
+        <div class="viewer-bottom"></div>
+        <div class="viewer-resize-handle"></div>
+    </div>
+        
+    <!-- Password protection overlay -->
+    <div id="password-overlay">
+        <div id="password-container">
+            <div id="password-label"></div>
+            <input type="text" id="password-input" autocomplete="off" spellcheck="false">
+            <div id="access-indicator"></div>
+        </div>
+    </div>
+
+    <!-- This image will be the halo reveal layer - COMMENTED OUT
+    <img id="halo-reveal-layer" src="assets/loops/01Loop.gif" alt="Eyes">
+    -->
+    
+    <!-- Candle glow effect overlay -->
+    <div id="glow-overlay"></div>
+    
+    <div id="webamp-container"></div>
+    
+    <!-- Load Webamp from CDN -->
+    <script src="https://unpkg.com/webamp@1.4.2/built/webamp.bundle.min.js"></script>
+    
+    <script>
+        // Global variables
+        let webampInstance = null;
+        let usesCustomSkin = true;
+        let animationId = null;
+        let eqIntervalId = null;
+        let passwordUnlocked = false;
+        let lastKnownPositions = null;
+        // Remove isFullscreenMode variable since we're removing fullscreen functionality
+        
+        // Deity Messages System
+        let deityMessageSystem = {
+            messages: [
+                "The rats have learned to speak",
+                "Drink deeply from my fountain",
+                "Ill winds carry no lutes",
+                "A garden grows in my storm",
+                "As the spiral straightens",
+                "As the pendelum swings",
+                "The dust remembers you",
+                "A path climbs down to meet you",
+                "In the darkness between the stars"
+            ],
+            usedMessages: new Set(),
+            activeWindows: new Set(),
+            nextMessageTimeout: null,
+            windowCounter: 0,
+            trackStartTime: null,
+            currentTrackDuration: null,
+            messageCount: 0,
+            
+            init() {
+                // Start with "welcome" message
+                setTimeout(() => {
+                    this.showWelcomeMessage();
+                }, 3000);
+                
+                // Schedule periodic messages
+                this.scheduleNextMessage();
+            },
+            
+            showWelcomeMessage() {
+                const messageWindow = this.createMessageWindow("welcome");
+                document.body.appendChild(messageWindow);
+                
+                // Position randomly on screen
+                this.positionRandomly(messageWindow);
+                
+                // Add to active windows
+                this.activeWindows.add(messageWindow);
+                
+                // Show with TV turn-on effect
+                requestAnimationFrame(() => {
+                    messageWindow.classList.add('appearing');
+                });
+                
+                // Start typing animation after TV turn-on effect
+                setTimeout(() => {
+                    this.startTypingAnimation(messageWindow, "welcome");
+                }, 1200);
+            },
+            
+            onTrackChange(trackDuration) {
+                // Reset for new track
+                this.trackStartTime = Date.now();
+                this.currentTrackDuration = trackDuration || 180; // Default to 3 minutes if unknown
+                this.messageCount = 0;
+                
+                // Clear existing timeout
+                if (this.nextMessageTimeout) {
+                    clearTimeout(this.nextMessageTimeout);
+                }
+                
+                // Schedule one message towards the beginning of the track (within first 30-60 seconds)
+                const earlyMessageDelay = Math.random() * 30000 + 10000; // 10-40 seconds into track
+                setTimeout(() => {
+                    this.showRandomMessage();
+                }, earlyMessageDelay);
+                
+                // Resume normal random scheduling for additional messages
+                this.scheduleNextMessage();
+            },
+            
+            scheduleNextMessage() {
+                // Random interval between 20-60 seconds for additional messages
+                const interval = Math.random() * 40000 + 20000;
+                
+                this.nextMessageTimeout = setTimeout(() => {
+                    this.showRandomMessage();
+                    this.scheduleNextMessage();
+                }, interval);
+            },
+            
+            getAvailableMessages() {
+                const available = this.messages.filter(msg => !this.usedMessages.has(msg));
+                // If all messages have been used, reset the used set
+                if (available.length === 0) {
+                    this.usedMessages.clear();
+                    return [...this.messages];
+                }
+                return available;
+            },
+            
+            showRandomMessage() {
+                // Much stricter control over simultaneous messages - only 5% chance if one is already active
+                if (this.activeWindows.size >= 1) {
+                    // Only 5% chance to show a second message when one is already active
+                    if (Math.random() > 0.05) {
+                        return;
+                    }
+                }
+                
+                // Never allow more than 2 messages
+                if (this.activeWindows.size >= 2) {
+                    return;
+                }
+                
+                const availableMessages = this.getAvailableMessages();
+                const randomMessage = availableMessages[Math.floor(Math.random() * availableMessages.length)];
+                
+                // Mark this message as used
+                this.usedMessages.add(randomMessage);
+                
+                const messageWindow = this.createMessageWindow(randomMessage);
+                document.body.appendChild(messageWindow);
+                
+                // Position randomly on screen
+                this.positionRandomly(messageWindow);
+                
+                // Add to active windows
+                this.activeWindows.add(messageWindow);
+                
+                // Show with TV turn-on effect
+                requestAnimationFrame(() => {
+                    messageWindow.classList.add('appearing');
+                });
+                
+                // Start typing animation after TV turn-on effect
+                setTimeout(() => {
+                    this.startTypingAnimation(messageWindow, randomMessage);
+                }, 1200);
+                
+                // Don't schedule dismissal here - it will be scheduled after typing actually completes
+            },
+            
+            createMessageWindow(message) {
+                const window = document.createElement('div');
+                window.className = 'deity-message-window';
+                window.id = `deity-message-${++this.windowCounter}`;
+                
+                window.innerHTML = `
+                    <div class="deity-message-top">
+                        <div class="deity-close-button"></div>
+                    </div>
+                    <div class="deity-message-content">
+                        <div class="scanlines"></div>
+                        <div class="deity-message-text"><span class="typing-ellipses"></span></div>
+                    </div>
+                    <div class="deity-message-bottom"></div>
+                `;
+                
+                // Make draggable
+                this.makeDraggable(window);
+                
+                // Add click handler to close button (X area only)
+                const closeButton = window.querySelector('.deity-close-button');
+                closeButton.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent drag from triggering
+                    this.dismissMessage(window);
+                });
+                
+                return window;
+            },
+            
+            calculateTypingDuration(message) {
+                // Calculate realistic typing duration with variations
+                const baseSpeed = 80; // Base milliseconds per character
+                const speedVariation = 40; // Variation in speed
+                const pauseChance = 0.15; // 15% chance of pause per character
+                const avgPauseDuration = 200; // Average pause duration
+                
+                let totalDuration = 0;
+                for (let i = 0; i < message.length; i++) {
+                    // Random typing speed per character
+                    const charSpeed = baseSpeed + (Math.random() * speedVariation - speedVariation/2);
+                    totalDuration += charSpeed;
+                    
+                    // Random pauses (like real typing)
+                    if (Math.random() < pauseChance) {
+                        totalDuration += avgPauseDuration + (Math.random() * 300);
+                    }
+                    
+                    // Longer pauses after punctuation
+                    if (message[i] === ',' || message[i] === ':') {
+                        totalDuration += 150 + (Math.random() * 200);
+                    }
+                }
+                
+                return Math.max(2000, totalDuration); // Minimum 2 seconds
+            },
+            
+            startTypingAnimation(messageWindow, message) {
+                const textElement = messageWindow.querySelector('.deity-message-text');
+                const ellipsesElement = messageWindow.querySelector('.typing-ellipses');
+                
+                // Clear any existing content and set up the structure
+                textElement.innerHTML = '<span class="typed-text"></span>&nbsp;<span class="typing-ellipses show"></span>';
+                const typedTextSpan = textElement.querySelector('.typed-text');
+                const ellipses = textElement.querySelector('.typing-ellipses');
+                
+                // Start typing animation
+                textElement.classList.add('typing');
+                
+                let currentIndex = 0;
+                const characters = message.split('');
+                
+                const typeNextCharacter = () => {
+                    if (currentIndex < characters.length) {
+                        const char = characters[currentIndex];
+                        
+                        // Create individual character span with subtle variations for broken feel
+                        const charSpan = document.createElement('span');
+                        charSpan.textContent = char;
+                        
+                        // Add subtle random variations to make text feel more broken/distant
+                        const variation = Math.random();
+                        if (variation < 0.05) { // 5% chance for slight character variations
+                            charSpan.style.opacity = '0.85';
+                        } else if (variation < 0.1) { // Another 5% for slight position shift
+                            charSpan.style.transform = `translateY(${Math.random() * 0.5 - 0.25}px)`;
+                        } else if (variation < 0.15) { // Another 5% for slight scaling
+                            charSpan.style.transform = `scale(${0.95 + Math.random() * 0.1})`;
+                        }
+                        
+                        typedTextSpan.appendChild(charSpan);
+                        currentIndex++;
+                        
+                        // Calculate delay for next character
+                        let delay = 60 + Math.random() * 40; // Base delay with variation
+                        
+                        // Random pauses for more broken/stuttering effect
+                        if (Math.random() < 0.18) { // Slightly more frequent pauses
+                            delay += 200 + Math.random() * 400; // Longer pauses occasionally
+                        }
+                        
+                        // Longer pauses after punctuation
+                        if (characters[currentIndex - 1] === ',' || characters[currentIndex - 1] === ':') {
+                            delay += 150 + Math.random() * 200;
+                        }
+                        
+                        setTimeout(typeNextCharacter, delay);
+                    } else {
+                        // Typing completed - schedule dismissal 2-5 seconds from now
+                        const readingTime = 2000 + Math.random() * 3000; // 2-5 seconds after typing completes
+                        setTimeout(() => {
+                            this.dismissMessage(messageWindow);
+                        }, readingTime);
+                        
+                        // Store reference to ellipses for cleanup in dismissMessage
+                        messageWindow.ellipsesElement = ellipses;
+                    }
+                };
+                
+                // Add a longer, randomized pause before typing begins
+                // Base delay of 1.2s (current TV turn-on effect) + random delay between 0.8s and 3.2s
+                const initialDelay = 1200 + Math.random() * 2400;
+                setTimeout(typeNextCharacter, initialDelay);
+            },
+            
+            positionRandomly(element) {
+                const margin = 50;
+                const maxX = window.innerWidth - element.offsetWidth - margin;
+                const maxY = window.innerHeight - element.offsetHeight - margin;
+                
+                // Ensure we have valid dimensions
+                const elementWidth = 315; // Updated to match new scaled width
+                const elementHeight = 120; // Estimated height
+                
+                const x = Math.max(margin, Math.random() * (window.innerWidth - elementWidth - margin));
+                const y = Math.max(margin, Math.random() * (window.innerHeight - elementHeight - margin));
+                
+                element.style.left = x + 'px';
+                element.style.top = y + 'px';
+            },
+            
+            makeDraggable(element) {
+                let isDragging = false;
+                let startX = 0;
+                let startY = 0;
+                let startLeft = 0;
+                let startTop = 0;
+                
+                // Use the entire window as the drag handle (not just title bar since we removed it)
+                element.addEventListener('mousedown', dragStart, { passive: false });
+                document.addEventListener('mousemove', drag, { passive: false });
+                document.addEventListener('mouseup', dragEnd, { passive: false });
+                
+                function dragStart(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    // Get current position
+                    const rect = element.getBoundingClientRect();
+                    startLeft = rect.left;
+                    startTop = rect.top;
+                    
+                    element.style.cursor = 'grabbing';
+                    element.style.zIndex = '1002'; // Bring to front while dragging
+                }
+                
+                function drag(e) {
+                    if (!isDragging) return;
+                    
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const deltaX = e.clientX - startX;
+                    const deltaY = e.clientY - startY;
+                    
+                    let newLeft = startLeft + deltaX;
+                    let newTop = startTop + deltaY;
+                    
+                    // Constrain to screen bounds
+                    const elementWidth = element.offsetWidth || 350;
+                    const elementHeight = element.offsetHeight || 120;
+                    
+                    newLeft = Math.max(0, Math.min(window.innerWidth - elementWidth, newLeft));
+                    newTop = Math.max(0, Math.min(window.innerHeight - elementHeight, newTop));
+                    
+                    element.style.left = newLeft + 'px';
+                    element.style.top = newTop + 'px';
+                }
+                
+                function dragEnd(e) {
+                    if (!isDragging) return;
+                    
+                    isDragging = false;
+                    element.style.cursor = 'move';
+                    element.style.zIndex = '1001'; // Reset z-index
+                }
+                
+                // Prevent text selection during drag
+                element.addEventListener('selectstart', (e) => {
+                    if (isDragging) e.preventDefault();
+                });
+            },
+            
+            dismissMessage(messageWindow) {
+                if (!this.activeWindows.has(messageWindow)) return;
+                
+                // Stop ellipses animation if it's running
+                const ellipses = messageWindow.querySelector('.typing-ellipses');
+                if (ellipses) {
+                    ellipses.classList.remove('show');
+                }
+                
+                // Remove from active set
+                this.activeWindows.delete(messageWindow);
+                
+                // Add disappearing animation
+                messageWindow.classList.remove('appearing');
+                messageWindow.classList.add('disappearing');
+                
+                // Remove from DOM after animation
+                setTimeout(() => {
+                    if (messageWindow.parentNode) {
+                        messageWindow.parentNode.removeChild(messageWindow);
+                    }
+                }, 800); // Match tvTurnOff animation duration
+            },
+            
+            cleanup() {
+                // Clear any pending timeouts
+                if (this.nextMessageTimeout) {
+                    clearTimeout(this.nextMessageTimeout);
+                    this.nextMessageTimeout = null;
+                }
+                
+                // Remove all active windows
+                this.activeWindows.forEach(window => {
+                    if (window.parentNode) {
+                        window.parentNode.removeChild(window);
+                    }
+                });
+                this.activeWindows.clear();
+                
+                // Reset used messages
+                this.usedMessages.clear();
+            }
+        };
+        
+        // Remove animation toggle state since it's always on
+        const MAIN_WINDOW_HEIGHT = 116;
+        const EQ_WINDOW_HEIGHT = 116;
+        
+        // Function to convert binary data to base64
+        async function fetchAndConvertToBase64(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+                }
+                const blob = await response.blob();
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } catch (error) {
+                console.error('Error fetching skin:', error);
+                return null;
+            }
+        }
+
+        // Function to preload an audio file and get its blob URL
+        async function preloadAudioFile(url) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                return URL.createObjectURL(blob);
+            } catch (error) {
+                console.error('Error preloading audio:', error);
+                return url; // Fallback to original URL if fetch fails
+            }
+        }
+
+        // Define the music files with their metadata - exact file names from the directory
+        const tracksData = [
+            { 
+                url: "assets/music/01 Gross Excelations.mp3",
+                defaultName: "Gross Excelations",
+                duration: 68.784,
+                metaData: {
+                    title: "Gross Excelations"
+                }
+            },
+            { 
+                url: "assets/music/02 Two Travelers.mp3",
+                defaultName: "Two Travelers",
+                duration: 208.152,
+                metaData: {
+                    title: "Two Travelers"
+                }
+            },
+            { 
+                url: "assets/music/03 Chambers of the Starwatcher.mp3",
+                defaultName: "Chambers of the Starwatcher",
+                duration: 218.5665,
+                metaData: {
+                    title: "Chambers of the Starwatcher"
+                }
+            },
+            { 
+                url: "assets/music/04 Hibernal Torment.mp3",
+                defaultName: "Hibernal Torment",
+                duration: 216,
+                metaData: {
+                    title: "Hibernal Torment"
+                }
+            },
+            { 
+                url: "assets/music/05 Rats.mp3",
+                defaultName: "Rats",
+                duration: 233.64,
+                metaData: {
+                    title: "Rats"
+                }
+            },
+            { 
+                url: "assets/music/06 Entrusted to Fools.mp3",
+                defaultName: "Entrusted to Fools",
+                duration: 196.008,
+                metaData: {
+                    title: "Entrusted to Fools"
+                }
+            },
+            { 
+                url: "assets/music/07 Stale Biscuits.mp3",
+                defaultName: "Stale Biscuits",
+                duration: 192,
+                metaData: {
+                    title: "Stale Biscuits"
+                }
+            },
+            { 
+                url: "assets/music/08 Crusted Aucklet.mp3",
+                defaultName: "Crusted Aucklet",
+                duration: 71.016,
+                metaData: {
+                    title: "Crusted Aucklet"
+                }
+            },
+            { 
+                url: "assets/music/09 Ill Wind.mp3",
+                defaultName: "Ill Wind",
+                duration: 216,
+                metaData: {
+                    title: "Ill Wind"
+                }
+            },
+            { 
+                url: "assets/music/10 Breadmaker.mp3",
+                defaultName: "Breadmaker",
+                duration: 193.824,
+                metaData: {
+                    title: "Breadmaker"
+                }
+            },
+            { 
+                url: "assets/music/11 Taste of my Chime.mp3",
+                defaultName: "Taste of my Chime",
+                duration: 138,
+                metaData: {
+                    title: "Taste of my Chime"
+                }
+            },
+            { 
+                url: "assets/music/12 Doom Fruit.mp3",
+                defaultName: "Doom Fruit",
+                duration: 210,
+                metaData: {
+                    title: "Doom Fruit"
+                }
+            },
+            { 
+                url: "assets/music/13 Bone Window.mp3",
+                defaultName: "Bone Window",
+                duration: 141.648,
+                metaData: {
+                    title: "Bone Window"
+                }
+            }
+        ];
+
+        // Background GIF mapping for each track with preloaded images
+        const trackBackgrounds = {
+            0: {  // Track 1 - Gross Excelations
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153489/01Loop.mp4",
+                preloadedVideo: null,
+                fadeIn: 10,    // 10 seconds fade in
+                fadeOut: 0     // no fade out
+            },
+            1: {  // Track 2 - Two Travelers
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153493/02Loop.mp4",
+                preloadedVideo: null,
+                fadeIn: 0,   // 0.2 seconds fade in
+                fadeOut: .3   // 0.2 seconds fade out
+            },
+            2: {  // Track 3 - Chambers of the Starwatcher
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153497/03Loop.mp4",
+                preloadedVideo: null,
+                fadeIn: 2,     // 2 seconds fade in
+                fadeOut: 0   // 0.2 seconds fade out
+            },
+            3: {  // Track 4 - Hibernal Torment
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153509/04Loop.mp4",
+                preloadedVideo: null,
+                fadeIn: 0,     // 2 seconds fade in
+                fadeOut: 0   // 0.2 seconds fade out
+            },
+            4: {  // Track 5 - Rats
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153513/05Loop.mp4",
+                preloadedVideo: null,
+                fadeIn: 1,     // instant fade in
+                fadeOut: 0     // instant fade out
+            },
+            5: {  // Track 6 - Entrusted to Fools
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153517/06Loop.mp4",
+                preloadedVideo: null,
+                fadeIn: 3,     // instant fade in
+                fadeOut: 0     // instant fade out
+            },
+            6: {  // Track 7 - Stale Biscuits
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153521/07Loop.mp4",
+                preloadedVideo: null,
+                fadeIn: 0,     // instant fade in
+                fadeOut: 0     // instant fade out
+            },
+            8: {  // Track 9 - Ill Wind
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153526/09Loop.mp4",
+                preloadedVideo: null,
+                fadeIn: 1,     // instant fade in
+                fadeOut: 0     // instant fade out
+            },
+            10: {  // Track 11 - Taste of my Chime
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153531/11Loop.mp4",
+                preloadedVideo: null,
+                fadeIn: 0,     // instant fade in
+                fadeOut: 0     // instant fade out
+            },
+            12: {  // Track 13 - Bone Window
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153534/13Loop.mp4",
+                preloadedVideo: null,
+                fadeIn: 3,     // instant fade in
+                fadeOut: 0     // instant fade out
+            }
+        };
+
+        // Function to set transition duration for an element
+        function setTransitionDuration(element, duration) {
+            // Remove transitions for instant changes
+            element.style.transition = 'none';
+        }
+
+        // Function to initialize background system
+        function initBackgroundSystem() {
+            const currentBg = document.getElementById('current-background');
+            const viewerContainer = document.querySelector('.viewer-loop-container');
+            const flickerOverlay = document.querySelector('.background-flicker-overlay');
+            
+            if (trackBackgrounds[0]) {
+                // Create video for both viewer and background
+                const video = document.createElement('video');
+                video.className = 'background-video';
+                video.loop = true;
+                video.muted = true;
+                video.playsInline = true;
+                video.autoplay = true;
+                
+                // Ensure video starts completely invisible with no transition
+                video.style.transition = 'none';
+                video.style.opacity = '0';
+                
+                video.onloadeddata = () => {
+                    // Start playing the video
+                    video.play().catch(err => console.error("Video autoplay failed:", err));
+                    
+                    // Add to background (fullscreen mode)
+                    currentBg.innerHTML = '';
+                    currentBg.appendChild(video);
+                    
+                    // Add to viewer
+                    if (viewerContainer) {
+                        const viewerVideo = video.cloneNode(true);
+                        viewerVideo.className = 'viewer-video';
+                        viewerVideo.style.objectFit = 'cover'; // Ensure cover is applied
+                        viewerContainer.innerHTML = '';
+                        viewerContainer.appendChild(viewerVideo);
+                        
+                        // Start playing the viewer video
+                        viewerVideo.play().catch(err => console.error("Viewer video autoplay failed:", err));
+                    }
+                };
+                
+                video.onerror = (error) => {
+                    console.error('Error loading initial background video:', error);
+                    console.log('Attempted to load:', trackBackgrounds[0].url);
+                };
+                
+                video.src = trackBackgrounds[0].url;
+                console.log('Loading initial video from:', trackBackgrounds[0].url);
+            }
+            
+            // Make the viewer window draggable
+            makeViewerDraggable();
+            
+            // Set up viewer buttons
+            setupViewerControls();
+            
+            // Set up the audio-reactive background flicker
+            setupBackgroundFlicker();
+        }
+
+        // Function to make the viewer window draggable
+        function makeViewerDraggable() {
+            const viewerWindow = document.getElementById('viewer-window');
+            
+            if (!viewerWindow) return;
+            
+            let isDragging = false;
+            let startX = 0;
+            let startY = 0;
+            let startLeft = 0;
+            let startTop = 0;
+            
+            // Use the header as the drag handle
+            const dragHandle = viewerWindow.querySelector('.viewer-header');
+            
+            if (dragHandle) {
+                dragHandle.addEventListener('mousedown', dragStart, { passive: false });
+                document.addEventListener('mousemove', drag, { passive: false });
+                document.addEventListener('mouseup', dragEnd, { passive: false });
+            }
+            
+            function dragStart(e) {
+                // Ignore if clicking on buttons
+                if (e.target.closest('.viewer-close-button')) {
+                    return;
+                }
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                // Get current position
+                const rect = viewerWindow.getBoundingClientRect();
+                startLeft = rect.left;
+                startTop = rect.top;
+                
+                // Make sure transform is none for proper dragging
+                if (viewerWindow.style.transform === 'translate(-50%, -50%)') {
+                    viewerWindow.style.transform = 'none';
+                    
+                    // Center it if first drag after initialization
+                    const rect = viewerWindow.getBoundingClientRect();
+                    viewerWindow.style.top = `${(window.innerHeight - rect.height) / 2}px`;
+                    viewerWindow.style.left = `${(window.innerWidth - rect.width) / 2}px`;
+                }
+                
+                dragHandle.style.cursor = 'grabbing';
+                viewerWindow.style.zIndex = '6'; // Bring to front while dragging
+            }
+            
+            function drag(e) {
+                if (!isDragging) return;
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                
+                let newLeft = startLeft + deltaX;
+                let newTop = startTop + deltaY;
+                
+                // Constrain to screen bounds with some flexibility
+                const rect = viewerWindow.getBoundingClientRect();
+                const elementWidth = rect.width;
+                const elementHeight = rect.height;
+                
+                // Allow more flexibility - only constrain when completely off-screen
+                newLeft = Math.max(-elementWidth + 100, Math.min(window.innerWidth - 50, newLeft));
+                newTop = Math.max(-50, Math.min(window.innerHeight - 50, newTop));
+                
+                viewerWindow.style.left = newLeft + 'px';
+                viewerWindow.style.top = newTop + 'px';
+            }
+            
+            function dragEnd(e) {
+                if (!isDragging) return;
+                
+                isDragging = false;
+                dragHandle.style.cursor = 'move';
+                viewerWindow.style.zIndex = '5'; // Reset z-index
+            }
+            
+            // Prevent text selection during drag
+            viewerWindow.addEventListener('selectstart', (e) => {
+                if (isDragging) e.preventDefault();
+            });
+        }
+
+        // Function to preload all background videos
+        function preloadBackgrounds() {
+            const preloadPromises = [];
+            const preloadProgress = {
+                total: Object.keys(trackBackgrounds).length,
+                loaded: 0,
+                failed: 0
+            };
+
+            // Create a preload manager
+            const preloadManager = {
+                onProgress: null,
+                onComplete: null,
+                onError: null
+            };
+
+            // Preload all backgrounds
+            Object.entries(trackBackgrounds).forEach(([index, background]) => {
+                const preloadPromise = new Promise((resolve, reject) => {
+                    const video = document.createElement('video');
+                    video.muted = true;
+                    video.playsInline = true;
+                    video.preload = 'auto'; // Changed from 'metadata' to 'auto' for full preload
+                    
+                    // Track loading progress
+                    video.addEventListener('progress', () => {
+                        if (video.buffered.length > 0) {
+                            const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+                            const duration = video.duration;
+                            if (duration > 0) {
+                                const progress = (bufferedEnd / duration) * 100;
+                                console.log(`Preloading video ${index}: ${progress.toFixed(1)}%`);
+                            }
+                        }
+                    });
+
+                    video.onloadeddata = () => {
+                        background.preloadedVideo = video;
+                        preloadProgress.loaded++;
+                        console.log(`Successfully preloaded video ${index}: ${background.url}`);
+                        
+                        // Update progress
+                        if (preloadManager.onProgress) {
+                            preloadManager.onProgress(preloadProgress);
+                        }
+                        
+                        resolve(video);
+                    };
+                    
+                    video.onerror = (error) => {
+                        preloadProgress.failed++;
+                        console.error(`Error preloading background ${index}:`, error);
+                        console.log('Attempted to load:', background.url);
+                        
+                        // Update progress
+                        if (preloadManager.onProgress) {
+                            preloadManager.onProgress(preloadProgress);
+                        }
+                        
+                        // Retry loading after a delay
+                        setTimeout(() => {
+                            console.log(`Retrying preload for video ${index}...`);
+                            video.src = background.url;
+                        }, 2000);
+                        
+                        reject(error);
+                    };
+                    
+                    video.src = background.url;
+                });
+                
+                preloadPromises.push(preloadPromise);
+            });
+
+            // Handle overall preload completion
+            Promise.allSettled(preloadPromises).then((results) => {
+                const successCount = results.filter(r => r.status === 'fulfilled').length;
+                console.log(`Preload complete. Successfully loaded ${successCount} of ${preloadProgress.total} videos`);
+                
+                if (preloadManager.onComplete) {
+                    preloadManager.onComplete({
+                        successCount,
+                        total: preloadProgress.total,
+                        failed: preloadProgress.failed
+                    });
+                }
+            });
+
+            return preloadManager;
+        }
+
+        // Initialize preloading immediately when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const preloadManager = preloadBackgrounds();
+            
+            // Optional: Add loading indicator
+            preloadManager.onProgress = (progress) => {
+                const percent = ((progress.loaded + progress.failed) / progress.total) * 100;
+                console.log(`Preload progress: ${percent.toFixed(1)}%`);
+            };
+            
+            preloadManager.onComplete = (result) => {
+                console.log('All videos preloaded:', result);
+            };
+            
+            preloadManager.onError = (error) => {
+                console.error('Preload error:', error);
+            };
+        });
+
+        // Modified track change handler with detailed logging
+        function handleTrackChange(trackInfo) {
+            // Immediately handle track change
+            requestAnimationFrame(() => {
+                if (!trackInfo) return;
+                
+                // Find the track index by matching the title
+                let trackIndex = -1;
+                
+                // First try to match by URL if available
+                if (trackInfo.url) {
+                    trackIndex = tracksData.findIndex(track => 
+                        track.url === trackInfo.url || 
+                        track.url.endsWith(trackInfo.url)
+                    );
+                }
+                
+                // If URL matching failed, try title matching
+                if (trackIndex === -1) {
+                    trackIndex = tracksData.findIndex(track => {
+                        // Try to match by title from metadata
+                        if (trackInfo.metaData?.title && track.metaData?.title === trackInfo.metaData.title) {
+                            return true;
+                        }
+                        
+                        // Try to match by defaultName
+                        if (trackInfo.defaultName && track.defaultName === trackInfo.defaultName) {
+                            return true;
+                        }
+                        
+                        // Try to match by filename
+                        const trackFileName = track.url.split('/').pop();
+                        const incomingFileName = (trackInfo.url || '').split('/').pop();
+                        if (trackFileName === incomingFileName) {
+                            return true;
+                        }
+                        
+                        return false;
+                    });
+                }
+                
+                // Get track duration and notify deity message system
+                if (trackIndex !== -1) {
+                    const trackDuration = tracksData[trackIndex]?.duration || 180;
+                    deityMessageSystem.onTrackChange(trackDuration);
+                    
+                    if (trackBackgrounds[trackIndex]) {
+                        switchBackground(trackIndex);
+                    }
+                }
+            });
+        }
+
+        // Set up viewer controls
+        function setupViewerControls() {
+            const viewerWindow = document.getElementById('viewer-window');
+            const closeButton = viewerWindow.querySelector('.viewer-close-button');
+            
+            // Close button - hides the viewer
+            if (closeButton) {
+                closeButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    viewerWindow.classList.remove('visible');
+                });
+            }
+            
+            // Position the viewer window in the center initially
+            // Initial position - will be draggable after
+            requestAnimationFrame(() => {
+                // Reset transform to use absolute positioning
+                viewerWindow.style.transform = 'none';
+                
+                // Get square size based on viewport (90% of smaller viewport dimension)
+                const squareSize = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+                
+                // Center it on screen
+                viewerWindow.style.top = `${(window.innerHeight - squareSize) / 2}px`;
+                viewerWindow.style.left = `${(window.innerWidth - squareSize) / 2}px`;
+                viewerWindow.style.width = `${squareSize}px`;
+                viewerWindow.style.height = `${squareSize}px`;
+            });
+            
+            // Make the viewer resizable manually in addition to native resize
+            const resizeHandle = viewerWindow.querySelector('.viewer-resize-handle');
+            if (resizeHandle) {
+                let isResizing = false;
+                let startX, startY;
+                let startWidth, startHeight;
+                
+                resizeHandle.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    isResizing = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    // Get the current dimensions
+                    const rect = viewerWindow.getBoundingClientRect();
+                    startWidth = rect.width;
+                    startHeight = rect.height;
+                    
+                    // When user starts resizing, remove the aspect-ratio constraint
+                    viewerWindow.style.aspectRatio = 'unset';
+                    
+                    // Add event listeners
+                    document.addEventListener('mousemove', handleResize);
+                    document.addEventListener('mouseup', stopResize);
+                });
+                
+                function handleResize(e) {
+                    if (!isResizing) return;
+                    
+                    // Calculate new dimensions
+                    const newWidth = startWidth + (e.clientX - startX);
+                    const newHeight = startHeight + (e.clientY - startY);
+                    
+                    // Enforce minimum size but no maximum size
+                    const minSize = 300;
+                    
+                    // Allow non-square proportions based on user dragging
+                    const width = Math.max(minSize, newWidth);
+                    const height = Math.max(minSize, newHeight);
+                    
+                    // Apply new dimensions
+                    viewerWindow.style.width = `${width}px`;
+                    viewerWindow.style.height = `${height}px`;
+                }
+                
+                function stopResize() {
+                    isResizing = false;
+                    document.removeEventListener('mousemove', handleResize);
+                    document.removeEventListener('mouseup', stopResize);
+                }
+            }
+        }
+        
+        // Function to switch between fullscreen and window mode
+        function setFullscreenMode(enabled) {
+            const body = document.body;
+            const viewerWindow = document.getElementById('viewer-window');
+            const exitButton = document.getElementById('exit-fullscreen-button');
+            
+            if (enabled) {
+                body.classList.add('fullscreen-mode');
+                
+                // Show exit button
+                if (exitButton) {
+                    exitButton.classList.remove('hidden');
+                }
+            } else {
+                body.classList.remove('fullscreen-mode');
+                
+                // Hide exit button
+                if (exitButton) {
+                    exitButton.classList.add('hidden');
+                }
+                
+                // Make viewer visible
+                if (viewerWindow) {
+                    viewerWindow.classList.add('visible');
+                }
+            }
+        }
+
+        // Function to handle background transitions
+        function switchBackground(trackIndex) {
+            const currentBg = document.getElementById('current-background');
+            const viewerContainer = document.querySelector('.viewer-loop-container');
+            const backgroundConfig = trackBackgrounds[trackIndex];
+
+            if (!backgroundConfig) {
+                console.warn('No background configuration for track index:', trackIndex);
+                return;
+            }
+
+            console.log(`Switching to background for track ${trackIndex}: ${backgroundConfig.url}`);
+
+            // Create new video or use preloaded one
+            const newVideo = backgroundConfig.preloadedVideo ? 
+                backgroundConfig.preloadedVideo.cloneNode(true) : 
+                document.createElement('video');
+            
+            if (!backgroundConfig.preloadedVideo) {
+                newVideo.loop = true;
+                newVideo.muted = true;
+                newVideo.playsInline = true;
+                newVideo.autoplay = true;
+                newVideo.src = backgroundConfig.url;
+            }
+            
+            newVideo.className = 'background-video';
+            
+            // Set initial state
+            newVideo.style.transition = 'none';
+            newVideo.style.opacity = '0';
+
+            const handleVideoReady = () => {
+                // Clear any existing content and timeouts
+                if (window.bgTransitionTimeout) {
+                    clearTimeout(window.bgTransitionTimeout);
+                }
+                
+                // Start playing
+                newVideo.play().catch(err => console.error("Video play failed:", err));
+                
+                // Remove any existing videos from background
+                currentBg.innerHTML = '';
+                
+                // Add new video to background
+                currentBg.appendChild(newVideo);
+                
+                // Create viewer video
+                if (viewerContainer) {
+                    const viewerVideo = newVideo.cloneNode(true);
+                    viewerVideo.className = 'viewer-video';
+                    viewerVideo.style.objectFit = 'cover'; // Ensure cover is applied
+                    viewerContainer.innerHTML = '';
+                    viewerContainer.appendChild(viewerVideo);
+                    
+                    // Start playing
+                    viewerVideo.play().catch(err => console.error("Viewer video play failed:", err));
+                }
+                
+                // Force reflow
+                void newVideo.offsetHeight;
+                
+                // Set up fade in for background
+                requestAnimationFrame(() => {
+                    newVideo.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
+                    newVideo.style.opacity = '0.5'; // Match the 0.5 opacity from CSS
+                    
+                    // Also fade in viewer video
+                    if (viewerContainer && viewerContainer.querySelector('.viewer-video')) {
+                        const viewerVideo = viewerContainer.querySelector('.viewer-video');
+                        viewerVideo.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
+                        viewerVideo.style.opacity = '1';
+                    }
+                });
+            };
+
+            // Handle video loading
+            if (backgroundConfig.preloadedVideo) {
+                // If we have a preloaded video, use it immediately
+                handleVideoReady();
+            } else {
+                // Otherwise wait for the video to load
+                newVideo.onloadeddata = handleVideoReady;
+                newVideo.onerror = (error) => {
+                    console.error('Error loading background video:', error);
+                    console.log('Attempted to load:', backgroundConfig.url);
+                };
+            }
+        }
+
+        // Function to center windows
+        function centerWindows() {
+            if (!webampInstance || !webampInstance.store) return;
+
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
+            
+            // Calculate position in top-left quadrant
+            const leftOffset = Math.floor(windowWidth * 0.14);
+            const topOffset = Math.floor(windowHeight * 0.15);
+            
+            // Divide by zoom factor to get the actual position in the zoomed space
+            const posX = Math.max(0, Math.floor(leftOffset / zoomFactor));
+            const posY = Math.max(0, Math.floor(topOffset / zoomFactor));
+
+            // Store these positions for animation reference
+            window.lastKnownPositions = {
+                main: { x: posX, y: posY },
+                equalizer: { x: posX, y: posY + 116 },
+                playlist: { x: posX, y: posY + 232 }
+            };
+
+            // Update window positions
+            webampInstance.store.dispatch({
+                type: 'UPDATE_WINDOW_POSITIONS',
+                positions: window.lastKnownPositions,
+                absolute: true
+            });
+        }
+
+        // Function to get current window positions
+        function getCurrentWindowPositions() {
+            const state = webampInstance.store.getState();
+            const genWindows = state?.windows?.genWindows;
+            
+            if (!genWindows) return null;
+            
+            // Extract positions from the nested position objects
+            const positions = {};
+            Object.entries(genWindows).forEach(([windowId, window]) => {
+                if (window?.position?.x != null && window?.position?.y != null) {
+                    positions[windowId] = {
+                        x: Math.round(window.position.x),
+                        y: Math.round(window.position.y)
+                    };
+                }
+            });
+            
+            return positions;
+        }
+
+        // Modified animation function to handle mouse interactions
+        function startHauntedAnimation() {
+            // Clean up any existing animation
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            // Get initial positions
+            const currentPositions = getCurrentWindowPositions();
+            
+            if (!currentPositions || Object.keys(currentPositions).length === 0) {
+                console.error('Could not get window positions for animation');
+                return;
+            }
+            
+            // Use current positions as base positions
+            let basePositions = { ...currentPositions };
+            
+            let time = 0;
+            // Increase frame rate by increasing animation speed
+            const ANIMATION_SPEED = 0.5;  // Slower base speed for smoother motion
+            // Base radius that will be modified by audio
+            const BASE_RADIUS = 2;    // Slight increase in base radius
+            const MAX_RADIUS = 50;    // Larger maximum radius for more dramatic swirls
+            // Slow down the actual movement speed
+            const OSCILLATION_FREQUENCY_MODIFIER = 0.0008;  // Much slower base oscillation
+            
+            // Add noise parameters for unpredictability
+            const NOISE_AMPLITUDE = 0.15;  // Increased noise for more organic movement
+            const NOISE_FREQUENCY = 0.002;  // Much slower noise for smoother transitions
+            
+            // Volume response curve parameters
+            const VOLUME_THRESHOLD = 0.02;  // Lower threshold to be more responsive
+            const VOLUME_POWER = 1.8;      // Gentler power curve for smoother response
+            
+            // Add secondary motion parameters
+            const SECONDARY_FREQUENCY = 0.0012; // Secondary motion frequency
+            const TERTIARY_FREQUENCY = 0.0015;  // Tertiary motion frequency
+            
+            // Track mouse interaction state
+            let isInteracting = false;
+            let lastVolume = 0;
+            let volumeSmoothing = 0;
+            const SMOOTHING_FACTOR = 0.03; // Even smoother transitions
+            const VOLUME_SMOOTHING_FACTOR = 0.08; // Smoother volume changes
+            
+            // Add transition tracking
+            let currentVolumeLevel = 0;
+            let targetVolumeLevel = 0;
+            let transitionStartPositions = null;
+            let transitionStartTime = 0;
+            let lastAnimationOffsets = { x: 0, y: 0 };
+            const TRANSITION_DURATION = 800;
+            
+            function updateBasePositions() {
+                const currentPositions = getCurrentWindowPositions();
+                if (currentPositions) {
+                    // Subtract current animation offsets to get true base positions
+                    Object.entries(currentPositions).forEach(([windowId, pos]) => {
+                        if (!basePositions[windowId]) basePositions[windowId] = { x: 0, y: 0 };
+                        basePositions[windowId] = {
+                            x: pos.x - lastAnimationOffsets.x,
+                            y: pos.y - lastAnimationOffsets.y
+                        };
+                    });
+                }
+            }
+
+            // Add mouse interaction handlers specifically for Webamp windows
+            function setupMouseHandlers() {
+                const webampElement = document.getElementById('webamp');
+                if (!webampElement) return;
+
+                // Function to check if the event target is a Webamp window or control
+                const isWebampWindow = (element) => {
+                    if (!element) return false;
+                    return element.closest('.window') || 
+                           element.closest('.title-bar') ||
+                           element.closest('.dragger') ||
+                           element.closest('.handle');
+                };
+
+                // Handle mousedown only on Webamp windows
+                webampElement.addEventListener('mousedown', (e) => {
+                    if (isWebampWindow(e.target)) {
+                        isInteracting = true;
+                        transitionStartPositions = null;
+                        updateBasePositions();
+                    }
+                });
+                
+                // Handle mouseup globally to ensure we catch the release
+                document.addEventListener('mouseup', () => {
+                    if (isInteracting) {
+                        isInteracting = false;
+                        transitionStartPositions = getCurrentWindowPositions();
+                        transitionStartTime = Date.now();
+                        updateBasePositions();
+                    }
+                });
+
+                // Handle mouseleave on the document
+                document.addEventListener('mouseleave', () => {
+                    if (isInteracting) {
+                        isInteracting = false;
+                        transitionStartPositions = getCurrentWindowPositions();
+                        transitionStartTime = Date.now();
+                        updateBasePositions();
+                    }
+                });
+            }
+
+            // Call setup after Webamp is initialized
+            setupMouseHandlers();
+            
+            function getAudioLevel() {
+                // Get the current state from Webamp
+                const state = webampInstance.store.getState();
+                const media = state?.media;
+                
+                if (!media) return 0;
+                
+                // Check if we're actually playing
+                const isPlaying = media.status === "PLAYING" && !media.waiting;
+                if (!isPlaying) {
+                    targetVolumeLevel = 0;
+                } else {
+                    // Get the volume from the state and normalize it
+                    const volume = state.media.volume || 0;
+                    const normalizedVolume = volume / 100;
+                    
+                    // Smoothly transition the target volume
+                    targetVolumeLevel = normalizedVolume;
+                }
+                
+                // Smoothly interpolate current volume towards target
+                currentVolumeLevel += (targetVolumeLevel - currentVolumeLevel) * VOLUME_SMOOTHING_FACTOR;
+                
+                // Apply volume threshold
+                let scaledVolume = 0;
+                if (currentVolumeLevel > VOLUME_THRESHOLD) {
+                    // Scale the volume to the range above threshold, with smooth interpolation
+                    const volumeAboveThreshold = (currentVolumeLevel - VOLUME_THRESHOLD) / (1 - VOLUME_THRESHOLD);
+                    // Apply gentler power curve with smoothing
+                    scaledVolume = Math.pow(volumeAboveThreshold, 2); // Use a gentler power curve
+                }
+                
+                // Apply very gentle cosine modulation for organic movement
+                const baseMovement = Math.abs(Math.cos(time * 0.05)); // Slowed down cosine
+                const targetVolume = Math.max(0.1, scaledVolume * (0.8 + 0.2 * baseMovement)); // Ensure minimum movement
+                
+                // Apply final smoothing
+                volumeSmoothing = volumeSmoothing + (targetVolume - volumeSmoothing) * SMOOTHING_FACTOR;
+                
+                // Log values periodically
+                if (Math.random() < 0.01) {
+                    const baseMovement = Math.abs(Math.cos(time * 0.05)); // Slowed down cosine
+                    const targetVolume = Math.max(0.1, scaledVolume * (0.8 + 0.2 * baseMovement)); // Ensure minimum movement
+                    
+                    // Apply final smoothing
+                    volumeSmoothing = volumeSmoothing + (targetVolume - volumeSmoothing) * SMOOTHING_FACTOR;
+                }
+                
+                return Math.max(0.1, volumeSmoothing); // Ensure minimum return value for base movement
+            }
+            
+            // Easing function for smooth transitions
+            function easeOutCubic(t) {
+                return 1 - Math.pow(1 - t, 3);
+            }
+            
+            // Function to update shadow based on volume
+            function updateShadowEffect(audioLevel) {
+                if (!webampInstance) return;
+                
+                const windows = document.querySelectorAll('#webamp .window');
+                if (!windows.length) return;
+
+                // Base values for low volume
+                const baseOffset = 4;
+                const baseBlur = 4;
+                const baseSpread = 8;
+                
+                // Calculate multipliers based on audio level
+                // audioLevel is already normalized 0-1 from getAudioLevel()
+                const intensityMultiplier = 1 + (audioLevel * 3); // Max 4x at highest volume
+                const spreadMultiplier = 1 + (audioLevel * 4);    // Max 5x at highest volume
+                
+                // Calculate dynamic values
+                const time = Date.now() * 0.001; // Current time in seconds
+                const rotationSpeed = 0.5 + (audioLevel * 2); // Faster rotation at higher volumes
+                const angle = time * rotationSpeed;
+                
+                // Calculate shadow position based on rotation
+                const xOffset = Math.cos(angle) * baseOffset * intensityMultiplier;
+                const yOffset = Math.sin(angle) * baseOffset * intensityMultiplier;
+                
+                // Calculate shadow sizes based on volume
+                const blur1 = baseBlur * (1 + audioLevel);
+                const blur2 = baseBlur * 2 * (1 + audioLevel);
+                const spread1 = baseSpread * (1 + audioLevel * 2);
+                const spread2 = baseSpread * 2 * (1 + audioLevel * 2);
+                
+                // Add some organic movement to the shadow
+                const pulseIntensity = audioLevel * 0.3; // Subtle pulse at high volumes
+                const pulse = 1 + Math.sin(time * 4) * pulseIntensity;
+                
+                // Create the dynamic shadow filter
+                const shadowFilter = `
+                    /* drop-shadow(${xOffset * pulse}px ${yOffset * pulse}px ${blur1}px rgba(0, 0, 0, 0.95))
+                    drop-shadow(${xOffset * 1.5 * pulse}px ${yOffset * 1.5 * pulse}px ${blur2}px rgba(0, 0, 0, 0.85))
+                    drop-shadow(${xOffset * 2 * pulse}px ${yOffset * 2 * pulse}px ${spread1}px rgba(0, 0, 0, 0.75))
+                    drop-shadow(${xOffset * 2.5 * pulse}px ${yOffset * 2.5 * pulse}px ${spread2}px rgba(0, 0, 0, 0.65)) */
+                `;
+                
+                // Apply the shadow to all webamp windows
+                windows.forEach(window => {
+                    window.classList.add('dynamic-shadow');
+                    window.style.filter = shadowFilter;
+                });
+                
+                // Apply the same shadow to all deity message windows
+                const deityWindows = document.querySelectorAll('.deity-message-window');
+                deityWindows.forEach(window => {
+                    window.style.filter = shadowFilter;
+                });
+            }
+
+            function animate() {
+                if (!webampInstance?.store) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                    return;
+                }
+
+                // Handle animation and transitions
+                if (!isInteracting) {
+                    time += ANIMATION_SPEED;
+                    
+                    // Get current audio level and calculate radius with smooth interpolation
+                    const audioLevel = getAudioLevel();
+                    
+                    // Update the shadow effect
+                    updateShadowEffect(audioLevel);
+                    
+                    // Get current audio level and calculate radius with smooth interpolation
+                    const targetRadius = BASE_RADIUS + (audioLevel * MAX_RADIUS);
+                    
+                    // Create multiple layers of motion
+                    const primaryMotion = {
+                        x: Math.sin(time * OSCILLATION_FREQUENCY_MODIFIER),
+                        y: Math.cos(time * OSCILLATION_FREQUENCY_MODIFIER * 0.9)
+                    };
+                    
+                    const secondaryMotion = {
+                        x: Math.sin(time * SECONDARY_FREQUENCY * 1.1) * 0.3,
+                        y: Math.cos(time * SECONDARY_FREQUENCY * 0.8) * 0.3
+                    };
+                    
+                    const tertiaryMotion = {
+                        x: Math.sin(time * TERTIARY_FREQUENCY * 1.2) * 0.2,
+                        y: Math.cos(time * TERTIARY_FREQUENCY * 1.3) * 0.2
+                    };
+                    
+                    // Combine motions with different weights based on audio level
+                    const combinedMotion = {
+                        x: primaryMotion.x + (secondaryMotion.x + tertiaryMotion.x) * (1 + audioLevel),
+                        y: primaryMotion.y + (secondaryMotion.y + tertiaryMotion.y) * (1 + audioLevel)
+                    };
+                    
+                    // Add smooth noise variation
+                    const timeScale = 1 + (audioLevel * 0.5);
+                    const noiseX = Math.sin(time * NOISE_FREQUENCY * 1.1) * NOISE_AMPLITUDE * (1 + audioLevel * 2);
+                    const noiseY = Math.cos(time * NOISE_FREQUENCY * 0.9) * NOISE_AMPLITUDE * (1 + audioLevel * 2);
+                    
+                    // Calculate final position with smooth easing
+                    const easeInOut = (t) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+                    const ease = easeInOut(Math.abs(Math.sin(time * 0.0005)));
+                    
+                    // Calculate animation offsets
+                    const xOffset = (combinedMotion.x * targetRadius * ease + noiseX) * timeScale;
+                    const yOffset = (combinedMotion.y * targetRadius * ease + noiseY) * timeScale;
+                    
+                    // Store last animation offsets
+                    lastAnimationOffsets = { x: xOffset, y: yOffset };
+                    
+                    // Handle transition if we just released the window
+                    let transitionProgress = 1;
+                    if (transitionStartPositions && Date.now() - transitionStartTime < TRANSITION_DURATION) {
+                        transitionProgress = easeOutCubic((Date.now() - transitionStartTime) / TRANSITION_DURATION);
+                    } else {
+                        transitionStartPositions = null;
+                    }
+                    
+                    // Create new positions object with transition handling
+                    const newPositions = {};
+                    Object.entries(basePositions).forEach(([windowId, basePos]) => {
+                        if (transitionStartPositions && transitionStartPositions[windowId]) {
+                            // Interpolate between release position and animated position
+                            const startPos = transitionStartPositions[windowId];
+                            const animatedPos = {
+                                x: basePos.x + xOffset,
+                                y: basePos.y + yOffset
+                            };
+                            newPositions[windowId] = {
+                                x: startPos.x + (animatedPos.x - startPos.x) * transitionProgress,
+                                y: startPos.y + (animatedPos.y - startPos.y) * transitionProgress
+                            };
+                        } else {
+                            newPositions[windowId] = {
+                                x: basePos.x + xOffset,
+                                y: basePos.y + yOffset
+                            };
+                        }
+                    });
+                    
+                    // Update all windows at once
+                    webampInstance.store.dispatch({
+                        type: 'UPDATE_WINDOW_POSITIONS',
+                        positions: newPositions,
+                        absolute: true
+                    });
+                }
+                
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // Main function to initialize Webamp
+        async function initWebamp() {
+            try {
+                // Clean up any previous instances
+                cleanup();
+                
+                // Remove animation toggle button initialization
+                window.basePositions = null;
+
+                // Add transition styles
+                const styleSheet = document.createElement('style');
+                styleSheet.textContent = `
+                    #webamp-container {
+                        opacity: 0;
+                        transition: opacity 1s ease-in-out;
+                    }
+                    #webamp {
+                        zoom: var(--webamp-zoom) !important;
+                        -moz-transform: scale(var(--webamp-zoom));
+                        -moz-transform-origin: top left;
+                    }
+                    .webamp-region {
+                        transition: all 0.3s ease-out;
+                    }
+                `;
+                document.head.appendChild(styleSheet);
+
+                // Get the custom skin if needed
+                let skinOption = undefined;
+                
+                if (usesCustomSkin) {
+                    const skinUrl = "assets/skins/GKSkin.wsz";
+                    const skinBase64 = await fetchAndConvertToBase64(skinUrl);
+                    
+                    if (skinBase64) {
+                        skinOption = {
+                            url: `data:application/zip;base64,${skinBase64}`
+                        };
+                    }
+                }
+
+                // First, preload all audio files
+                const tracks = await Promise.all(tracksData.map(async (track) => {
+                    // Create a blob URL for each track
+                    const blobUrl = await preloadAudioFile(track.url);
+                    return {
+                        ...track,
+                        url: blobUrl,
+                        blob: true // Tell Webamp this is a blob URL
+                    };
+                }));
+
+                // Calculate position for top-left quadrant placement
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+                // Get zoom factor from CSS variable
+                const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
+                
+                // Original Webamp dimensions
+                const playerWidth = 275;  // Original size
+                const totalHeight = 500;  // Original size
+                
+                // Position in top-left quadrant - approximately 20% from left edge and 15% from top
+                const leftOffset = Math.floor(windowWidth * 0.20);
+                const topOffset = Math.floor(windowHeight * 0.15);
+                
+                // Divide by zoom factor to get the actual position in the zoomed space
+                const posX = Math.max(0, Math.floor(leftOffset / zoomFactor));
+                const posY = Math.max(0, Math.floor(topOffset / zoomFactor));
+
+                // Initialize Webamp with preloaded tracks
+                const webampOptions = {
+                    initialTracks: tracks,
+                    initialSkin: skinOption,
+                    zIndex: 100,
+                    enableHotkeys: false,
+                    __initialWindowLayout: {
+                        main: { position: { x: posX, y: posY } },
+                        equalizer: { position: { x: posX, y: posY + 116 } },
+                        playlist: { 
+                            position: { x: posX, y: posY + 232 },
+                            size: [0, 5]
+                        }
+                    }
+                };
+
+                console.log('Initializing Webamp with options:', webampOptions);
+                webampInstance = new Webamp(webampOptions);
+
+                // Render Webamp and set up the player
+                await webampInstance.renderWhenReady(document.getElementById('webamp-container'));
+                
+                // Wait for skin to be loaded
+                await webampInstance.skinIsLoaded();
+
+                // Set up audio analyzer
+                await setupAudioAnalyzer();
+
+                // Intercept Redux store to prevent playlist reordering
+                const originalDispatch = webampInstance.store.dispatch;
+                webampInstance.store.dispatch = (action) => {
+                    if (action.type === 'REMOVE_TRACKS' || 
+                        action.type === 'ADD_TRACK_FROM_URL' || 
+                        action.type === 'SET_MEDIA' || 
+                        action.type === 'PLAYLIST_REORDER') {
+                        return;
+                    }
+                    return originalDispatch(action);
+                };
+
+                // Show the player
+                const container = document.getElementById('webamp-container');
+                container.style.opacity = '1';
+
+                // Initialize background system
+                initBackgroundSystem();
+
+                // Set up track change handler
+                webampInstance.onTrackDidChange(trackInfo => {
+                    handleTrackChange(trackInfo);
+                    // Try to set up audio analyzer again for new track
+                    setupAudioAnalyzer();
+                });
+
+                // Center windows initially
+                centerWindows();
+
+                // Focus the playlist window to bring it to the foreground
+                setTimeout(() => {
+                    if (webampInstance && webampInstance.store) {
+                        webampInstance.store.dispatch({
+                            type: 'SET_FOCUSED_WINDOW',
+                            window: 'playlist'
+                        });
+                        
+                        // Try multiple approaches to set visualizer to oscilloscope
+                        // Approach 1: Try TOGGLE_VISUALIZER_STYLE (might cycle between modes)
+                        webampInstance.store.dispatch({
+                            type: 'TOGGLE_VISUALIZER_STYLE'
+                        });
+                    }
+                }, 100);
+                
+                // Try another approach after a short delay
+                setTimeout(() => {
+                    if (webampInstance && webampInstance.store) {
+                        // Approach 2: Try clicking on the visualizer area programmatically
+                        const visualizerElement = document.querySelector('#webamp .visualizer');
+                        if (visualizerElement) {
+                            visualizerElement.click();
+                        }
+                    }
+                }, 500);
+
+                // Start the haunted animation immediately
+                startHauntedAnimation();
+
+                // Add essential click handlers
+                const playlistContainer = document.querySelector('#webamp .playlist-window');
+                if (playlistContainer) {
+                    // Prevent right-click
+                    playlistContainer.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }, true);
+
+                    // Handle double-clicks for play
+                    playlistContainer.addEventListener('dblclick', (e) => {
+                        const trackEl = e.target.closest('.playlist-track');
+                        if (trackEl) {
+                            const tracks = document.querySelectorAll('#webamp .playlist-track');
+                            const index = Array.from(tracks).indexOf(trackEl);
+                            if (index !== -1) {
+                                webampInstance.store.dispatch({ 
+                                    type: "SET_CURRENT_TRACK",
+                                    id: index 
+                                });
+                                setTimeout(() => webampInstance.play(), 50);
+                            }
+                        }
+                    });
+                }
+
+                // Fade in the initial background
+                setTimeout(() => {
+                    const currentBg = document.getElementById('current-background');
+                    currentBg.classList.add('active');
+                }, 1000);
+
+                // Fade in the halo and glow effects with a longer delay
+                setTimeout(() => {
+                    const glowOverlay = document.getElementById('glow-overlay');
+                    if (glowOverlay) glowOverlay.style.opacity = '1';
+                }, 3000);
+
+                // Set the title using direct skin data modification
+                try {
+                    // Access the skin data in the Redux store
+                    const state = webampInstance.store.getState();
+                    if (state && state.display && state.display.skinGenLetterWidths) {
+                        // Directly dispatch an action to update the skinInfo which controls the title
+                        webampInstance.store.dispatch({
+                            type: "SET_SKIN_DATA",
+                            data: {
+                                skinInfo: {
+                                    name: "TEST"
+                                }
+                            }
+                        });
+                        
+                        // Also try the window info update as backup
+                        webampInstance.store.dispatch({
+                            type: "UPDATE_WINDOW_INFO",
+                            window: "main",
+                            info: {
+                                title: "TEST"
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error("Error setting title:", e);
+                }
+
+                // Clean up blob URLs when Webamp closes
+                webampInstance.onWillClose(() => {
+                    tracks.forEach(track => {
+                        if (track.url.startsWith('blob:')) {
+                            URL.revokeObjectURL(track.url);
+                        }
+                    });
+                    cleanup();
+                });
+
+                // In initWebamp, after setting up the store
+                webampInstance.store.subscribe(() => {
+                    const state = webampInstance.store.getState();
+                    const media = state?.media;
+                    
+                    // If media starts playing and we don't have an analyzer yet
+                    if (media?.status === "PLAYING" && !webampInstance.analyzer) {
+                        setupAudioAnalyzer();
+                    }
+                });
+
+                return webampInstance;
+            } catch (error) {
+                console.error("Error initializing Webamp:", error);
+                return null;
+            }
+        }
+
+        // Function to play first track using Webamp API
+        function playFirstTrack() {
+            if (!webampInstance) {
+                console.error("Webamp not initialized");
+                return;
+            }
+            
+            try {
+                // Make sure track is selected first
+                webampInstance.store.dispatch({ 
+                    type: "SET_CURRENT_TRACK",
+                    id: 0 
+                });
+                
+                // Force the play button to be "unpressed" before pressing it again
+                webampInstance.store.dispatch({ type: "STOP" });
+                
+                // Short delay to ensure track is loaded
+                setTimeout(() => {
+                    // Try multiple methods to ensure playback starts
+                    webampInstance.play();
+                    
+                    // Also try the direct Redux action
+                    webampInstance.store.dispatch({ type: "PLAY" });
+
+                    // Set up audio analyzer after playback starts
+                    setTimeout(setupAudioAnalyzer, 1000);
+                }, 200);
+            } catch (e) {
+                console.error("Error playing track:", e);
+            }
+        }
+
+        // Function to play a specific track by index
+        function playTrackByIndex(index) {
+            if (!webampInstance) return;
+            
+            try {
+                // First select the track
+                webampInstance.store.dispatch({ 
+                    type: "SET_CURRENT_TRACK",
+                    id: index 
+                });
+                
+                // Then play it
+                setTimeout(() => {
+                    webampInstance.play();
+                }, 100);
+            } catch (e) {
+                console.error("Error playing track:", e);
+            }
+        }
+
+        // Set up player controls using official Webamp API
+        function setupPlayerControls() {
+            // Wait a moment to ensure Webamp is fully initialized
+            setTimeout(() => {
+                if (!webampInstance) return;
+
+                // Set up double-click handler using Webamp's API
+                const handleDoubleClick = (e) => {
+                    const trackEl = e.target.closest('.playlist-track');
+                    if (trackEl) {
+                        const tracks = document.querySelectorAll('#webamp .playlist-track');
+                        const index = Array.from(tracks).indexOf(trackEl);
+                        if (index !== -1) {
+                            // Use Webamp's store to change tracks
+                            webampInstance.store.dispatch({ 
+                                type: "SET_CURRENT_TRACK",
+                                id: index 
+                            });
+                            // Play the track
+                            setTimeout(() => webampInstance.play(), 50);
+                        }
+                    }
+                };
+
+                // Add double-click listener to playlist
+                const playlistEl = document.querySelector('#webamp .playlist-window');
+                if (playlistEl) {
+                    playlistEl.addEventListener('dblclick', handleDoubleClick);
+                }
+
+                // Use official Webamp API for track changes
+                webampInstance.onTrackDidChange(trackInfo => {
+                    handleTrackChange(trackInfo);
+                    // Try to set up audio analyzer again for new track
+                    setupAudioAnalyzer();
+                });
+            }, 1000);
+        }
+
+        // Add cleanup for background transition timeouts
+        function cleanup() {
+            if (eqIntervalId) {
+                clearInterval(eqIntervalId);
+                eqIntervalId = null;
+            }
+            
+            window.eqInitialized = false;
+            
+            // Cleanup deity messages
+            if (deityMessageSystem) {
+                deityMessageSystem.cleanup();
+            }
+            
+            // Reset viewer window
+            const viewerWindow = document.getElementById('viewer-window');
+            if (viewerWindow) {
+                viewerWindow.classList.remove('visible');
+                const viewerContainer = viewerWindow.querySelector('.viewer-loop-container');
+                if (viewerContainer) {
+                    viewerContainer.innerHTML = '';
+                }
+            }
+            
+            // Reset fullscreen mode
+            document.body.classList.remove('fullscreen-mode');
+            
+            // Hide exit button
+            const exitButton = document.getElementById('exit-fullscreen-button');
+            if (exitButton) {
+                exitButton.classList.add('hidden');
+            }
+            
+            if (webampInstance) {
+                try {
+                    webampInstance.close();
+                } catch (e) {}
+                webampInstance = null;
+            }
+            
+            document.getElementById('webamp-container').innerHTML = '';
+        }
+
+        // Function to restart Webamp with a different skin
+        async function restartWithDifferentSkin() {
+            cleanup();
+            usesCustomSkin = !usesCustomSkin;
+            initWebamp();
+        }
+
+        // Password validation function
+        function setupPasswordValidation() {
+            const passwordInput = document.getElementById('password-input');
+            const accessIndicator = document.getElementById('access-indicator');
+            const passwordOverlay = document.getElementById('password-overlay');
+            const correctPassword = ' ';
+            
+            // Show/hide the password label based on input
+            passwordInput.addEventListener('input', function() {
+                const label = document.getElementById('password-label');
+                if (this.value) {
+                    label.style.opacity = '0';
+                } else {
+                    label.style.opacity = '1';
+                }
+                
+                // Add flashing effect when typing
+                this.classList.add('flashing');
+                setTimeout(() => {
+                    this.classList.remove('flashing');
+                }, 500);
+            });
+
+            // Check password on enter key
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkPassword();
+                }
+            });
+
+            // Password validation
+            function checkPassword() {
+                if (passwordInput.value.toLowerCase() === correctPassword) {
+                    // Show success indicator
+                    accessIndicator.classList.add('granted');
+                    
+                    // Initialize Webamp here before showing it
+                    initWebamp().then((instance) => {
+                        // Wait a moment, then fade out the overlay
+                        setTimeout(() => {
+                            passwordOverlay.style.opacity = '0';
+                            passwordOverlay.style.pointerEvents = 'none';
+                            passwordUnlocked = true;
+                            
+                            // Show the viewer window
+                            const viewerWindow = document.getElementById('viewer-window');
+                            viewerWindow.classList.add('visible');
+                            
+                            // After password overlay fades out, start the background fade
+                            setTimeout(() => {
+                                const currentBg = document.getElementById('current-background');
+                                if (currentBg && currentBg.firstChild) {
+                                    void currentBg.firstChild.offsetHeight;
+                                    currentBg.firstChild.style.transition = `opacity ${trackBackgrounds[0].fadeIn}s ease-in`;
+                                    requestAnimationFrame(() => {
+                                        currentBg.firstChild.style.opacity = '1';
+                                    });
+                                }
+                                
+                                // Also fade in the viewer loop
+                                const viewerLoop = document.querySelector('.viewer-loop');
+                                if (viewerLoop) {
+                                    void viewerLoop.offsetHeight;
+                                    viewerLoop.style.transition = `opacity ${trackBackgrounds[0].fadeIn}s ease-in`;
+                                    requestAnimationFrame(() => {
+                                        viewerLoop.style.opacity = '1';
+                                    });
+                                }
+                                
+                                if (webampInstance) {
+                                    playFirstTrack();
+                                }
+                                // Fade in the logo and start animation
+                                const logoLink = document.getElementById('legendarium-logo-link');
+                                if (logoLink) {
+                                    logoLink.classList.add('visible');
+                                    // Start animation after visible (if not already started)
+                                    if (!window.legendariumLogoAnimStarted) {
+                                        window.legendariumLogoAnimStarted = true;
+                                        startLegendariumLogoAnimation();
+                                    }
+                                }
+                                setTimeout(() => {
+                                    deityMessageSystem.init();
+                                }, 5000);
+                            }, 2000);
+                        }, 700);
+                    });
+                } else {
+                    // Show failure indication (shake the input)
+                    passwordInput.style.animation = 'none';
+                    void passwordInput.offsetWidth; // Trigger reflow
+                    passwordInput.style.animation = 'shake 0.5s'; 
+                }
+            }
+        }
+
+        // Set up audio analyzer
+        async function setupAudioAnalyzer() {
+            try {
+                // Check if we already have an analyzer set up
+                if (webampInstance.analyzer) {
+                    return;
+                }
+
+                // Create audio context and analyzer only if they don't exist
+                if (!webampInstance.audioContext) {
+                    webampInstance.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                if (!webampInstance.analyzer) {
+                    webampInstance.analyzer = webampInstance.audioContext.createAnalyser();
+                    webampInstance.analyzer.fftSize = 256;
+                    webampInstance.audioData = new Uint8Array(webampInstance.analyzer.frequencyBinCount);
+                }
+
+                // Function to connect audio
+                const connectAudio = () => {
+                    return new Promise((resolve, reject) => {
+                        // Get Webamp's media element
+                        const state = webampInstance.store.getState();
+                        const media = state?.media;
+                        
+                        if (!media) {
+                            reject(new Error('No media state available'));
+                            return;
+                        }
+
+                        // Get the actual audio element from Webamp
+                        const audioElement = document.querySelector('#webamp audio');
+                        if (!audioElement) {
+                            reject(new Error('Audio element not found'));
+                            return;
+                        }
+
+                        try {
+                            // Create and connect the source only if it doesn't exist
+                            if (!webampInstance.source) {
+                                webampInstance.source = webampInstance.audioContext.createMediaElementSource(audioElement);
+                            }
+                            
+                            // Connect the nodes
+                            webampInstance.source.connect(webampInstance.analyzer);
+                            webampInstance.analyzer.connect(webampInstance.audioContext.destination);
+                            
+                            resolve(true);
+                        } catch (e) {
+                            console.error('Error connecting audio:', e);
+                            reject(e);
+                        }
+                    });
+                };
+
+                // Try to connect with increasing delays
+                let retries = 0;
+                const maxRetries = 5;
+                const tryConnect = async () => {
+                    try {
+                        await connectAudio();
+                    } catch (e) {
+                        if (retries < maxRetries) {
+                            retries++;
+                            // Wait longer between each retry (exponential backoff)
+                            const delay = Math.min(1000 * Math.pow(2, retries), 10000);
+                            setTimeout(tryConnect, delay);
+                        }
+                    }
+                };
+
+                // Resume audio context if it's suspended
+                if (webampInstance.audioContext.state === 'suspended') {
+                    await webampInstance.audioContext.resume();
+                }
+
+                // Start trying to connect
+                tryConnect();
+
+            } catch (e) {
+                console.error('Error in setupAudioAnalyzer:', e);
+            }
+        }
+
+        // Legendarium logo orbiting animation
+        function startLegendariumLogoAnimation() {
+            const logo = document.getElementById('legendarium-logo');
+            if (!logo) return;
+            let start = null;
+            let isHovered = false;
+
+            // Add hover listeners
+            const logoLink = document.getElementById('legendarium-logo-link');
+            logoLink.addEventListener('mouseenter', () => isHovered = true);
+            logoLink.addEventListener('mouseleave', () => isHovered = false);
+
+            function animate(ts) {
+                if (!start) start = ts;
+                const t = (ts - start) / 1000;
+                
+                if (!isHovered) {
+                    // Only orbit and spin when not hovered
+                    const orbitRadiusX = 4; // px
+                    const orbitRadiusY = 2; // px
+                    const orbitSpeed = 0.15; // radians/sec
+                    const angle = t * orbitSpeed;
+                    const x = Math.cos(angle) * orbitRadiusX;
+                    const y = Math.sin(angle) * orbitRadiusY;
+                    const spin = Math.sin(t * 0.25) * 90; // -90deg to +90deg
+                    logo.style.transform = `translate(${x}px, ${y}px) rotateY(${spin}deg)`;
+                }
+                requestAnimationFrame(animate);
+            }
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Start preloading backgrounds immediately
+            preloadBackgrounds();
+            
+            // Setup password validation
+            setupPasswordValidation();
+            
+            // Remove animation toggle button setup
+            window.basePositions = null;
+
+            // Hide the password overlay
+            const passwordOverlay = document.getElementById('password-overlay');
+            if (passwordOverlay) {
+                passwordOverlay.style.opacity = '1';
+                passwordOverlay.style.pointerEvents = 'auto';
+            }
+
+            // Focus on the password input
+            setTimeout(() => {
+                document.getElementById('password-input').focus();
+            }, 500);
+
+            // Call the animation function if needed
+            if (!window.legendariumLogoAnimStarted) {
+                window.legendariumLogoAnimStarted = true;
+                startLegendariumLogoAnimation();
+            }
+        });
+        
+        // Remove animation toggle related styles
+        document.head.insertAdjacentHTML('beforeend', `
+            <style>
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                    20%, 40%, 60%, 80% { transform: translateX(5px); }
+                }
+                
+                .shake {
+                    animation: shake 0.5s;
+                }
+            </style>
+        `);
+
+        // Modify resize handler to always center if needed
+        window.addEventListener('resize', () => {
+            centerWindows();
+        });
+
+        // Add function to handle background flickering effects
+        function setupBackgroundFlicker() {
+            if (!webampInstance) {
+                // If analyzer isn't ready yet, try again later
+                setTimeout(setupBackgroundFlicker, 1000);
+                return;
+            }
+            
+            const flickerOverlay = document.querySelector('.background-flicker-overlay');
+            const vignetteOverlay = document.querySelector('.background-vignette');
+            const bloomEffect = document.querySelector('.background-bloom');
+            const flashEffect = document.querySelector('.background-flash');
+            
+            if (!flickerOverlay || !vignetteOverlay || !bloomEffect || !flashEffect) {
+                console.error('Missing overlay elements for audio effects');
+                return;
+            }
+            
+            let lastUpdate = 0;
+            let lastAudioLevel = 0;
+            
+            // Beat detection state
+            let beatState = {
+                energyHistory: new Array(30).fill(0),
+                historyIndex: 0,
+                lastBeatTime: 0,
+                beatThreshold: 1.5, // How much energy increase triggers a beat
+                minBeatInterval: 200, // Minimum ms between beats (300ms = 200bpm max)
+                beatDetected: false,
+                beatCount: 0,
+                beatDecay: 0,
+                pulsePhase: 0,
+                vignetteIntensity: 0.7,
+                currentMode: 'dark'
+            };
+            
+            // Simple darker modes
+            const darkMode = {
+                baseColor: 'rgba(0, 0, 0, 0.7)',
+                mixBlendMode: 'multiply'
+            };
+            
+            // Brighter mode for higher intensity
+            const brightMode = {
+                baseColor: 'rgba(255, 255, 255, 0.3)',
+                mixBlendMode: 'screen'
+            };
+            
+            // Start with dark mode
+            flickerOverlay.style.backgroundColor = darkMode.baseColor;
+            flickerOverlay.style.mixBlendMode = darkMode.mixBlendMode;
+            
+            function updateFlickerEffect(timestamp) {
+                // Update at 60fps
+                if (timestamp - lastUpdate < 16) {
+                    requestAnimationFrame(updateFlickerEffect);
+                    return;
+                }
+                lastUpdate = timestamp;
+                
+                try {
+                    // Get current audio level (0-1)
+                    const audioLevel = getAudioLevel();
+                    
+                    // Calculate time delta and update pulse phase
+                    const deltaTime = timestamp - (beatState.lastTime || timestamp);
+                    beatState.lastTime = timestamp;
+                    beatState.pulsePhase += deltaTime * 0.001 * (0.3 + audioLevel * 2);
+                    
+                    // Smooth transitions between audio levels with minimal smoothing
+                    // Use faster response for increasing levels to catch peaks
+                    const isIncreasing = audioLevel > lastAudioLevel + 0.05;
+                    const smoothingFactor = isIncreasing ? 0.6 : 0.2; // Faster response to increases
+                    const smoothedAudioLevel = lastAudioLevel + (audioLevel - lastAudioLevel) * smoothingFactor;
+                    lastAudioLevel = smoothedAudioLevel;
+                    
+                    // ------------------------
+                    // Beat detection algorithm
+                    // ------------------------
+                    // Store current energy level in history
+                    beatState.energyHistory[beatState.historyIndex] = audioLevel;
+                    beatState.historyIndex = (beatState.historyIndex + 1) % beatState.energyHistory.length;
+                    
+                    // Calculate average energy over recent history
+                    const recentAverage = beatState.energyHistory.reduce((sum, val) => sum + val, 0) / 
+                                          beatState.energyHistory.length;
+                    
+                    // Beat is detected when current level exceeds average by threshold
+                    // AND enough time has passed since last beat
+                    const beatTimeThreshold = timestamp - beatState.lastBeatTime > beatState.minBeatInterval;
+                    const energyThreshold = audioLevel > recentAverage * beatState.beatThreshold;
+                    const newBeat = beatTimeThreshold && energyThreshold && audioLevel > 0.15;
+                    
+                    if (newBeat && !beatState.beatDetected) {
+                        beatState.beatDetected = true;
+                        beatState.lastBeatTime = timestamp;
+                        beatState.beatCount++;
+                        beatState.beatDecay = 1.0; // Full intensity
+                        
+                        // Flash more intensely on beat
+                        flashBeat(audioLevel);
+                    } else {
+                        beatState.beatDetected = false;
+                        
+                        // Decay the beat effect rapidly
+                        beatState.beatDecay *= 0.85;
+                    }
+                    
+                    // Determine if we should switch modes based on audio intensity
+                    const threshold = 0.6; // Threshold for switching to bright mode
+                    const newMode = smoothedAudioLevel > threshold ? 'bright' : 'dark';
+                    
+                    if (newMode !== beatState.currentMode) {
+                        beatState.currentMode = newMode;
+                        
+                        // Apply the new mode to the overlay
+                        if (newMode === 'bright') {
+                            flickerOverlay.style.backgroundColor = brightMode.baseColor;
+                            flickerOverlay.style.mixBlendMode = brightMode.mixBlendMode;
+                        } else {
+                            flickerOverlay.style.backgroundColor = darkMode.baseColor;
+                            flickerOverlay.style.mixBlendMode = darkMode.mixBlendMode;
+                        }
+                    }
+                    
+                    // Calculate flicker value based on audio level and beat
+                    let flickerValue;
+                    
+                    if (smoothedAudioLevel < 0.3) {
+                        // Subtle, slow pulse at low levels with beat enhancement
+                        flickerValue = 0.3 + 0.1 * Math.sin(beatState.pulsePhase * 0.3) + beatState.beatDecay * 0.2;
+                    } else if (smoothedAudioLevel < 0.6) {
+                        // More dynamic pulse with faster response
+                        const pulseBase = 0.4 + 0.2 * Math.sin(beatState.pulsePhase * 0.7);
+                        const secondaryPulse = 0.1 * Math.sin(beatState.pulsePhase * 1.3);
+                        const randomComponent = 0.1 * (Math.random() - 0.5) * smoothedAudioLevel * 3;
+                        const beatComponent = beatState.beatDecay * 0.4; // Strong beat influence
+                        flickerValue = pulseBase + secondaryPulse + randomComponent + beatComponent;
+                    } else {
+                        // Strong pulsing for high levels with stuttering
+                        const stutterFactor = Math.floor(timestamp / (20 + Math.random() * 30)) % 2;
+                        const hardPulse = Math.sin(beatState.pulsePhase * 4) > 0.2 ? 1 : 0.7;
+                        const beatComponent = beatState.beatDecay * 0.5; // Very strong beat influence
+                        
+                        flickerValue = 0.6 + 
+                            0.3 * smoothedAudioLevel + 
+                            0.3 * hardPulse * stutterFactor +
+                            beatComponent;
+                    }
+                    
+                    // Add randomness proportional to audio level
+                    flickerValue += (Math.random() - 0.5) * 0.15 * smoothedAudioLevel;
+                    
+                    // Clamp values
+                    flickerValue = Math.max(0, Math.min(1, flickerValue));
+                    
+                    // Apply the flicker effect
+                    flickerOverlay.style.opacity = flickerValue;
+                    
+                    // Update vignette based on audio level (inverse relationship)
+                    // Stronger vignette during quiet, lighter during loud parts
+                    const targetVignette = 0.7 - (smoothedAudioLevel * 0.4) - (beatState.beatDecay * 0.2);
+                    beatState.vignetteIntensity += (targetVignette - beatState.vignetteIntensity) * 0.1;
+                    vignetteOverlay.style.opacity = Math.max(0.2, Math.min(0.8, beatState.vignetteIntensity));
+                    
+                    // Update bloom effect
+                    // Only show bloom at higher audio levels
+                    let bloomOpacity = 0;
+                    if (smoothedAudioLevel > 0.4) {
+                        // Scale normalized level to reasonable bloom opacity
+                        const normalizedBloom = (smoothedAudioLevel - 0.4) / 0.6;
+                        // Add beat influence to bloom
+                        bloomOpacity = (Math.pow(normalizedBloom, 1.5) * 0.9) + (beatState.beatDecay * 0.4);
+                        
+                        // Add color variance based on intensity
+                        const r = 255;
+                        const g = Math.floor(220 + normalizedBloom * 35); // 220-255
+                        const b = Math.floor(180 + normalizedBloom * 75); // 180-255
+                        
+                        // Create bloom gradient with appropriate size
+                        // Larger during beats
+                        const size = 30 + normalizedBloom * 40 + (beatState.beatDecay * 20); // 30-70% size + beat expansion
+                        const rgbColor = `rgba(${r}, ${g}, ${b}, ${0.5 + normalizedBloom * 0.5})`;
+                        bloomEffect.style.background = `radial-gradient(circle at center, ${rgbColor} 0%, rgba(255, 255, 255, 0) ${size}%)`;
+                        bloomEffect.style.filter = `blur(${5 + Math.floor(normalizedBloom * 15)}px)`;
+                    }
+                    
+                    // Apply bloom with immediate response for visibility
+                    bloomEffect.style.opacity = Math.min(1, bloomOpacity);
+                    
+                } catch (e) {
+                    console.error('Error in background flicker effect:', e);
+                }
+                
+                requestAnimationFrame(updateFlickerEffect);
+            }
+            
+            // Function to create a flash on beat detection
+            function flashBeat(intensity) {
+                // Check if we're in a full frequency moment for more intense flashes
+                const isFullFrequency = detectFullFrequency();
+                
+                // Base flash intensity on audio level and whether it's a full spectrum moment
+                const flashIntensity = isFullFrequency ? intensity * 1.4 : intensity;
+                
+                // Apply flash with rapid fade
+                flashEffect.style.opacity = Math.min(1, flashIntensity * 0.8);
+                
+                // Quick falloff for the flash
+                setTimeout(() => {
+                    flashEffect.style.opacity = Math.min(0.5, flashIntensity * 0.4);
+                    
+                    setTimeout(() => {
+                        flashEffect.style.opacity = '0';
+                    }, 60);
+                }, 60);
+            }
+            
+            // Helper function to detect full frequency spectrum activity
+            function detectFullFrequency() {
+                try {
+                    if (!webampInstance?.analyzer || !webampInstance?.audioData) {
+                        return false;
+                    }
+                    
+                    // Get frequency data
+                    webampInstance.analyzer.getByteFrequencyData(webampInstance.audioData);
+                    
+                    // Analyze key frequency bands
+                    let bassSum = 0, midsSum = 0, highsSum = 0;
+                    
+                    // Check specific frequency bands (bass: 0-4, mids: 5-20, highs: 21+)
+                    for (let i = 0; i < 5; i++) {
+                        bassSum += webampInstance.audioData[i] || 0;
+                    }
+                    
+                    for (let i = 5; i < 21; i++) {
+                        midsSum += webampInstance.audioData[i] || 0;
+                    }
+                    
+                    for (let i = 21; i < 40; i++) {
+                        highsSum += webampInstance.audioData[i] || 0;
+                    }
+                    
+                    // Normalize to 0-1 scale
+                    const bassLevel = bassSum / (5 * 255);
+                    const midsLevel = midsSum / (16 * 255);
+                    const highsLevel = highsSum / (19 * 255);
+                    
+                    // Check if all frequency bands are active (with appropriate thresholds)
+                    return (bassLevel > 0.25 && midsLevel > 0.3 && highsLevel > 0.25);
+                    
+                } catch (e) {
+                    console.error('Error detecting full frequency:', e);
+                    return false;
+                }
+            }
+            
+            // Start the effect
+            requestAnimationFrame(updateFlickerEffect);
+            
+            // Log that we started the effect
+            console.log('Audio-reactive background effects initialized with beat detection');
+        }
+
+        // Simplified function to get audio level - more reliable
+        function getAudioLevel() {
+            // Get the current state from Webamp
+            const state = webampInstance?.store?.getState();
+            const media = state?.media;
+            
+            if (!media) return 0;
+            
+            // Check if we're actually playing
+            const isPlaying = media.status === "PLAYING" && !media.waiting;
+            if (!isPlaying) {
+                return 0;
+            }
+            
+            let audioLevel = 0;
+            
+            // Try to get data from analyzer if available
+            if (webampInstance?.analyzer && webampInstance?.audioData) {
+                try {
+                    // Get frequency data
+                    webampInstance.analyzer.getByteFrequencyData(webampInstance.audioData);
+                    
+                    // Use a simple average of frequency data for reliability
+                    let sum = 0;
+                    const count = Math.min(webampInstance.audioData.length, 128); // Use first 128 bins or less
+                    
+                    for (let i = 0; i < count; i++) {
+                        sum += webampInstance.audioData[i];
+                    }
+                    
+                    // Normalize to 0-1 range
+                    audioLevel = sum / (count * 255);
+                    
+                    // Apply a slight curve for better visualization
+                    audioLevel = Math.pow(audioLevel, 1.2);
+                    
+                } catch (e) {
+                    console.error('Error getting audio data:', e);
+                    // Fall back to volume-based method
+                    audioLevel = 0;
+                }
+            }
+            
+            // If analyzer failed or isn't available, fallback to volume
+            if (audioLevel === 0) {
+                // Get the volume from the state and normalize it
+                const volume = state.media.volume || 0;
+                const normalizedVolume = volume / 100;
+                audioLevel = normalizedVolume * 0.7; // Scale down a bit for fallback
+            }
+            
+            // Ensure reasonable bounds and add a minimum level to ensure some activity
+            return Math.max(0.05, Math.min(1, audioLevel));
+        }
+    </script>
+    <a id="legendarium-logo-link" href="https://legendarium.nyc" target="_blank" rel="noopener">
+        <img id="legendarium-logo" src="assets/images/Legendarium-Logo-Trans-1.png" alt="Legendarium Logo">
+    </a>
+</body>
+</html> 
