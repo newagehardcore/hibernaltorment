@@ -895,7 +895,7 @@
         .viewer-header {
             height: 20px;
             width: 100%;
-            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/f_auto,q_auto/v1/hibernal-torment/skins/viewerHeader');
+            background-image: url('src/assets/skins/viewerHeader.png');
             background-size: cover;
             cursor: grab;
             position: relative;
@@ -1057,7 +1057,7 @@
         .message-header {
             height: 20px;
             width: 100%;
-            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/f_auto,q_auto/v1/hibernal-torment/skins/messageHeader');
+            background-image: url('src/assets/skins/messageHeader.png');
             background-size: cover;
             cursor: grab;
             position: relative;
@@ -1747,7 +1747,6 @@
                     viewerVideo.className = 'viewer-video';
                     viewerVideo.style.objectFit = 'cover';
                     viewerVideo.style.display = 'none';
-                    viewerVideo.dataset.track = index;
                     viewerContainer.appendChild(viewerVideo);
                 }
                 
@@ -1772,43 +1771,11 @@
 
         // Function to handle track changes
         function handleTrackChange(trackInfo) {
-            const currentBg = document.getElementById('current-background');
-            const viewerContainer = document.querySelector('.viewer-loop-container');
-            
-            if (!currentBg || !viewerContainer) return;
-            
             const trackIndex = trackInfo.id;
-            const background = trackBackgrounds[trackIndex];
+            console.log('Track changed to index:', trackIndex);
             
-            if (background && background.preloadedVideo) {
-                // Hide all videos
-                currentBg.querySelectorAll('.background-video').forEach(video => {
-                    video.style.display = 'none';
-                    video.pause();
-                });
-                viewerContainer.querySelectorAll('.viewer-video').forEach(video => {
-                    video.style.display = 'none';
-                    video.pause();
-                });
-                
-                // Show and play the new videos
-                const mainVideo = background.preloadedVideo;
-                const viewerVideo = viewerContainer.querySelector(`.viewer-video[data-track="${trackIndex}"]`);
-                
-                if (mainVideo) {
-                    mainVideo.style.display = 'block';
-                    mainVideo.currentTime = 0;
-                    mainVideo.play().catch(err => console.error("Video play failed:", err));
-                }
-                
-                if (viewerVideo) {
-                    viewerVideo.style.display = 'block';
-                    viewerVideo.currentTime = 0;
-                    viewerVideo.play().catch(err => console.error("Viewer video play failed:", err));
-                } else {
-                    console.error(`No viewer video found for track ${trackIndex}`);
-                }
-            }
+            // Use the switchBackground function to handle the transition
+            switchBackground(trackIndex);
         }
 
         // Function to make the viewer window draggable
@@ -2180,25 +2147,37 @@
                     viewerContainer.innerHTML = '';
                     viewerContainer.appendChild(viewerVideo);
                     
-                    // Start playing
-                    viewerVideo.play().catch(err => console.error("Viewer video play failed:", err));
-                }
-                
-                // Force reflow
-                void newVideo.offsetHeight;
-                
-                // Set up fade in for background
-                requestAnimationFrame(() => {
-                    newVideo.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
-                    newVideo.style.opacity = '0.5'; // Match the 0.5 opacity from CSS
+                    // Ensure both videos start at the beginning
+                    newVideo.currentTime = 0;
+                    viewerVideo.currentTime = 0;
                     
-                    // Also fade in viewer video
-                    if (viewerContainer && viewerContainer.querySelector('.viewer-video')) {
-                        const viewerVideo = viewerContainer.querySelector('.viewer-video');
-                        viewerVideo.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
-                        viewerVideo.style.opacity = '1';
-                    }
-                });
+                    // Start playing both videos
+                    Promise.all([
+                        newVideo.play().catch(err => console.error("Background video play failed:", err)),
+                        viewerVideo.play().catch(err => console.error("Viewer video play failed:", err))
+                    ]).then(() => {
+                        // Force reflow
+                        void newVideo.offsetHeight;
+                        void viewerVideo.offsetHeight;
+                        
+                        // Set up fade in for both videos
+                        requestAnimationFrame(() => {
+                            // Background video fade
+                            newVideo.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
+                            newVideo.style.opacity = '0.5'; // Match the 0.5 opacity from CSS
+                            
+                            // Viewer video fade
+                            viewerVideo.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
+                            viewerVideo.style.opacity = '1';
+                            
+                            // Make viewer window visible if not already
+                            const viewerWindow = document.getElementById('viewer-window');
+                            if (viewerWindow && !viewerWindow.classList.contains('visible')) {
+                                viewerWindow.classList.add('visible');
+                            }
+                        });
+                    });
+                }
             };
 
             // Handle video loading
