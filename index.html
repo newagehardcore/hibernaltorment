@@ -401,7 +401,7 @@
         .deity-message-top {
             width: 100%;
             height: 25px;
-            background-image: url('/assets/skins/messagetop.png');
+            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/v1/hibernal-torment/skins/messageHeader.png');
             background-repeat: no-repeat;
             background-size: 100% 100%;
             background-position: center;
@@ -893,18 +893,13 @@
         }
 
         .viewer-header {
+            height: 20px;
             width: 100%;
-            height: 25px;
-            background-image: url('assets/skins/viewerHeader.png');
-            background-repeat: no-repeat;
-            background-size: 100% 100%;
-            background-position: center;
-            image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
-            cursor: move;
+            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/v1/hibernal-torment/skins/viewerHeader.png');
+            background-size: cover;
+            cursor: grab;
             position: relative;
-            flex-shrink: 0;
+            z-index: 2;
         }
 
         .viewer-close-button, .viewer-fullscreen-button {
@@ -1057,6 +1052,16 @@
 
         body.fullscreen-mode #exit-fullscreen-button {
             display: block !important;
+        }
+
+        .message-header {
+            height: 20px;
+            width: 100%;
+            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/v1/hibernal-torment/skins/messageHeader.png');
+            background-size: cover;
+            cursor: grab;
+            position: relative;
+            z-index: 2;
         }
     </style>
 </head>
@@ -1719,57 +1724,88 @@
             const viewerContainer = document.querySelector('.viewer-loop-container');
             const flickerOverlay = document.querySelector('.background-flicker-overlay');
             
-            if (trackBackgrounds[0]) {
-                // Create video for both viewer and background
+            // Preload all videos
+            Object.entries(trackBackgrounds).forEach(([index, background]) => {
                 const video = document.createElement('video');
                 video.className = 'background-video';
                 video.loop = true;
                 video.muted = true;
                 video.playsInline = true;
                 video.autoplay = true;
+                video.src = background.url;
+                video.style.display = 'none'; // Hide initially
                 
-                // Ensure video starts completely invisible with no transition
-                video.style.transition = 'none';
-                video.style.opacity = '0';
+                // Store the preloaded video
+                trackBackgrounds[index].preloadedVideo = video;
                 
-                video.onloadeddata = () => {
-                    // Start playing the video
-                    video.play().catch(err => console.error("Video autoplay failed:", err));
-                    
-                    // Add to background (fullscreen mode)
-                    currentBg.innerHTML = '';
-                    currentBg.appendChild(video);
-                    
-                    // Add to viewer
-                    if (viewerContainer) {
-                        const viewerVideo = video.cloneNode(true);
-                        viewerVideo.className = 'viewer-video';
-                        viewerVideo.style.objectFit = 'cover'; // Ensure cover is applied
-                        viewerContainer.innerHTML = '';
-                        viewerContainer.appendChild(viewerVideo);
-                        
-                        // Start playing the viewer video
-                        viewerVideo.play().catch(err => console.error("Viewer video autoplay failed:", err));
-                    }
-                };
+                // Add to background container
+                currentBg.appendChild(video);
                 
-                video.onerror = (error) => {
-                    console.error('Error loading initial background video:', error);
-                    console.log('Attempted to load:', trackBackgrounds[0].url);
-                };
+                // Create clone for viewer
+                if (viewerContainer) {
+                    const viewerVideo = video.cloneNode(true);
+                    viewerVideo.className = 'viewer-video';
+                    viewerVideo.style.objectFit = 'cover';
+                    viewerVideo.style.display = 'none';
+                    viewerContainer.appendChild(viewerVideo);
+                }
                 
-                video.src = trackBackgrounds[0].url;
-                console.log('Loading initial video from:', trackBackgrounds[0].url);
+                // Start loading the video
+                video.load();
+            });
+            
+            // Show the first video
+            if (trackBackgrounds[0]) {
+                const firstVideo = trackBackgrounds[0].preloadedVideo;
+                const firstViewerVideo = viewerContainer.querySelector('.viewer-video');
+                if (firstVideo) {
+                    firstVideo.style.display = 'block';
+                    firstVideo.play().catch(err => console.error("Video autoplay failed:", err));
+                }
+                if (firstViewerVideo) {
+                    firstViewerVideo.style.display = 'block';
+                    firstViewerVideo.play().catch(err => console.error("Viewer video autoplay failed:", err));
+                }
             }
+        }
+
+        // Function to handle track changes
+        function handleTrackChange(trackInfo) {
+            const currentBg = document.getElementById('current-background');
+            const viewerContainer = document.querySelector('.viewer-loop-container');
             
-            // Make the viewer window draggable
-            makeViewerDraggable();
+            if (!currentBg || !viewerContainer) return;
             
-            // Set up viewer buttons
-            setupViewerControls();
+            const trackIndex = trackInfo.id;
+            const background = trackBackgrounds[trackIndex];
             
-            // Set up the audio-reactive background flicker
-            setupBackgroundFlicker();
+            if (background && background.preloadedVideo) {
+                // Hide all videos
+                currentBg.querySelectorAll('.background-video').forEach(video => {
+                    video.style.display = 'none';
+                    video.pause();
+                });
+                viewerContainer.querySelectorAll('.viewer-video').forEach(video => {
+                    video.style.display = 'none';
+                    video.pause();
+                });
+                
+                // Show and play the new videos
+                const mainVideo = background.preloadedVideo;
+                const viewerVideo = viewerContainer.children[trackIndex];
+                
+                if (mainVideo) {
+                    mainVideo.style.display = 'block';
+                    mainVideo.currentTime = 0;
+                    mainVideo.play().catch(err => console.error("Video play failed:", err));
+                }
+                
+                if (viewerVideo) {
+                    viewerVideo.style.display = 'block';
+                    viewerVideo.currentTime = 0;
+                    viewerVideo.play().catch(err => console.error("Viewer video play failed:", err));
+                }
+            }
         }
 
         // Function to make the viewer window draggable
@@ -1973,59 +2009,6 @@
                 console.error('Preload error:', error);
             };
         });
-
-        // Modified track change handler with detailed logging
-        function handleTrackChange(trackInfo) {
-            // Immediately handle track change
-            requestAnimationFrame(() => {
-                if (!trackInfo) return;
-                
-                // Find the track index by matching the title
-                let trackIndex = -1;
-                
-                // First try to match by URL if available
-                if (trackInfo.url) {
-                    trackIndex = tracksData.findIndex(track => 
-                        track.url === trackInfo.url || 
-                        track.url.endsWith(trackInfo.url)
-                    );
-                }
-                
-                // If URL matching failed, try title matching
-                if (trackIndex === -1) {
-                    trackIndex = tracksData.findIndex(track => {
-                        // Try to match by title from metadata
-                        if (trackInfo.metaData?.title && track.metaData?.title === trackInfo.metaData.title) {
-                            return true;
-                        }
-                        
-                        // Try to match by defaultName
-                        if (trackInfo.defaultName && track.defaultName === trackInfo.defaultName) {
-                            return true;
-                        }
-                        
-                        // Try to match by filename
-                        const trackFileName = track.url.split('/').pop();
-                        const incomingFileName = (trackInfo.url || '').split('/').pop();
-                        if (trackFileName === incomingFileName) {
-                            return true;
-                        }
-                        
-                        return false;
-                    });
-                }
-                
-                // Get track duration and notify deity message system
-                if (trackIndex !== -1) {
-                    const trackDuration = tracksData[trackIndex]?.duration || 180;
-                    deityMessageSystem.onTrackChange(trackDuration);
-                    
-                    if (trackBackgrounds[trackIndex]) {
-                        switchBackground(trackIndex);
-                    }
-                }
-            });
-        }
 
         // Set up viewer controls
         function setupViewerControls() {
