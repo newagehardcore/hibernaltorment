@@ -895,7 +895,7 @@
         .viewer-header {
             height: 20px;
             width: 100%;
-            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/v1/hibernal-torment/skins/viewerHeader.png');
+            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/f_auto,q_auto/v1/hibernal-torment/skins/viewerHeader');
             background-size: cover;
             cursor: grab;
             position: relative;
@@ -1057,7 +1057,7 @@
         .message-header {
             height: 20px;
             width: 100%;
-            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/v1/hibernal-torment/skins/messageHeader.png');
+            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/f_auto,q_auto/v1/hibernal-torment/skins/messageHeader');
             background-size: cover;
             cursor: grab;
             position: relative;
@@ -1747,6 +1747,7 @@
                     viewerVideo.className = 'viewer-video';
                     viewerVideo.style.objectFit = 'cover';
                     viewerVideo.style.display = 'none';
+                    viewerVideo.dataset.track = index;
                     viewerContainer.appendChild(viewerVideo);
                 }
                 
@@ -1792,7 +1793,7 @@
                 
                 // Show and play the new videos
                 const mainVideo = background.preloadedVideo;
-                const viewerVideo = viewerContainer.children[trackIndex];
+                const viewerVideo = viewerContainer.querySelector(`.viewer-video[data-track="${trackIndex}"]`);
                 
                 if (mainVideo) {
                     mainVideo.style.display = 'block';
@@ -1804,6 +1805,8 @@
                     viewerVideo.style.display = 'block';
                     viewerVideo.currentTime = 0;
                     viewerVideo.play().catch(err => console.error("Viewer video play failed:", err));
+                } else {
+                    console.error(`No viewer video found for track ${trackIndex}`);
                 }
             }
         }
