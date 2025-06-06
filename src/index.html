@@ -109,13 +109,13 @@
             display: none;
         }
         
-        /* Override ALL cursor styles */
+        /* Override cursor styles except for buttons */
         * {
             cursor: auto !important;
         }
-        /* Ensure cursor stays normal on all parts of Webamp */
-        .window, .webamp-region, #webamp, #webamp * {
-            cursor: auto !important;
+        /* Allow pointer cursor on buttons */
+        button, .webamp-region button, #webamp button, [role="button"] {
+            cursor: pointer !important;
         }
 
         /* Password protection overlay */
