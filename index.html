@@ -895,7 +895,7 @@
         .viewer-header {
             height: 20px;
             width: 100%;
-            background-image: url('src/assets/skins/viewerHeader.png');
+            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/v1/hibernal-torment/skins/viewerHeader.png');
             background-size: cover;
             cursor: grab;
             position: relative;
@@ -1057,7 +1057,7 @@
         .message-header {
             height: 20px;
             width: 100%;
-            background-image: url('src/assets/skins/messageHeader.png');
+            background-image: url('https://res.cloudinary.com/dtwix3ubl/image/upload/v1/hibernal-torment/skins/messageHeader.png');
             background-size: cover;
             cursor: grab;
             position: relative;
@@ -1774,6 +1774,22 @@
             const trackIndex = trackInfo.id;
             console.log('Track changed to index:', trackIndex);
             
+            // Log the current video states
+            const currentBg = document.getElementById('current-background');
+            const viewerContainer = document.querySelector('.viewer-loop-container');
+            
+            if (currentBg) {
+                const bgVideos = currentBg.querySelectorAll('video');
+                console.log('Current background videos:', bgVideos.length);
+                bgVideos.forEach((v, i) => console.log(`Background video ${i} playing:`, !v.paused, 'currentTime:', v.currentTime));
+            }
+            
+            if (viewerContainer) {
+                const viewerVideos = viewerContainer.querySelectorAll('video');
+                console.log('Current viewer videos:', viewerVideos.length);
+                viewerVideos.forEach((v, i) => console.log(`Viewer video ${i} playing:`, !v.paused, 'currentTime:', v.currentTime));
+            }
+            
             // Use the switchBackground function to handle the transition
             switchBackground(trackIndex);
         }
@@ -2147,15 +2163,33 @@
                     viewerContainer.innerHTML = '';
                     viewerContainer.appendChild(viewerVideo);
                     
-                    // Ensure both videos start at the beginning
+                    // Ensure both videos start at the beginning and are muted
                     newVideo.currentTime = 0;
                     viewerVideo.currentTime = 0;
+                    newVideo.muted = true;
+                    viewerVideo.muted = true;
+                    
+                    // Make sure videos are visible before playing
+                    newVideo.style.display = 'block';
+                    viewerVideo.style.display = 'block';
                     
                     // Start playing both videos
-                    Promise.all([
-                        newVideo.play().catch(err => console.error("Background video play failed:", err)),
-                        viewerVideo.play().catch(err => console.error("Viewer video play failed:", err))
-                    ]).then(() => {
+                    const playPromises = [
+                        newVideo.play().catch(err => {
+                            console.error("Background video play failed:", err);
+                            console.log("Retrying background video play...");
+                            return newVideo.play();
+                        }),
+                        viewerVideo.play().catch(err => {
+                            console.error("Viewer video play failed:", err);
+                            console.log("Retrying viewer video play...");
+                            return viewerVideo.play();
+                        })
+                    ];
+                    
+                    Promise.all(playPromises).then(() => {
+                        console.log("Both videos started playing successfully");
+                        
                         // Force reflow
                         void newVideo.offsetHeight;
                         void viewerVideo.offsetHeight;
@@ -2176,6 +2210,8 @@
                                 viewerWindow.classList.add('visible');
                             }
                         });
+                    }).catch(err => {
+                        console.error("Final video playback error:", err);
                     });
                 }
             };
