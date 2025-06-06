@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GATEKEEPER - HIBERNAL TORMENT - 2025</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 10 L30 50 L50 40 L70 50 Z' fill='%23FFA500'/><path d='M40 50 L50 30 L60 50 L50 70 Z' fill='%23FF8C00'/></svg>">
-    <link rel="stylesheet" type="text/css" href="webamp.css">
+    <link rel="stylesheet" type="text/css" href="./webamp.css">
     <style>
         :root {
             --webamp-zoom: 1.1;
@@ -401,7 +401,7 @@
         .deity-message-top {
             width: 100%;
             height: 25px;
-            background-image: url('assets/skins/messagetop.png');
+            background-image: url('./assets/skins/messagetop.png');
             background-repeat: no-repeat;
             background-size: 100% 100%;
             background-position: center;
@@ -895,7 +895,7 @@
         .viewer-header {
             width: 100%;
             height: 25px;
-            background-image: url('assets/skins/viewerHeader.png');
+            background-image: url('./assets/skins/viewerHeader.png');
             background-repeat: no-repeat;
             background-size: 100% 100%;
             background-position: center;
@@ -2643,7 +2643,7 @@
                 let skinOption = undefined;
                 
                 if (usesCustomSkin) {
-                    const skinUrl = "assets/skins/GKSkin.wsz";
+                    const skinUrl = "./assets/skins/GKSkin.wsz";
                     const skinBase64 = await fetchAndConvertToBase64(skinUrl);
                     
                     if (skinBase64) {
