@@ -20,39 +20,61 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           
+      - name: Debug Environment
+        run: |
+          echo "Working directory: $(pwd)"
+          echo "Node version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+          echo "Repository contents:"
+          ls -la
+          echo "Source directory contents:"
+          ls -la src/ || echo "No src directory found"
+          
       - name: Install Dependencies
         run: |
           npm ci
-          npm list fs-extra || npm install fs-extra --save-dev
+          echo "Dependencies installed successfully"
         
-      - name: Debug Directory
+      - name: Verify Dependencies
         run: |
-          pwd
-          ls -la
+          echo "Checking for fs-extra:"
+          npm list fs-extra || echo "fs-extra not found in package-lock.json"
+          echo "Node modules contents:"
+          ls -la node_modules/fs-extra/ || echo "fs-extra not installed"
           
-      - name: Build
+      - name: Build Site
         run: |
+          echo "Starting build process..."
           mkdir -p dist
           node scripts/build.js
+          echo "Build process completed"
         env:
           CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
           
-      - name: Debug Build Output
+      - name: Verify Build Output
         run: |
-          ls -la dist/
+          echo "Checking dist directory:"
+          ls -la dist/ || echo "Dist directory not found"
+          echo "Checking for index.html in dist:"
+          ls -la dist/index.html || echo "index.html not found in dist"
+          echo "Checking for assets in dist:"
+          ls -la dist/assets/ || echo "assets directory not found in dist"
+          echo "Checking for webamp.css in dist:"
+          ls -la dist/webamp.css || echo "webamp.css not found in dist"
           
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
@@ -68,4 +90,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2 
+        uses: actions/deploy-pages@v4 

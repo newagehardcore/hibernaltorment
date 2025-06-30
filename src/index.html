@@ -52,9 +52,7 @@
             transition: all 0.5s ease-in-out;
         }
         
-        /* Remove CSS-based mobile adjustment in favor of using Webamp API */
-
-        /* Desktop-only zoom variables */
+        /* Desktop zoom variables */
         @media screen and (min-width: 769px) {
             :root {
                 --webamp-zoom: 1.0;
@@ -64,217 +62,6 @@
         @media screen and (min-width: 1921px) {
             :root {
                 --webamp-zoom: 1.05;
-            }
-        }
-        
-        /* New mobile layout with split screen */
-        @media screen and (max-width: 768px) {
-            :root {
-                /* Mobile zoom set dynamically in JavaScript */
-                --webamp-zoom: 1.3; /* Starting zoom level, will be adjusted by JS */
-            }
-            
-            body {
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-            }
-            
-            #webamp-container {
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100% !important;
-                height: 50vh !important;
-                overflow: hidden !important; /* Clip overflow */
-                z-index: 10;
-                display: flex !important;
-                align-items: flex-start !important;
-                justify-content: center !important;
-                transform-origin: top center !important;
-            }
-            
-            /* Ensure content stays properly sized */
-            #webamp {
-                transform-origin: top center !important;
-                max-height: 50vh !important; /* Constrain height to viewport */
-            }
-            
-            /* Constrain playlist to fit in mobile container */
-            #webamp .playlist-window {
-                max-height: calc(50vh / var(--webamp-zoom) - 116px - 20px) !important; /* Subtract main window height and margin */
-                overflow: hidden !important; /* Let internal scrolling handle overflow */
-            }
-            
-            /* Ensure playlist content is scrollable within constrained height */
-            #webamp .playlist-window .playlist {
-                height: auto !important;
-                max-height: calc(50vh / var(--webamp-zoom) - 116px - 50px) !important; /* Account for playlist header */
-                overflow-y: auto !important;
-            }
-            
-            /* Style the playlist tracks container for better mobile experience */
-            #webamp .playlist-window .playlist-tracks {
-                height: auto !important;
-                max-height: calc(50vh / var(--webamp-zoom) - 166px) !important; /* Leave room for headers */
-                overflow-y: auto !important;
-                -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-            }
-            
-            /* Add dotted borders around player and viewer for visual effect */
-            #webamp-container::before {
-                content: '';
-                position: absolute;
-                top: -4px;
-                left: -4px;
-                right: -4px;
-                bottom: -4px;
-                border: 2px dotted rgba(255, 255, 255, 0.8);
-                pointer-events: none;
-                z-index: 12;
-            }
-            
-            #webamp-container::after {
-                content: '';
-                position: absolute;
-                top: -8px;
-                left: -8px;
-                right: -8px;
-                bottom: -8px;
-                border: 2px dotted rgba(255, 255, 255, 0.6);
-                pointer-events: none;
-                z-index: 11;
-            }
-            
-            #viewer-window {
-                position: fixed !important;
-                top: 50vh !important;
-                left: 0 !important;
-                width: 100% !important;
-                height: 50vh !important;
-                max-width: 100% !important;
-                max-height: 50vh !important;
-                transform: none !important;
-                border-top: 2px dotted rgba(255, 255, 255, 0.8);
-            }
-            
-            /* Add additional dotted borders to viewer window */
-            #viewer-window::before {
-                content: '';
-                position: absolute;
-                top: -4px;
-                left: -4px;
-                right: -4px;
-                bottom: -4px;
-                border: 2px dotted rgba(255, 255, 255, 0.8);
-                pointer-events: none;
-                z-index: 7;
-            }
-            
-            #viewer-window::after {
-                content: '';
-                position: absolute;
-                top: -8px;
-                left: -8px;
-                right: -8px;
-                bottom: -8px;
-                border: 2px dotted rgba(255, 255, 255, 0.6);
-                pointer-events: none;
-                z-index: 6;
-            }
-            
-            /* Middle divider for split screen - multi-line dotted effect */
-            
-            /* First dotted line (outer) */
-            body::before {
-                content: '';
-                position: fixed;
-                top: calc(50vh - 6px);
-                left: 0;
-                width: 100%;
-                height: 2px;
-                background: linear-gradient(to right, 
-                    transparent 0%, transparent 2px, 
-                    rgba(255, 255, 255, 0.6) 2px, rgba(255, 255, 255, 0.6) 4px, 
-                    transparent 4px, transparent 6px, 
-                    rgba(255, 255, 255, 0.6) 6px, rgba(255, 255, 255, 0.6) 8px);
-                background-size: 8px 2px;
-                background-repeat: repeat-x;
-                z-index: 999;
-                pointer-events: none;
-            }
-            
-            /* Second dotted line (middle-outer) */
-            body::after {
-                content: '';
-                position: fixed;
-                top: calc(50vh - 3px);
-                left: 0;
-                width: 100%;
-                height: 2px;
-                background: linear-gradient(to right, 
-                    transparent 0%, transparent 2px, 
-                    rgba(255, 255, 255, 0.8) 2px, rgba(255, 255, 255, 0.8) 4px, 
-                    transparent 4px, transparent 6px, 
-                    rgba(255, 255, 255, 0.8) 6px, rgba(255, 255, 255, 0.8) 8px);
-                background-size: 8px 2px;
-                background-repeat: repeat-x;
-                z-index: 999;
-                pointer-events: none;
-            }
-            
-            /* Third dotted line (middle) */
-            .middle-divider-line1 {
-                position: fixed;
-                top: 50vh;
-                left: 0;
-                width: 100%;
-                height: 2px;
-                background: linear-gradient(to right, 
-                    transparent 0%, transparent 2px, 
-                    rgba(255, 255, 255, 1) 2px, rgba(255, 255, 255, 1) 4px, 
-                    transparent 4px, transparent 6px, 
-                    rgba(255, 255, 255, 1) 6px, rgba(255, 255, 255, 1) 8px);
-                background-size: 8px 2px;
-                background-repeat: repeat-x;
-                z-index: 999;
-                pointer-events: none;
-            }
-            
-            /* Fourth dotted line (middle-outer) */
-            .middle-divider-line2 {
-                position: fixed;
-                top: calc(50vh + 3px);
-                left: 0;
-                width: 100%;
-                height: 2px;
-                background: linear-gradient(to right, 
-                    transparent 0%, transparent 2px, 
-                    rgba(255, 255, 255, 0.8) 2px, rgba(255, 255, 255, 0.8) 4px, 
-                    transparent 4px, transparent 6px, 
-                    rgba(255, 255, 255, 0.8) 6px, rgba(255, 255, 255, 0.8) 8px);
-                background-size: 8px 2px;
-                background-repeat: repeat-x;
-                z-index: 999;
-                pointer-events: none;
-            }
-            
-            /* Fifth dotted line (outer) */
-            .middle-divider-line3 {
-                position: fixed;
-                top: calc(50vh + 6px);
-                left: 0;
-                width: 100%;
-                height: 2px;
-                background: linear-gradient(to right, 
-                    transparent 0%, transparent 2px, 
-                    rgba(255, 255, 255, 0.6) 2px, rgba(255, 255, 255, 0.6) 4px, 
-                    transparent 4px, transparent 6px, 
-                    rgba(255, 255, 255, 0.6) 6px, rgba(255, 255, 255, 0.6) 8px);
-                background-size: 8px 2px;
-                background-repeat: repeat-x;
-                z-index: 999;
-                pointer-events: none;
             }
         }
 
@@ -466,10 +253,7 @@
             z-index: 1001;
             cursor: move;
             
-            /* Ensure messages appear over everything */
-            @media screen and (max-width: 768px) {
-                z-index: 9999; /* Higher z-index to appear over everything else */
-            }
+
             filter: 
                 drop-shadow(-4px 2px 4px rgba(0, 0, 0, 0.95))
                 drop-shadow(-6px 4px 8px rgba(0, 0, 0, 0.85))
@@ -962,16 +746,7 @@
             overflow: hidden;
         }
 
-        /* Desktop-only viewer window sizing */
-        @media screen and (min-width: 769px) {
-            #viewer-window {
-                width: 90vmin;
-                height: 90vmin;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-            }
-        }
+
 
         /* Add resize handle */
         .viewer-resize-handle {
@@ -985,12 +760,7 @@
             background: transparent;
         }
         
-        /* Hide resize handle on mobile */
-        @media screen and (max-width: 768px) {
-            .viewer-resize-handle {
-                display: none;
-            }
-        }
+
 
         .viewer-resize-handle::after {
             content: "◢";
@@ -1094,28 +864,7 @@
             transition: opacity 0.5s ease-in-out;
         }
         
-        /* Mobile-specific viewer content adjustments */
-        @media screen and (max-width: 768px) {
-            .viewer-content, .viewer-loop-container {
-                border: none;
-                padding: 0;
-                margin: 0;
-            }
-            
-            /* Ensure correct sizing */
-            .viewer-content {
-                flex: 1;
-                height: calc(50vh - 31px); /* Account for header + bottom border */
-            }
-            
-            /* Keep dotted borders on the sides but not top/bottom */
-            .viewer-content {
-                border-left: 2px dotted rgba(255, 255, 255, 0.8);
-                border-right: 2px dotted rgba(255, 255, 255, 0.8);
-                border-top: none;
-                border-bottom: none;
-            }
-        }
+
 
         .viewer-loop.active {
             opacity: 1;
@@ -1164,7 +913,6 @@
             top: 20%;
             left: 20%;
             transform: none;
-            aspect-ratio: 1/1;
             background: #000000;
             border: none;
             border-radius: 0;
@@ -1176,18 +924,11 @@
             display: flex;
             flex-direction: column;
             width: 300px;
-            height: 300px;
+            height: 333px; /* Slightly taller to account for header (25px) + bottom (8px) = 33px extra */
             opacity: 0;
             transition: opacity 0.8s ease-in-out, width 0.3s ease-out, height 0.3s ease-out;
             resize: both;
             overflow: hidden;
-            /* Add the same shadow effects as other windows */
-            filter: 
-                drop-shadow(-4px 2px 4px rgba(0, 0, 0, 0.95))
-                drop-shadow(-6px 4px 8px rgba(0, 0, 0, 0.85))
-                drop-shadow(-8px 8px 15px rgba(0, 0, 0, 0.75))
-                drop-shadow(-10px 12px 25px rgba(0, 0, 0, 0.65));
-            animation: float 8s ease-in-out infinite;
         }
 
         #cover-window.visible {
@@ -1319,26 +1060,12 @@
             font-size: 10px;
         }
 
-        /* Hide resize handle on mobile */
-        @media screen and (max-width: 768px) {
-            .cover-resize-handle {
-                display: none;
-            }
-            
-            #cover-window {
-                width: 200px;
-                height: 200px;
-            }
-        }
+
     </style>
 </head>
 <body>
 
-    
-    <!-- Mobile-only divider lines -->
-    <div class="middle-divider-line1"></div>
-    <div class="middle-divider-line2"></div>
-    <div class="middle-divider-line3"></div>
+
 
     <!-- Viewer window for loops -->
     <div id="viewer-window" class="window-draggable">
@@ -1394,7 +1121,6 @@
         let eqIntervalId = null;
         let passwordUnlocked = false;
         let lastKnownPositions = null;
-        // Remove isFullscreenMode variable since we're removing fullscreen functionality
         
         // Deity Messages System
         let deityMessageSystem = {
@@ -1930,7 +1656,7 @@
             1: {  // Track 2 - Two Travelers
                 url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153493/02Loop.mp4",
                 preloadedVideo: null,
-                fadeIn: .2,   // 1.5 seconds fade in
+                fadeIn: 0,   // 1.5 seconds fade in
                 fadeOut: 0   // no fade out
             },
             2: {  // Track 3 - Chambers of the Starwatcher
@@ -2461,9 +2187,10 @@
             // Position the cover window initially (offset from center so it doesn't overlap viewer)
             requestAnimationFrame(() => {
                 // Position it to the right side of the screen
-                const initialSize = 300;
-                coverWindow.style.top = `${(window.innerHeight - initialSize) / 2}px`;
-                coverWindow.style.left = `${window.innerWidth - initialSize - 50}px`;
+                const initialWidth = 300;
+                const initialHeight = 333; // Slightly rectangular for square image area
+                coverWindow.style.top = `${(window.innerHeight - initialHeight) / 2}px`;
+                coverWindow.style.left = `${window.innerWidth - initialWidth - 50}px`;
             });
             
             // Make the cover window resizable
@@ -2501,15 +2228,17 @@
                     const newWidth = startWidth + (e.clientX - startX);
                     const newHeight = startHeight + (e.clientY - startY);
                     
-                    // Maintain aspect ratio for cover window
-                    const size = Math.max(newWidth, newHeight);
+                    // Maintain rectangular aspect ratio for cover window (width + 33px = height)
+                    // Use the larger dimension to determine the size
+                    const size = Math.max(newWidth, newHeight - 33);
                     
                     // Apply minimum size constraints
-                    const finalSize = Math.max(150, size);
+                    const finalWidth = Math.max(150, size);
+                    const finalHeight = finalWidth + 33; // Keep rectangular ratio
                     
                     // Apply new dimensions
-                    coverWindow.style.width = `${finalSize}px`;
-                    coverWindow.style.height = `${finalSize}px`;
+                    coverWindow.style.width = `${finalWidth}px`;
+                    coverWindow.style.height = `${finalHeight}px`;
                 }
                 
                 function stopResize() {
@@ -2607,70 +2336,22 @@
             if (!webampInstance || !webampInstance.store) return;
 
             const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
-            const isMobile = window.innerWidth <= 768;
 
-            // Position windows based on device type
-            let posX, posY, playlistY;
+            // Desktop: Position on left side, vertically centered, overlapping viewer
+            const mainWindowWidth = 275;
+            const mainWindowHeight = 116;
             
-            if (isMobile) {
-                // Mobile: Position player in top half with playlist bottom at center
-                const mainWindowWidth = 275; // Standard width of main Winamp window
-                const mainWindowHeight = 116; // Standard height of main window
-                
-                // Calculate horizontal center position
-                posX = Math.floor((window.innerWidth / zoomFactor) / 2) - Math.floor(mainWindowWidth / 2);
-                
-                // Calculate playlist height based on current track count
-                const tracksToShow = window.mobilePlaylistSize || 4;
-                const playlistHeaderHeight = 30;
-                const trackHeight = 14;
-                const playlistHeight = playlistHeaderHeight + (tracksToShow * trackHeight);
-                
-                // Calculate center point in unscaled coordinates
-                const centerY = (window.innerHeight / 2) / zoomFactor;
-                
-                // Position playlist so its bottom aligns with center of page
-                playlistY = Math.floor(centerY - playlistHeight);
-                
-                // Position main window above playlist with small gap
-                posY = Math.floor(playlistY - mainWindowHeight - 5); // 5px gap
-                
-                // Ensure main window doesn't go above screen
-                if (posY < 5) {
-                    posY = 5;
-                    playlistY = posY + mainWindowHeight + 5;
-                }
-                
-                // Ensure positions are integers to avoid rendering issues
-                posX = Math.floor(posX);
-                posY = Math.floor(posY);
-                playlistY = Math.floor(playlistY);
-                
-                // Make sure it doesn't go outside the screen horizontally
-                posX = Math.max(0, Math.min(posX, (window.innerWidth / zoomFactor) - mainWindowWidth));
-                
-                console.log(`Mobile positioning: main at (${posX}, ${posY}), playlist at (${posX}, ${playlistY}), center at ${centerY}`);
-            } else {
-                // Desktop: Position on left side, vertically centered, overlapping viewer
-                const mainWindowWidth = 275;
-                const mainWindowHeight = 116;
-                
-                // Position on left side with some margin from edge
-                posX = Math.floor(50 / zoomFactor);
-                
-                // Vertically center the main window
-                posY = Math.floor(window.innerHeight / (2 * zoomFactor)) - Math.floor(mainWindowHeight / 2);
-                
-                // Position playlist below equalizer (main + equalizer + gap)
-                playlistY = posY + mainWindowHeight + 116 + 5; // Below main + equalizer + 5px gap
-            }
+            // Position on left side with some margin from edge
+            const posX = Math.floor(50 / zoomFactor);
+            
+            // Vertically center the main window
+            const posY = Math.floor(window.innerHeight / (2 * zoomFactor)) - Math.floor(mainWindowHeight / 2);
+            
+            // Position playlist below equalizer (main + equalizer + gap)
+            const playlistY = posY + mainWindowHeight + 116 + 5; // Below main + equalizer + 5px gap
 
             // Store these positions for animation reference
-            window.lastKnownPositions = isMobile ? {
-                main: { x: posX, y: posY },
-                // No equalizer in mobile view
-                playlist: { x: posX, y: playlistY } // Positioned so bottom aligns with center
-            } : {
+            window.lastKnownPositions = {
                 main: { x: posX, y: posY },
                 equalizer: { x: posX, y: posY + 116 }, // Position equalizer directly below main window
                 playlist: { x: posX, y: playlistY }
@@ -3088,81 +2769,26 @@
                     };
                 }));
 
-                // Calculate mobile zoom and playlist size before creating Webamp instance
-                const isMobileView = window.innerWidth <= 768;
-                if (isMobileView) {
-                    // Pre-calculate mobile settings
-                    const mainWindowWidth = 275;
-                    const mainWindowHeight = 116;
-                    const containerWidth = window.innerWidth;
-                    const containerHeight = window.innerHeight * 0.5;
-                    const widthZoom = containerWidth * 0.95 / mainWindowWidth;
-                    let newZoom = Math.max(1.3, widthZoom);
-                    newZoom = Math.min(newZoom, 2.0);
-                    
-                    document.documentElement.style.setProperty('--webamp-zoom', newZoom);
-                    
-                    // Calculate playlist size
-                    const zoomFactor = newZoom;
-                    const mainScaledHeight = mainWindowHeight * zoomFactor;
-                    const availableHeightForPlaylist = containerHeight - mainScaledHeight - 20;
-                    const unscaledAvailableHeight = availableHeightForPlaylist / zoomFactor;
-                    const playlistHeaderHeight = 30;
-                    const trackHeight = 14;
-                    const maxTracksForSpace = Math.floor((unscaledAvailableHeight - playlistHeaderHeight) / trackHeight);
-                    window.mobilePlaylistSize = Math.max(3, Math.min(maxTracksForSpace, 8));
-                    
-                    console.log(`Pre-init mobile layout: zoom=${newZoom}, tracks=${window.mobilePlaylistSize}`);
-                }
+
 
                 // Set initial position (can be dragged anywhere later)
                 const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
-                let posX, posY, playlistY;
                 
-                if (isMobileView) {
-                    // Mobile: Calculate positions with playlist bottom at center
-                    const mainWindowWidth = 275;
-                    const mainWindowHeight = 116;
-                    
-                    posX = Math.floor((window.innerWidth / zoomFactor) / 2) - Math.floor(mainWindowWidth / 2);
-                    
-                    // Calculate playlist height
-                    const tracksToShow = window.mobilePlaylistSize || 4;
-                    const playlistHeaderHeight = 30;
-                    const trackHeight = 14;
-                    const playlistHeight = playlistHeaderHeight + (tracksToShow * trackHeight);
-                    
-                    // Calculate center point
-                    const centerY = (window.innerHeight / 2) / zoomFactor;
-                    
-                    // Position playlist so its bottom aligns with center
-                    playlistY = Math.floor(centerY - playlistHeight);
-                    posY = Math.floor(playlistY - mainWindowHeight - 5); // 5px gap
-                    
-                    // Ensure main window doesn't go above screen
-                    if (posY < 5) {
-                        posY = 5;
-                        playlistY = posY + mainWindowHeight + 5;
-                    }
-                    
-                    posX = Math.max(0, Math.min(posX, (window.innerWidth / zoomFactor) - mainWindowWidth));
-                } else {
-                    // Desktop: Position on left side, vertically centered, overlapping viewer
-                    const mainWindowWidth = 275;
-                    const mainWindowHeight = 116;
-                    
-                    // Position on left side with some margin from edge
-                    posX = Math.floor(50 / zoomFactor);
-                    
-                    // Vertically center the main window
-                    posY = Math.floor((window.innerHeight / zoomFactor) / 2) - Math.floor(mainWindowHeight / 2);
-                    
-                    // Position playlist below equalizer (main + equalizer + gap)
-                    playlistY = posY + mainWindowHeight + 116 + 5; // Below main + equalizer + 5px gap
-                }
+                // Desktop: Position on left side, vertically centered, overlapping viewer
+                const mainWindowWidth = 275;
+                const mainWindowHeight = 116;
+                
+                // Position on left side with some margin from edge
+                const posX = Math.floor(50 / zoomFactor);
+                
+                // Vertically center the main window
+                const posY = Math.floor((window.innerHeight / zoomFactor) / 2) - Math.floor(mainWindowHeight / 2);
+                
+                // Position playlist below equalizer (main + equalizer + gap)
+                const playlistY = posY + mainWindowHeight + 116 + 5; // Below main + equalizer + 5px gap
                 
                 // Get appropriate playlist size for initial layout
-                const initialPlaylistSize = isMobileView ? (window.mobilePlaylistSize || 4) : 5;
+                const initialPlaylistSize = 13;
                 
                 // Initialize Webamp with preloaded tracks
                 const webampOptions = {
@@ -3170,23 +2796,14 @@
                     initialSkin: skinOption,
                     zIndex: 100,
                     enableHotkeys: false,
-                    // For mobile: Don't show equalizer initially
-                                             initialWindowLayout: isMobileView ? {
-                         main: { position: { x: posX, y: posY } },
-                         equalizer: { position: { x: -9999, y: -9999 } }, // Hide off-screen
-                         playlist: { 
-                             position: { x: posX, y: playlistY }, // Position with bottom at center
-                             size: [0, initialPlaylistSize] // Use calculated size
-                         }
-                    } : undefined,
-                    __initialWindowLayout: !isMobileView ? {
+                    initialWindowLayout: {
                         main: { position: { x: posX, y: posY } },
                         equalizer: { position: { x: posX, y: posY + 116 } }, // Directly below main window
                         playlist: { 
                             position: { x: posX, y: playlistY }, // Below equalizer
                             size: [0, initialPlaylistSize] // Use calculated size
                         }
-                    } : undefined
+                    }
                 };
 
                 console.log('Initializing Webamp with options:', webampOptions);
@@ -3227,140 +2844,19 @@
                     setupAudioAnalyzer();
                 });
 
-                // Function to calculate and set appropriate zoom for mobile
-                function setMobileZoom() {
-                    if (window.innerWidth <= 768) {
-                        // Get the dimensions needed for the player
-                        const mainWindowWidth = 275; // Standard width of Winamp window
-                        const mainWindowHeight = 116; // Main window height
-                        
-                        const containerWidth = window.innerWidth;
-                        const containerHeight = window.innerHeight * 0.5; // Top half
-                        
-                        // Calculate zoom based on container dimensions
-                        // We need to fit both width and height, but prioritize fitting the main window
-                        const widthZoom = containerWidth * 0.95 / mainWindowWidth; // Leave some margin
-                        
-                        // Ensure zoom is at least 130% as requested
-                        let newZoom = Math.max(1.3, widthZoom);
-                        
-                        // But don't make it too large that playlist can't fit
-                        newZoom = Math.min(newZoom, 2.0); // Cap at 200%
-                        
-                        // Set the zoom
-                        document.documentElement.style.setProperty('--webamp-zoom', newZoom);
-                        
-                        // Calculate playlist size that fits in remaining space
-                        const zoomFactor = newZoom;
-                        const mainScaledHeight = mainWindowHeight * zoomFactor;
-                        const availableHeightForPlaylist = containerHeight - mainScaledHeight - 20; // 20px margin
-                        const unscaledAvailableHeight = availableHeightForPlaylist / zoomFactor;
-                        
-                        // Calculate how many tracks can fit (each track is about 14px + playlist header is about 30px)
-                        const playlistHeaderHeight = 30;
-                        const trackHeight = 14;
-                        const maxTracksForSpace = Math.floor((unscaledAvailableHeight - playlistHeaderHeight) / trackHeight);
-                        const tracksToShow = Math.max(3, Math.min(maxTracksForSpace, 8)); // Show 3-8 tracks
-                        
-                        // Store this for later use
-                        window.mobilePlaylistSize = tracksToShow;
-                        
-                        // Debug log
-                        console.log(`Mobile layout: Setting zoom to ${newZoom}, playlist tracks: ${tracksToShow}`);
-                        console.log(`Available height for playlist: ${availableHeightForPlaylist}px (unscaled: ${unscaledAvailableHeight}px)`);
-                        
-                        // Adjust container styles to allow for proper scaling
-                        const container = document.getElementById('webamp-container');
-                        if (container) {
-                            container.style.width = '100%';
-                            container.style.height = '50vh';
-                            container.style.overflow = 'hidden';
-                            
-                            // Center the scaled content
-                            const webampEl = document.getElementById('webamp');
-                            if (webampEl) {
-                                webampEl.style.transformOrigin = 'center top';
-                            }
-                        }
-                        
-                        return true; // Indicating we're in mobile mode
-                    } else {
-                        // Reset to desktop default if needed
-                        if (window.innerWidth > 768 && window.innerWidth < 1921) {
-                            document.documentElement.style.setProperty('--webamp-zoom', '1.0');
-                        } else if (window.innerWidth >= 1921) {
-                            document.documentElement.style.setProperty('--webamp-zoom', '1.05');
-                        }
-                        
-                        // Reset container styles
-                        const container = document.getElementById('webamp-container');
-                        if (container) {
-                            container.style.width = '';
-                            container.style.height = '';
-                            container.style.overflow = '';
-                        }
-                        
-                        // Clear mobile playlist size
-                        window.mobilePlaylistSize = null;
-                        
-                        return false; // Indicating we're not in mobile mode
-                    }
-                }
-                
-                // Set initial zoom and center windows
-                setMobileZoom();
+                // Center windows
                 centerWindows();
 
-                // Add resize event listener for responsive behavior
-                window.addEventListener('resize', () => {
-                    // Debounce the resize event
-                    if (window.resizeTimeout) {
-                        clearTimeout(window.resizeTimeout);
+                // Set playlist size to 13 tracks explicitly
+                setTimeout(() => {
+                    if (webampInstance && webampInstance.store) {
+                        console.log('Setting playlist size to 13 tracks');
+                        webampInstance.store.dispatch({
+                            type: 'SET_PLAYLIST_WINDOW_SIZE',
+                            size: [0, 13]
+                        });
                     }
-                    window.resizeTimeout = setTimeout(() => {
-                        // Update zoom first, then position
-                        const isMobile = setMobileZoom();
-                        centerWindows();
-                        
-                        // Handle mobile/desktop transitions
-                        if (isMobile) {
-                            setupMobileConstraints();
-                            
-                            // Force close equalizer on mobile
-                            webampInstance.store.dispatch({
-                                type: 'CLOSE_WINDOW',
-                                windowId: 'equalizer'
-                            });
-                            
-                            // Use the pre-calculated mobile playlist size
-                            const tracksToShow = window.mobilePlaylistSize || 4;
-                            
-                            console.log(`Mobile layout: Setting playlist to show ${tracksToShow} tracks`);
-                            
-                            webampInstance.store.dispatch({
-                                type: 'SET_PLAYLIST_WINDOW_SIZE',
-                                size: [0, tracksToShow]
-                            });
-                        } else {
-                            // We're switching back to desktop
-                            
-                            // Re-open equalizer on desktop
-                            webampInstance.store.dispatch({
-                                type: 'OPEN_WINDOW',
-                                windowId: 'equalizer'
-                            });
-                            
-                            // Set playlist size to 5 tracks for desktop
-                            webampInstance.store.dispatch({
-                                type: 'SET_PLAYLIST_WINDOW_SIZE',
-                                size: [0, 5]
-                            });
-                        }
-                        
-                        // Mobile layout is now controlled by CSS in media queries
-                        // Update only happens here to adapt to window size changes
-                    }, 250); // Wait for 250ms after last resize event
-                });
+                }, 500);
 
                 // Focus the playlist window to bring it to the foreground
                 setTimeout(() => {
@@ -3389,158 +2885,7 @@
                     }
                 }, 500);
 
-                // Function to constrain Webamp windows to the top half on mobile
-                function setupMobileConstraints() {
-                    // Only apply constraints on mobile
-                    if (window.innerWidth > 768) return;
-                    
-                    // Make sure equalizer is always closed on mobile
-                    // This needs to be called regularly in case user tries to open it
-                    function ensureEqualizerClosed() {
-                        const state = webampInstance?.store?.getState();
-                        const isEqualizerOpen = state?.windows?.genWindows?.equalizer?.open;
-                        
-                        if (isEqualizerOpen) {
-                            console.log("Mobile mode: Closing equalizer window");
-                            webampInstance.store.dispatch({
-                                type: 'CLOSE_WINDOW',
-                                windowId: 'equalizer'
-                            });
-                        }
-                    }
-                    
-                    // Check periodically and keep equalizer closed
-                    const equalizerCheckInterval = setInterval(ensureEqualizerClosed, 1000);
-                    
-                    // Clear interval when window size changes
-                    window.addEventListener('resize', () => {
-                        if (window.innerWidth > 768) {
-                            clearInterval(equalizerCheckInterval);
-                        }
-                    });
 
-                    // Get the original dispatch to intercept position updates
-                    const originalDispatch = webampInstance.store.dispatch;
-                    
-                    // Replace dispatch to intercept window position updates
-                    webampInstance.store.dispatch = (action) => {
-                        // Check if it's a window position update
-                        if (action.type === 'UPDATE_WINDOW_POSITIONS' && window.innerWidth <= 768) {
-                            // Clone the positions object to modify it
-                            const constrainedPositions = { ...action.positions };
-                            
-                            // Get the top half height and zoom factor
-                            const topHalfHeight = window.innerHeight / 2;
-                            const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
-                            
-                            // Adjust for the 130%+ zoom factor
-                            const adjustedTopHalfHeight = topHalfHeight / zoomFactor;
-                            
-                            // Get current windows state
-                            const state = webampInstance.store.getState();
-                            const windows = state?.windows?.genWindows || {};
-                            
-                            // Constrain each window's Y position to stay in the top half
-                            Object.keys(constrainedPositions).forEach(windowId => {
-                                const pos = constrainedPositions[windowId];
-                                
-                                // Get window height (handle dynamically sized playlist)
-                                let windowHeight = 116; // Default height
-                                
-                                if (windowId === 'playlist') {
-                                    // Get playlist window size
-                                    const playlistSize = windows.playlist?.size || [0, 4];
-                                    // Calculate playlist height based on number of tracks shown
-                                    const tracksShown = playlistSize[1];
-                                    windowHeight = 116 + (tracksShown * 14); // Base height + track height
-                                }
-                                
-                                // Calculate maximum Y position that keeps window in top half
-                                // Allow some overflow for the playlist window by reducing constraint
-                                // This enables scrolling the playlist
-                                let maxY;
-                                if (windowId === 'playlist') {
-                                    // Allow playlist to extend beyond, will be clipped by container
-                                    maxY = adjustedTopHalfHeight - 30; // Just keep the header visible
-                                } else {
-                                    // Other windows must stay fully in view
-                                    maxY = adjustedTopHalfHeight - windowHeight;
-                                }
-                                
-                                // Constrain Y position
-                                if (pos.y > maxY) {
-                                    pos.y = maxY;
-                                }
-                                
-                                // Also constrain X to stay on screen
-                                const windowWidth = 275; // Standard Winamp window width
-                                const maxX = Math.floor((window.innerWidth / zoomFactor)) - windowWidth;
-                                
-                                if (pos.x < 0) pos.x = 0;
-                                if (pos.x > maxX) pos.x = maxX;
-                            });
-                            
-                            // Create modified action with constrained positions
-                            const modifiedAction = {
-                                ...action,
-                                positions: constrainedPositions
-                            };
-                            
-                            return originalDispatch(modifiedAction);
-                        }
-                        
-                        // Pass through all other actions
-                        return originalDispatch(action);
-                    };
-                    
-                    // Additional setup for mobile view
-                    setTimeout(() => {
-                        // Hide equalizer and set playlist height
-                        const state = webampInstance.store.getState();
-                        
-                        // 1. Hide equalizer window completely for mobile
-                        webampInstance.store.dispatch({
-                            type: 'CLOSE_WINDOW',
-                            windowId: 'equalizer'
-                        });
-                        
-                        // 2. Set playlist to use pre-calculated size
-                        const tracksToShow = window.mobilePlaylistSize || 4;
-                        
-                        console.log(`Mobile constraints: Setting playlist to ${tracksToShow} tracks`);
-                        
-                        webampInstance.store.dispatch({
-                            type: 'SET_PLAYLIST_WINDOW_SIZE',
-                            size: [0, tracksToShow]
-                        });
-                        
-                        // 3. Ensure playlist is positioned with bottom at center
-                        const mainPos = getCurrentWindowPositions()?.main;
-                        if (mainPos) {
-                            // Calculate playlist position with bottom at center
-                            const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
-                            const playlistHeaderHeight = 30;
-                            const trackHeight = 14;
-                            const playlistHeight = playlistHeaderHeight + (tracksToShow * trackHeight);
-                            const centerY = (window.innerHeight / 2) / zoomFactor;
-                            const playlistY = Math.floor(centerY - playlistHeight);
-                            
-                            webampInstance.store.dispatch({
-                                type: 'UPDATE_WINDOW_POSITIONS',
-                                positions: {
-                                    playlist: { 
-                                        x: mainPos.x, 
-                                        y: playlistY // Position with bottom at center
-                                    }
-                                },
-                                absolute: true
-                            });
-                        }
-                    }, 500);
-                }
-                
-                // Set up mobile constraints
-                setupMobileConstraints();
                 
                 // Start the haunted animation immediately
                 startHauntedAnimation();
@@ -4014,10 +3359,7 @@
             </style>
         `);
 
-        // Modify resize handler to always center if needed
-        window.addEventListener('resize', () => {
-            centerWindows();
-        });
+
 
 
 
