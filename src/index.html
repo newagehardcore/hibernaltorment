@@ -252,9 +252,7 @@
             color: #ffffff;
             z-index: 1001;
             cursor: move;
-            --float-x: 0px;
-            --float-y: 0px;
-            --float-rotate: 0deg;
+            
 
             filter: 
                 drop-shadow(-4px 2px 4px rgba(0, 0, 0, 0.95))
@@ -265,7 +263,7 @@
             animation: float 8s ease-in-out infinite;
             user-select: none;
             opacity: 0;
-            transform: scale(0.1) translate(var(--float-x), var(--float-y)) rotate(var(--float-rotate));
+            transform: scale(0.1);
             transition: none;
             image-rendering: pixelated;
             image-rendering: -moz-crisp-edges;
@@ -275,7 +273,6 @@
 
         .deity-message-window.appearing {
             animation: tvTurnOn 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards, float 8s ease-in-out infinite 1.2s;
-            transform: scale(1) translate(var(--float-x), var(--float-y)) rotate(var(--float-rotate));
         }
 
         .deity-message-window.disappearing {
@@ -627,29 +624,19 @@
 
         @keyframes float {
             0%, 100% {
-                --float-x: 0px;
-                --float-y: 0px;
-                --float-rotate: 0deg;
+                transform: translate(0, 0) rotate(0deg);
             }
             20% {
-                --float-x: 3px;
-                --float-y: -4px;
-                --float-rotate: 0.8deg;
+                transform: translate(3px, -4px) rotate(0.8deg);
             }
             40% {
-                --float-x: -2px;
-                --float-y: -6px;
-                --float-rotate: 0.2deg;
+                transform: translate(-2px, -6px) rotate(0.2deg);
             }
             60% {
-                --float-x: -4px;
-                --float-y: 2px;
-                --float-rotate: -0.5deg;
+                transform: translate(-4px, 2px) rotate(-0.5deg);
             }
             80% {
-                --float-x: 1px;
-                --float-y: 4px;
-                --float-rotate: -0.2deg;
+                transform: translate(1px, 4px) rotate(-0.2deg);
             }
         }
 
@@ -737,10 +724,7 @@
             position: fixed;
             top: 50%;
             left: 50%;
-            --float-x: 0px;
-            --float-y: 0px;
-            --float-rotate: 0deg;
-            transform: translate(calc(-50% + var(--float-x)), calc(-50% + var(--float-y))) rotate(var(--float-rotate));
+            transform: translate(-50%, -50%);
             aspect-ratio: 1/1;
             background: #000000;
             border: none;
@@ -760,7 +744,6 @@
             transition: opacity 0.8s ease-in-out, width 0.3s ease-out, height 0.3s ease-out;
             resize: both;
             overflow: hidden;
-            animation: float 8s ease-in-out infinite;
         }
 
 
@@ -929,10 +912,7 @@
             position: fixed;
             top: 20%;
             left: 20%;
-            --float-x: 0px;
-            --float-y: 0px;
-            --float-rotate: 0deg;
-            transform: translate(var(--float-x), var(--float-y)) rotate(var(--float-rotate));
+            transform: none;
             background: #000000;
             border: none;
             border-radius: 0;
@@ -949,7 +929,6 @@
             transition: opacity 0.8s ease-in-out, width 0.3s ease-out, height 0.3s ease-out;
             resize: both;
             overflow: hidden;
-            animation: float 8s ease-in-out infinite;
         }
 
         #cover-window.visible {
@@ -1806,13 +1785,8 @@
                 startLeft = rect.left;
                 startTop = rect.top;
                 
-                // Pause floating animation during drag by setting custom properties to 0
-                viewerWindow.style.setProperty('--float-x', '0px');
-                viewerWindow.style.setProperty('--float-y', '0px');
-                viewerWindow.style.setProperty('--float-rotate', '0deg');
-                
                 // Make sure transform is none for proper dragging
-                if (viewerWindow.style.transform.includes('translate(-50%, -50%)')) {
+                if (viewerWindow.style.transform === 'translate(-50%, -50%)') {
                     viewerWindow.style.transform = 'none';
                     
                     // Center it if first drag after initialization
@@ -2149,11 +2123,6 @@
                 const rect = coverWindow.getBoundingClientRect();
                 startLeft = rect.left;
                 startTop = rect.top;
-                
-                // Pause floating animation during drag by setting custom properties to 0
-                coverWindow.style.setProperty('--float-x', '0px');
-                coverWindow.style.setProperty('--float-y', '0px');
-                coverWindow.style.setProperty('--float-rotate', '0deg');
                 
                 dragHandle.style.cursor = 'grabbing';
                 coverWindow.style.zIndex = '6'; // Bring to front while dragging
