@@ -2,23 +2,13 @@
   "name": "hibernal-torment",
   "version": "1.0.0",
   "description": "A haunted Winamp-style music player experience",
-  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node scripts/dev.js",
     "build": "node scripts/build.js",
     "clean": "rm -rf dist"
   },
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "cloudinary": "^2.6.1",
-    "dotenv": "^16.5.0",
-    "express": "^5.1.0"
-  },
   "devDependencies": {
-    "fkill": "^8.1.1",
-    "fs-extra": "^11.3.0",
-    "open": "^8.4.2"
+    "fs-extra": "^11.3.0"
   }
 }
