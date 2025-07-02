@@ -14,6 +14,40 @@
             --deity-font-style: italic;
             --deity-font-weight: bold;
             --deity-letter-spacing: -0.02em; /* -20 kerning approximation */
+            
+            /* Starfield configuration - easy to modify */
+            --starfield-speed: 1.5; /* Base speed multiplier */
+            --starfield-density: 800; /* Number of stars */
+            --starfield-brightness: 0.9; /* Star brightness (0-1) */
+        }
+
+        /* Starfield Canvas - positioned behind everything */
+        #starfield-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1; /* Behind everything */
+            pointer-events: none;
+            background: #000;
+        }
+
+        /* Mobile starfield optimization */
+        @media screen and (max-width: 768px) {
+            :root {
+                --starfield-speed: 1.2; /* Slightly slower on mobile for performance */
+                --starfield-density: 600; /* Fewer stars on mobile */
+                --starfield-brightness: 0.85;
+            }
+        }
+
+        /* High resolution display optimization */
+        @media screen and (min-width: 1921px) {
+            :root {
+                --starfield-density: 1000; /* More stars on high-res displays */
+                --starfield-brightness: 0.95;
+            }
         }
 
         html, body {
@@ -52,6 +86,13 @@
             transition: all 0.5s ease-in-out;
         }
         
+        /* Mobile zoom variables */
+        @media screen and (max-width: 768px) {
+            :root {
+                --webamp-zoom: 1.4;
+            }
+        }
+
         /* Desktop zoom variables */
         @media screen and (min-width: 769px) {
             :root {
@@ -269,6 +310,25 @@
             image-rendering: -moz-crisp-edges;
             image-rendering: crisp-edges;
             backdrop-filter: blur(1px);
+        }
+
+        /* Add floating animation to viewer and cover windows */
+        #viewer-window {
+            will-change: transform;
+            animation: floatViewer 9.5s ease-in-out infinite;
+        }
+
+        #cover-window {
+            will-change: transform;
+            animation: floatCover 8.7s ease-in-out infinite;
+        }
+
+        /* Ensure the animation doesn't interfere with mobile layout */
+        @media (max-width: 768px) {
+            #viewer-window,
+            #cover-window {
+                animation: none !important;
+            }
         }
 
         .deity-message-window.appearing {
@@ -637,6 +697,39 @@
             }
             80% {
                 transform: translate(1px, 4px) rotate(-0.2deg);
+            }
+        }
+
+        @keyframes floatViewer {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(-3px, -2px) rotate(-0.3deg);
+            }
+            50% {
+                transform: translate(2px, -5px) rotate(0.5deg);
+            }
+            75% {
+                transform: translate(4px, 3px) rotate(-0.2deg);
+            }
+        }
+
+        @keyframes floatCover {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            20% {
+                transform: translate(4px, 2px) rotate(0.4deg);
+            }
+            45% {
+                transform: translate(-3px, -3px) rotate(-0.6deg);
+            }
+            65% {
+                transform: translate(-2px, 4px) rotate(0.3deg);
+            }
+            85% {
+                transform: translate(3px, -2px) rotate(-0.2deg);
             }
         }
 
@@ -1060,12 +1153,223 @@
             font-size: 10px;
         }
 
+        /* Mobile Layout Styles */
+        @media screen and (max-width: 768px) {
+            /* Force fixed body height on mobile */
+            html, body {
+                height: 100vh !important;
+                overflow: hidden !important;
+                position: fixed !important;
+                width: 100% !important;
+            }
+            
+            /* Disable webamp window dragging and movement on mobile */
+            #webamp .window {
+                pointer-events: auto !important;
+                position: fixed !important;
+            }
+            
+            /* Position webamp container - let API handle positioning */
+            #webamp-container {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                z-index: 10 !important;
+            }
+            
+
+            
+            /* Disable dragging and movement on mobile */
+            #webamp .window {
+                pointer-events: auto !important;
+            }
+            
+            /* Ensure playlist shows only 4 tracks on mobile */
+            #webamp .playlist-window .playlist-tracks {
+                max-height: 60px !important; /* Roughly 4 tracks */
+                overflow: hidden !important;
+            }
+            
+            /* Mobile viewer window positioning */
+            #viewer-window {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                width: 50vw !important;
+                height: 50vw !important;
+                max-height: none !important;
+                max-width: none !important;
+                min-width: 50vw !important;
+                min-height: 50vw !important;
+                transform: none !important;
+                cursor: default !important;
+                resize: none !important;
+                opacity: 1 !important;
+                top: auto !important;
+                right: auto !important;
+                z-index: 5 !important;
+                /* Remove flex layout since header is hidden */
+                display: block !important;
+            }
+            
+            /* Make viewer content fill entire window */
+            #viewer-window .viewer-content {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                flex: none !important;
+            }
+            
+            /* Hide viewer header completely on mobile */
+            .viewer-header {
+                display: none !important;
+            }
+            
+            /* Hide resize handle on mobile */
+            .viewer-resize-handle {
+                display: none !important;
+            }
+            
+            /* Enhance viewer border to match webamp style */
+            .viewer-content {
+                border: 3px dotted rgba(255, 255, 255, 0.9) !important;
+                border-style: dotted !important;
+            }
+            
+            .viewer-content::before {
+                border: 3px dotted rgba(255, 255, 255, 0.9) !important;
+                border-style: dotted !important;
+            }
+            
+            /* Mobile cover window positioning */
+            #cover-window {
+                position: fixed !important;
+                bottom: 0 !important;
+                right: 0 !important;
+                width: 50vw !important;
+                height: 50vw !important;
+                max-height: none !important;
+                max-width: none !important;
+                min-width: 50vw !important;
+                min-height: 50vw !important;
+                transform: none !important;
+                cursor: default !important;
+                resize: none !important;
+                opacity: 1 !important;
+                top: auto !important;
+                left: auto !important;
+                z-index: 5 !important;
+                /* Remove flex layout since header is hidden */
+                display: block !important;
+            }
+            
+            /* Make cover content fill entire window */
+            #cover-window .cover-content {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                flex: none !important;
+            }
+            
+            /* Hide cover header completely on mobile */
+            .cover-header {
+                display: none !important;
+            }
+            
+            /* Hide cover resize handle on mobile */
+            .cover-resize-handle {
+                display: none !important;
+            }
+            
+            /* Enhance cover border to match webamp style */
+            .cover-content {
+                border: 3px dotted rgba(255, 255, 255, 0.9) !important;
+                border-style: dotted !important;
+            }
+            
+            .cover-content::before {
+                border: 3px dotted rgba(255, 255, 255, 0.9) !important;
+                border-style: dotted !important;
+            }
+            
+            /* Keep deity messages draggable but disable other dragging */
+            .deity-message-window {
+                cursor: move !important;
+            }
+            
+            /* Ensure content areas remain interactive */
+            .viewer-content,
+            .cover-content {
+                pointer-events: auto !important;
+            }
+            
+            /* Adjust Legendarium logo for mobile */
+            #legendarium-logo-link {
+                right: 2vw !important;
+                bottom: 52vw !important; /* Position above the bottom windows */
+                width: 12vw !important;
+                max-width: 80px !important;
+                min-width: 50px !important;
+            }
+            
+            /* Remove logo hover animation on mobile */
+            #legendarium-logo-link:hover #legendarium-logo {
+                transform: none !important;
+            }
+            
+            /* Scale deity messages but keep them draggable on mobile */
+            .deity-message-window {
+                cursor: move !important;
+                transform: scale(0.75) !important;
+                transform-origin: center !important;
+            }
+            
+            /* Ensure password overlay works on mobile */
+            #password-overlay {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+            }
+            
+            #password-container {
+                width: 90vw !important;
+                max-width: 300px !important;
+            }
+            
+            /* Additional mobile safeguards */
+            #webamp .window.dynamic-shadow {
+                filter: none !important; /* Disable dynamic shadows on mobile */
+            }
+            
+            /* Force remove any transforms on mobile */
+            #viewer-window *, #cover-window * {
+                transform: none !important;
+            }
+            
+            /* Ensure windows are always on top on mobile */
+            #viewer-window, #cover-window {
+                z-index: 5 !important;
+            }
+            
+            /* Remove bottom borders since headers are hidden */
+            .viewer-bottom,
+            .cover-bottom {
+                display: none !important;
+            }
+        }
+
 
     </style>
 </head>
 <body>
-
-
+    <!-- Starfield Background Canvas -->
+    <canvas id="starfield-canvas"></canvas>
 
     <!-- Viewer window for loops -->
     <div id="viewer-window" class="window-draggable">
@@ -1110,6 +1414,117 @@
     <script src="https://unpkg.com/webamp@1.4.2/built/webamp.bundle.min.js"></script>
     
     <script>
+        // Starfield System
+        class StarField {
+            constructor() {
+                this.canvas = document.getElementById('starfield-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.stars = [];
+                this.time = 0;
+                this.twinkleSpeedMultiplier = 1.0; // Adjustable twinkle speed
+                this.resize();
+                this.createStars(800); // 800 stars
+                window.addEventListener('resize', () => this.resize());
+                requestAnimationFrame((t) => this.animate(t));
+            }
+
+            resize() {
+                this.width = window.innerWidth;
+                this.height = window.innerHeight;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+                this.centerX = this.width / 2;
+                this.centerY = this.height / 2;
+            }
+
+            createStars(count) {
+                const maxDist = Math.sqrt(Math.pow(this.width/2, 2) + Math.pow(this.height/2, 2));
+                
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const initialDistance = Math.random() * maxDist; // Distribute across screen
+                    
+                    this.stars.push({
+                        angle: angle,
+                        size: (Math.random() * 1.5 + 0.375), // 75% of original size
+                        speed: Math.random() * 0.5 + 0.1,
+                        brightness: Math.random() * 1.8 + 0.6, // Brighter base brightness
+                        twinkleSpeed: Math.random() * 2.1 + 0.02, // Individual twinkle speed
+                        twinklePhase: Math.random() * Math.PI * 2, // Random starting phase
+                        x: this.centerX + Math.cos(angle) * initialDistance,
+                        y: this.centerY + Math.sin(angle) * initialDistance
+                    });
+                }
+            }
+
+            animate(timestamp) {
+                this.time = timestamp * 0.001; // Convert to seconds
+                this.ctx.fillStyle = 'black';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                this.stars.forEach(star => {
+                    // Move star
+                    star.x += Math.cos(star.angle) * star.speed;
+                    star.y += Math.sin(star.angle) * star.speed;
+
+                    // Reset if off screen
+                    if (star.x < 0 || star.x > this.width || 
+                        star.y < 0 || star.y > this.height) {
+                        star.x = this.centerX;
+                        star.y = this.centerY;
+                        star.angle = Math.random() * Math.PI * 2;
+                    }
+
+                    // Draw star
+                    let distance = Math.sqrt(
+                        Math.pow(star.x - this.centerX, 2) + 
+                        Math.pow(star.y - this.centerY, 2)
+                    );
+                    let maxDistance = Math.sqrt(
+                        Math.pow(this.width/2, 2) + 
+                        Math.pow(this.height/2, 2)
+                    );
+                    // Base opacity increases from center to edge
+                    let opacity = distance / maxDistance * 1.5; // Increased overall brightness by 50%
+                    
+                    // Add twinkle effect
+                    let twinkle = Math.sin(this.time * star.twinkleSpeed * this.twinkleSpeedMultiplier * 10 + star.twinklePhase) * 0.15 + 0.85;
+                    
+                    // Combine base opacity with twinkle and brightness
+                    opacity = Math.min(opacity * star.brightness * twinkle, 1);
+
+                    if (opacity > 0) {
+                        // Draw main star
+                        this.ctx.fillStyle = `rgba(255,255,255,${opacity})`;
+                        this.ctx.beginPath();
+                        this.ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                        this.ctx.fill();
+
+                        // Add subtle glow when star is bright
+                        if (opacity > 0.5) {
+                            this.ctx.globalAlpha = opacity * 0.3;
+                            this.ctx.shadowColor = 'rgba(255,255,255,0.5)';
+                            this.ctx.shadowBlur = star.size * 2;
+                            this.ctx.beginPath();
+                            this.ctx.arc(star.x, star.y, star.size * 0.8, 0, Math.PI * 2);
+                            this.ctx.fill();
+                            this.ctx.globalAlpha = 1;
+                            this.ctx.shadowBlur = 0;
+                        }
+                    }
+                });
+
+                requestAnimationFrame((t) => this.animate(t));
+            }
+
+            destroy() {
+                window.removeEventListener('resize', () => this.resize());
+            }
+        }
+        
+        // Initialize starfield
+        let starField = null;
+        
         // Global variables
         let webampInstance = null;
         let usesCustomSkin = true;
@@ -1719,9 +2134,9 @@
                 url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153534/13Loop.mp4",
                 preloadedVideo: null,
                 fadeIn: 2,     // 2 seconds fade in
-                fadeOut: 0     // no fade out
-            }
-        };
+                                  fadeOut: 0     // no fade out
+              }
+         };
 
         // Function to set transition duration for an element
         function setTransitionDuration(element, duration) {
@@ -1746,11 +2161,16 @@
             setupCoverControls();
         }
 
+        // Function to check if we're on mobile
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+
         // Function to make the viewer window draggable
         function makeViewerDraggable() {
             const viewerWindow = document.getElementById('viewer-window');
             
-            if (!viewerWindow) return;
+            if (!viewerWindow || isMobile()) return; // Skip on mobile
             
             let isDragging = false;
             let startX = 0;
@@ -2018,25 +2438,29 @@
                 });
             }
             
-            // Position the viewer window in the center initially
-            // Initial position - will be draggable after
+            // Position the viewer window - mobile vs desktop
             requestAnimationFrame(() => {
-                // Reset transform to use absolute positioning
-                viewerWindow.style.transform = 'none';
-                
-                // Get square size based on viewport (90% of smaller viewport dimension)
-                const squareSize = Math.min(window.innerWidth, window.innerHeight) * 0.9;
-                
-                // Center it on screen
-                viewerWindow.style.top = `${(window.innerHeight - squareSize) / 2}px`;
-                viewerWindow.style.left = `${(window.innerWidth - squareSize) / 2}px`;
-                viewerWindow.style.width = `${squareSize}px`;
-                viewerWindow.style.height = `${squareSize}px`;
+                if (isMobile()) {
+                    // Mobile: Fixed position at bottom-left, handled by CSS
+                    // No need to set positions here, CSS handles it
+                } else {
+                    // Desktop: Reset transform to use absolute positioning
+                    viewerWindow.style.transform = 'none';
+                    
+                    // Get square size based on viewport (90% of smaller viewport dimension)
+                    const squareSize = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+                    
+                    // Center it on screen
+                    viewerWindow.style.top = `${(window.innerHeight - squareSize) / 2}px`;
+                    viewerWindow.style.left = `${(window.innerWidth - squareSize) / 2}px`;
+                    viewerWindow.style.width = `${squareSize}px`;
+                    viewerWindow.style.height = `${squareSize}px`;
+                }
             });
             
-            // Make the viewer resizable manually in addition to native resize
+            // Make the viewer resizable manually in addition to native resize (skip on mobile)
             const resizeHandle = viewerWindow.querySelector('.viewer-resize-handle');
-            if (resizeHandle) {
+            if (resizeHandle && !isMobile()) {
                 let isResizing = false;
                 let startX, startY;
                 let startWidth, startHeight;
@@ -2089,7 +2513,7 @@
         function makeCoverDraggable() {
             const coverWindow = document.getElementById('cover-window');
             
-            if (!coverWindow) return;
+            if (!coverWindow || isMobile()) return; // Skip on mobile
             
             let isDragging = false;
             let startX = 0;
@@ -2180,18 +2604,23 @@
                 });
             }
             
-            // Position the cover window initially (offset from center so it doesn't overlap viewer)
+            // Position the cover window - mobile vs desktop
             requestAnimationFrame(() => {
-                // Position it to the right side of the screen
-                const initialWidth = 300;
-                const initialHeight = 333; // Slightly rectangular for square image area
-                coverWindow.style.top = `${(window.innerHeight - initialHeight) / 2}px`;
-                coverWindow.style.left = `${window.innerWidth - initialWidth - 50}px`;
+                if (isMobile()) {
+                    // Mobile: Fixed position at bottom-right, handled by CSS
+                    // No need to set positions here, CSS handles it
+                } else {
+                    // Desktop: Position it to the right side of the screen
+                    const initialWidth = 300;
+                    const initialHeight = 333; // Slightly rectangular for square image area
+                    coverWindow.style.top = `${(window.innerHeight - initialHeight) / 2}px`;
+                    coverWindow.style.left = `${window.innerWidth - initialWidth - 50}px`;
+                }
             });
             
-            // Make the cover window resizable
+            // Make the cover window resizable (skip on mobile)
             const resizeHandle = coverWindow.querySelector('.cover-resize-handle');
-            if (resizeHandle) {
+            if (resizeHandle && !isMobile()) {
                 let isResizing = false;
                 let startX, startY;
                 let startWidth, startHeight;
@@ -2295,18 +2724,18 @@
                 });
 
                 const handleViewerVideoReady = () => {
-                    // Start playing
-                    newViewerVideo.play().catch(err => console.error("Viewer video play failed:", err));
-                    
-                    // Replace viewer content
+                    // Replace viewer content first
                     viewerContainer.innerHTML = '';
                     viewerContainer.appendChild(newViewerVideo);
                     
                     // Force reflow
                     void newViewerVideo.offsetHeight;
                     
-                    // Fade in viewer video
+                    // Start playing after the video is in the DOM
                     requestAnimationFrame(() => {
+                        newViewerVideo.play().catch(err => console.error("Viewer video play failed:", err));
+                        
+                        // Fade in viewer video
                         newViewerVideo.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
                         newViewerVideo.style.opacity = '1';
                     });
@@ -2333,23 +2762,77 @@
 
             const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
 
-            // Desktop: Position on left side, vertically centered, overlapping viewer
+            // Mobile layout: Center webamp in available space above bottom windows
+            if (isMobile()) {
+                // Set small playlist size for mobile (4 tracks)
+                webampInstance.store.dispatch({
+                    type: 'SET_PLAYLIST_WINDOW_SIZE',
+                    size: [0, 1] // Show only 1 extra track (4 total with header)
+                });
+                
+                // Calculate center position in available space
+                const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
+                
+                // Available space above bottom windows (50vw = 50% of viewport width)
+                const bottomWindowHeight = window.innerHeight * 0.5; // 50vw converted to pixels
+                const availableHeight = window.innerHeight - bottomWindowHeight;
+                
+                // Total webamp height (main + playlist only, no equalizer)
+                const webampTotalHeight = (116 + 60) * zoomFactor; // Main + playlist height
+                
+                // Center vertically in available space
+                const centerY = (availableHeight - webampTotalHeight) / 2;
+                const centerX = (window.innerWidth - (275 * zoomFactor)) / 2; // Center horizontally
+                
+                // Convert to webamp coordinate system (divide by zoom)
+                const posX = Math.floor(centerX / zoomFactor);
+                const posY = Math.floor(centerY / zoomFactor);
+                
+                window.lastKnownPositions = {
+                    main: { x: posX, y: posY },
+                    playlist: { x: posX, y: posY + 116 } // Playlist where EQ was
+                };
+                
+                webampInstance.store.dispatch({
+                    type: 'UPDATE_WINDOW_POSITIONS',
+                    positions: window.lastKnownPositions,
+                    absolute: true
+                });
+                
+                return;
+            }
+
+            // Desktop: Position on left side, vertically centered based on total player height
             const mainWindowWidth = 275;
             const mainWindowHeight = 116;
+            const equalizerHeight = 116;
+            const gapBetweenWindows = 5;
+            
+            // Get current playlist size from Webamp state
+            const state = webampInstance.store.getState();
+            const playlistSize = state?.windows?.genWindows?.playlist?.size?.[1] || 5;
+            
+            // Calculate playlist height based on number of tracks
+            const playlistHeaderHeight = 30; // Approximate header height
+            const trackHeight = 14; // Each track is about 14px high
+            const playlistHeight = playlistHeaderHeight + (playlistSize * trackHeight);
+            
+            // Calculate total height of all windows
+            const totalHeight = mainWindowHeight + equalizerHeight + gapBetweenWindows + playlistHeight;
             
             // Position on left side with some margin from edge
             const posX = Math.floor(50 / zoomFactor);
             
-            // Vertically center the main window
-            const posY = Math.floor(window.innerHeight / (2 * zoomFactor)) - Math.floor(mainWindowHeight / 2);
+            // Vertically center the entire player based on total height
+            const posY = Math.floor(window.innerHeight / (2 * zoomFactor)) - Math.floor(totalHeight / 2);
             
             // Position playlist below equalizer (main + equalizer + gap)
-            const playlistY = posY + mainWindowHeight + 116 + 5; // Below main + equalizer + 5px gap
+            const playlistY = posY + mainWindowHeight + equalizerHeight + gapBetweenWindows;
 
             // Store these positions for animation reference
             window.lastKnownPositions = {
                 main: { x: posX, y: posY },
-                equalizer: { x: posX, y: posY + 116 }, // Position equalizer directly below main window
+                equalizer: { x: posX, y: posY + mainWindowHeight }, // Position equalizer directly below main window
                 playlist: { x: posX, y: playlistY }
             };
 
@@ -2384,6 +2867,12 @@
 
         // Modified animation function to handle mouse interactions
         function startHauntedAnimation() {
+            // Skip animation entirely on mobile
+            if (isMobile()) {
+                console.log('Skipping haunted animation on mobile');
+                return;
+            }
+            
             // Clean up any existing animation
             if (animationId) {
                 cancelAnimationFrame(animationId);
@@ -2403,12 +2892,12 @@
             
             let time = 0;
             // Increase frame rate by increasing animation speed
-            const ANIMATION_SPEED = 0.5;  // Slower base speed for smoother motion
+            const ANIMATION_SPEED = 0.8;  // Slightly faster for more noticeable motion
             // Base radius that will be modified by audio
-            const BASE_RADIUS = 2;    // Slight increase in base radius
-            const MAX_RADIUS = 50;    // Larger maximum radius for more dramatic swirls
-            // Slow down the actual movement speed
-            const OSCILLATION_FREQUENCY_MODIFIER = 0.0008;  // Much slower base oscillation
+            const BASE_RADIUS = 4;    // Increased base radius for more noticeable movement
+            const MAX_RADIUS = 60;    // Larger maximum radius for more dramatic swirls
+            // Adjust the movement speed
+            const OSCILLATION_FREQUENCY_MODIFIER = 0.001;  // Slightly faster oscillation
             
             // Add noise parameters for unpredictability
             const NOISE_AMPLITUDE = 0.15;  // Increased noise for more organic movement
@@ -2561,57 +3050,57 @@
                 const windows = document.querySelectorAll('#webamp .window');
                 if (!windows.length) return;
 
-                // Base values for low volume
-                const baseOffset = 4;
-                const baseBlur = 4;
-                const baseSpread = 8;
-                
-                // Calculate multipliers based on audio level
-                // audioLevel is already normalized 0-1 from getAudioLevel()
-                const intensityMultiplier = 1 + (audioLevel * 3); // Max 4x at highest volume
-                const spreadMultiplier = 1 + (audioLevel * 4);    // Max 5x at highest volume
-                
-                // Calculate dynamic values
-                const time = Date.now() * 0.001; // Current time in seconds
-                const rotationSpeed = 0.5 + (audioLevel * 2); // Faster rotation at higher volumes
-                const angle = time * rotationSpeed;
-                
-                // Calculate shadow position based on rotation
-                const xOffset = Math.cos(angle) * baseOffset * intensityMultiplier;
-                const yOffset = Math.sin(angle) * baseOffset * intensityMultiplier;
-                
-                // Calculate shadow sizes based on volume
-                const blur1 = baseBlur * (1 + audioLevel);
-                const blur2 = baseBlur * 2 * (1 + audioLevel);
-                const spread1 = baseSpread * (1 + audioLevel * 2);
-                const spread2 = baseSpread * 2 * (1 + audioLevel * 2);
-                
-                // Add some organic movement to the shadow
-                const pulseIntensity = audioLevel * 0.3; // Subtle pulse at high volumes
-                const pulse = 1 + Math.sin(time * 4) * pulseIntensity;
-                
-                // Create the dynamic shadow filter
-                const shadowFilter = `
-                    /* drop-shadow(${xOffset * pulse}px ${yOffset * pulse}px ${blur1}px rgba(0, 0, 0, 0.95))
-                    drop-shadow(${xOffset * 1.5 * pulse}px ${yOffset * 1.5 * pulse}px ${blur2}px rgba(0, 0, 0, 0.85))
-                    drop-shadow(${xOffset * 2 * pulse}px ${yOffset * 2 * pulse}px ${spread1}px rgba(0, 0, 0, 0.75))
-                    drop-shadow(${xOffset * 2.5 * pulse}px ${yOffset * 2.5 * pulse}px ${spread2}px rgba(0, 0, 0, 0.65)) */
-                `;
-                
-                // Apply the shadow to all webamp windows
+                // Remove shadow from Webamp windows
                 windows.forEach(window => {
                     window.classList.add('dynamic-shadow');
-                    window.style.filter = shadowFilter;
+                    window.style.filter = 'none'; // Remove shadow filter
                 });
                 
-                // Apply the same shadow to all deity message windows
+                // Keep shadow only for deity message windows
                 const deityWindows = document.querySelectorAll('.deity-message-window');
                 deityWindows.forEach(window => {
+                    // Calculate dynamic values for deity windows only
+                    const time = Date.now() * 0.001;
+                    const rotationSpeed = 0.5 + (audioLevel * 2);
+                    const angle = time * rotationSpeed;
+                    
+                    const baseOffset = 4;
+                    const baseBlur = 4;
+                    const baseSpread = 8;
+                    
+                    const intensityMultiplier = 1 + (audioLevel * 3);
+                    const spreadMultiplier = 1 + (audioLevel * 4);
+                    
+                    const xOffset = Math.cos(angle) * baseOffset * intensityMultiplier;
+                    const yOffset = Math.sin(angle) * baseOffset * intensityMultiplier;
+                    
+                    const blur1 = baseBlur * (1 + audioLevel);
+                    const blur2 = baseBlur * 2 * (1 + audioLevel);
+                    const spread1 = baseSpread * (1 + audioLevel * 2);
+                    const spread2 = baseSpread * 2 * (1 + audioLevel * 2);
+                    
+                    const pulseIntensity = audioLevel * 0.3;
+                    const pulse = 1 + Math.sin(time * 4) * pulseIntensity;
+                    
+                    const shadowFilter = `
+                        drop-shadow(${xOffset * pulse}px ${yOffset * pulse}px ${blur1}px rgba(0, 0, 0, 0.95))
+                        drop-shadow(${xOffset * 1.5 * pulse}px ${yOffset * 1.5 * pulse}px ${blur2}px rgba(0, 0, 0, 0.85))
+                        drop-shadow(${xOffset * 2 * pulse}px ${yOffset * 2 * pulse}px ${spread1}px rgba(0, 0, 0, 0.75))
+                        drop-shadow(${xOffset * 2.5 * pulse}px ${yOffset * 2.5 * pulse}px ${spread2}px rgba(0, 0, 0, 0.65))
+                    `;
+                    
                     window.style.filter = shadowFilter;
                 });
             }
 
             function animate() {
+                // Exit immediately if on mobile
+                if (isMobile()) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                    return;
+                }
+                
                 if (!webampInstance?.store) {
                     cancelAnimationFrame(animationId);
                     animationId = null;
@@ -2767,24 +3256,34 @@
 
 
 
+                // *** PLAYLIST HEIGHT CONTROL - CHANGE THIS NUMBER TO ADJUST PLAYLIST WINDOW HEIGHT ***
+                const initialPlaylistSize = isMobile() ? 4.2 : 5; // Mobile: 4 tracks total, Desktop: 5 tracks
+                
                 // Set initial position (can be dragged anywhere later)
                 const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
                 
-                // Desktop: Position on left side, vertically centered, overlapping viewer
+                // Desktop: Position on left side, vertically centered based on total player height
                 const mainWindowWidth = 275;
                 const mainWindowHeight = 116;
+                const equalizerHeight = 116;
+                const gapBetweenWindows = 5;
+                
+                // Calculate playlist height based on number of tracks
+                const playlistHeaderHeight = 30; // Approximate header height
+                const trackHeight = 14; // Each track is about 14px high
+                const playlistHeight = playlistHeaderHeight + (initialPlaylistSize * trackHeight);
+                
+                // Calculate total height of all windows
+                const totalHeight = mainWindowHeight + equalizerHeight + gapBetweenWindows + playlistHeight;
                 
                 // Position on left side with some margin from edge
                 const posX = Math.floor(50 / zoomFactor);
                 
-                // Vertically center the main window
-                const posY = Math.floor((window.innerHeight / zoomFactor) / 2) - Math.floor(mainWindowHeight / 2);
+                // Vertically center the entire player based on total height
+                const posY = Math.floor((window.innerHeight / zoomFactor) / 2) - Math.floor(totalHeight / 2);
                 
                 // Position playlist below equalizer (main + equalizer + gap)
-                const playlistY = posY + mainWindowHeight + 116 + 5; // Below main + equalizer + 5px gap
-                
-                // Get appropriate playlist size for initial layout
-                const initialPlaylistSize = 13;
+                const playlistY = posY + mainWindowHeight + equalizerHeight + gapBetweenWindows;
                 
                 // Initialize Webamp with preloaded tracks
                 const webampOptions = {
@@ -2792,7 +3291,16 @@
                     initialSkin: skinOption,
                     zIndex: 100,
                     enableHotkeys: false,
-                    initialWindowLayout: {
+                    __initialWindowLayout: isMobile() ? {
+                        // Mobile: Main + Playlist only (no equalizer), positioned 10% higher
+                        main: { position: { x: Math.floor((window.innerWidth - 275 * 1.3) / (2 * 1.3)), y: Math.floor(((window.innerHeight * 0.4) - 176 * 1.3) / (2 * 1.3)) } },
+                        equalizer: { closed: true }, // Explicitly close equalizer on mobile
+                        playlist: { 
+                            position: { x: Math.floor((window.innerWidth - 275 * 1.3) / (2 * 1.3)), y: Math.floor(((window.innerHeight * 0.4) - 176 * 1.3) / (2 * 1.3)) + 116 },
+                            size: [0, initialPlaylistSize]
+                        }
+                    } : {
+                        // Desktop: Full positioning control
                         main: { position: { x: posX, y: posY } },
                         equalizer: { position: { x: posX, y: posY + 116 } }, // Directly below main window
                         playlist: { 
@@ -2842,15 +3350,85 @@
 
                 // Center windows
                 centerWindows();
+                
+                // Hide equalizer on mobile using Webamp API
+                if (isMobile()) {
+                    // Initial hide
+                    webampInstance.store.dispatch({
+                        type: 'SET_WINDOW_VISIBILITY',
+                        windowId: 'equalizer',
+                        hidden: true
+                    });
 
-                // Set playlist size to 13 tracks explicitly
+                    // Set up a mutation observer to ensure equalizer stays hidden
+                    const observer = new MutationObserver((mutations) => {
+                        const eqWindow = document.querySelector('#webamp .equalizer-window');
+                        if (eqWindow && !eqWindow.style.display === 'none') {
+                            webampInstance.store.dispatch({
+                                type: 'SET_WINDOW_VISIBILITY',
+                                windowId: 'equalizer',
+                                hidden: true
+                            });
+                        }
+                    });
+
+                    // Start observing after a short delay to ensure Webamp is fully rendered
+                    setTimeout(() => {
+                        const webampContainer = document.querySelector('#webamp');
+                        if (webampContainer) {
+                            observer.observe(webampContainer, {
+                                childList: true,
+                                subtree: true,
+                                attributes: true
+                            });
+                        }
+
+                        // Additional forceful approaches
+                        const eqWindow = document.querySelector('#webamp .equalizer-window');
+                        if (eqWindow) {
+                            eqWindow.style.display = 'none';
+                            eqWindow.style.visibility = 'hidden';
+                        }
+
+                        // Also try closing through the window state
+                        webampInstance.store.dispatch({
+                            type: 'CLOSE_WINDOW',
+                            windowId: 'equalizer'
+                        });
+                    }, 100);
+
+                    // Periodically check and hide if somehow shown
+                    const hideInterval = setInterval(() => {
+                        const state = webampInstance.store.getState();
+                        if (state?.windows?.genWindows?.equalizer && !state.windows.genWindows.equalizer.hidden) {
+                            webampInstance.store.dispatch({
+                                type: 'SET_WINDOW_VISIBILITY',
+                                windowId: 'equalizer',
+                                hidden: true
+                            });
+                        }
+                    }, 1000);
+
+                    // Clean up interval when Webamp closes
+                    webampInstance.onWillClose(() => {
+                        clearInterval(hideInterval);
+                        observer.disconnect();
+                    });
+                }
+
+
+
+                // Set playlist size to the specified number of tracks explicitly
                 setTimeout(() => {
                     if (webampInstance && webampInstance.store) {
-                        console.log('Setting playlist size to 13 tracks');
+                        const playlistSize = isMobile() ? 1 : initialPlaylistSize;
+                        console.log(`Setting playlist size to ${playlistSize} tracks (mobile: ${isMobile()})`);
                         webampInstance.store.dispatch({
                             type: 'SET_PLAYLIST_WINDOW_SIZE',
-                            size: [0, 13]
+                            size: [0, playlistSize]
                         });
+                        
+
                     }
                 }, 500);
 
@@ -2883,7 +3461,7 @@
 
 
                 
-                // Start the haunted animation immediately
+                // Start the haunted animation for both desktop and mobile
                 startHauntedAnimation();
 
                 // Add essential click handlers
@@ -3074,6 +3652,12 @@
             
             window.eqInitialized = false;
             
+            // Cleanup starfield
+            if (starField) {
+                starField.destroy();
+                starField = null;
+            }
+            
             // Cleanup deity messages
             if (deityMessageSystem) {
                 deityMessageSystem.cleanup();
@@ -3157,6 +3741,30 @@
                             // Show the cover window
                             const coverWindow = document.getElementById('cover-window');
                             coverWindow.classList.add('visible');
+                            
+                            // On mobile, ensure both windows are always visible and positioned correctly
+                            if (isMobile()) {
+                                // Force visibility and positioning for mobile
+                                viewerWindow.style.opacity = '1';
+                                coverWindow.style.opacity = '1';
+                                
+                                // Force mobile positioning
+                                setTimeout(() => {
+                                    viewerWindow.style.position = 'fixed';
+                                    viewerWindow.style.bottom = '0';
+                                    viewerWindow.style.left = '0';
+                                    viewerWindow.style.width = '50vw';
+                                    viewerWindow.style.height = '50vw';
+                                    viewerWindow.style.transform = 'none';
+                                    
+                                    coverWindow.style.position = 'fixed';
+                                    coverWindow.style.bottom = '0';
+                                    coverWindow.style.right = '0';
+                                    coverWindow.style.width = '50vw';
+                                    coverWindow.style.height = '50vw';
+                                    coverWindow.style.transform = 'none';
+                                }, 100);
+                            }
                             
                             // After password overlay fades out, start playback
                             setTimeout(() => {
@@ -3310,8 +3918,38 @@
             requestAnimationFrame(animate);
         }
 
+        // Handle window resize for mobile layout adjustments
+        function handleResize() {
+            if (webampInstance && webampInstance.store) {
+                // Re-center windows when window resizes
+                centerWindows();
+                
+                // Hide equalizer on mobile after resize using API
+                if (isMobile()) {
+                    setTimeout(() => {
+                        webampInstance.store.dispatch({
+                            type: 'SET_WINDOW_VISIBILITY',
+                            windowId: 'equalizer',
+                            hidden: true
+                        });
+                        
+                        const state = webampInstance.store.getState();
+                        if (state?.windows?.genWindows?.equalizer && !state.windows.genWindows.equalizer.hidden) {
+                            webampInstance.store.dispatch({
+                                type: 'TOGGLE_WINDOW',
+                                windowId: 'equalizer'
+                            });
+                        }
+                    }, 200);
+                }
+            }
+        }
+
         // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize starfield background
+            starField = new StarField();
+            
             // Start preloading backgrounds immediately
             preloadBackgrounds();
             
@@ -3338,6 +3976,16 @@
                 window.legendariumLogoAnimStarted = true;
                 startLegendariumLogoAnimation();
             }
+            
+            // Add resize listener for mobile layout adjustments
+            window.addEventListener('resize', handleResize);
+            
+            // Cleanup on page unload
+            window.addEventListener('beforeunload', () => {
+                if (starField) {
+                    starField.destroy();
+                }
+            });
         });
         
         // Remove animation toggle related styles
