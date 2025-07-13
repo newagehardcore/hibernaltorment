@@ -17,7 +17,7 @@
             
             /* Starfield configuration - easy to modify */
             --starfield-speed: 1.5; /* Base speed multiplier */
-            --starfield-density: 800; /* Number of stars */
+            --starfield-density: 000; /* Number of stars */
             --starfield-brightness: 0.9; /* Star brightness (0-1) */
         }
 
@@ -86,31 +86,43 @@
             transition: all 0.5s ease-in-out;
         }
         
-        /* Mobile zoom variables */
-        @media screen and (max-width: 768px) {
-            :root {
-                --webamp-zoom: 1.4;
-            }
-        }
-
-        /* Desktop zoom variables */
-        @media screen and (min-width: 769px) {
-            :root {
-                --webamp-zoom: 1.0;
-            }
-        }
-
-        @media screen and (min-width: 1921px) {
-            :root {
-                --webamp-zoom: 1.05;
-            }
+        /* Consistent zoom across all devices */
+        :root {
+            --webamp-zoom: 1.3;
         }
 
         /* Remove any position constraints from windows */
+        /* Base styles for all windows */
         #webamp .window {
             position: absolute !important;  /* Override any other positioning */
             will-change: transform;
             z-index: 2;
+            cursor: move !important;
+            touch-action: none !important;  /* Prevent scrolling while dragging on mobile */
+            animation: float-main 36s ease-in-out infinite;  /* Default animation - 300% slower */
+        }
+
+        /* Specific animations for each window type */
+        #webamp #main-window {
+            animation: float-main 36s ease-in-out infinite;  /* 300% slower */
+        }
+
+        #webamp #equalizer-window {
+            animation: float-eq 36s ease-in-out infinite;  /* 300% slower */
+        }
+
+        #webamp #playlist-window {
+            animation: float-playlist 36s ease-in-out infinite;  /* 300% slower */
+        }
+
+        /* Keep floating animation on mobile - removed restriction */
+        
+        /* Ensure draggable elements work on touch devices */
+        #webamp .title-bar,
+        #webamp .dragger,
+        #webamp .handle {
+            cursor: move !important;
+            touch-action: none !important;
         }
         
         /* Additional glow effect for windows */
@@ -323,13 +335,7 @@
             animation: floatCover 8.7s ease-in-out infinite;
         }
 
-        /* Ensure the animation doesn't interfere with mobile layout */
-        @media (max-width: 768px) {
-            #viewer-window,
-            #cover-window {
-                animation: none !important;
-            }
-        }
+        /* Keep viewer and cover animations on mobile - removed restriction */
 
         .deity-message-window.appearing {
             animation: tvTurnOn 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards, float 8s ease-in-out infinite 1.2s;
@@ -682,7 +688,7 @@
             }
         }
 
-        @keyframes float {
+        @keyframes float-main {
             0%, 100% {
                 transform: translate(0, 0) rotate(0deg);
             }
@@ -697,6 +703,42 @@
             }
             80% {
                 transform: translate(1px, 4px) rotate(-0.2deg);
+            }
+        }
+
+        @keyframes float-eq {
+            0%, 100% {
+                transform: translate(-2px, 2px) rotate(-0.3deg);
+            }
+            20% {
+                transform: translate(-4px, -2px) rotate(0.5deg);
+            }
+            40% {
+                transform: translate(3px, -4px) rotate(-0.2deg);
+            }
+            60% {
+                transform: translate(2px, 3px) rotate(0.4deg);
+            }
+            80% {
+                transform: translate(-3px, 1px) rotate(-0.6deg);
+            }
+        }
+
+        @keyframes float-playlist {
+            0%, 100% {
+                transform: translate(2px, -3px) rotate(0.4deg);
+            }
+            20% {
+                transform: translate(-3px, -1px) rotate(-0.3deg);
+            }
+            40% {
+                transform: translate(1px, 4px) rotate(0.6deg);
+            }
+            60% {
+                transform: translate(-2px, -4px) rotate(-0.2deg);
+            }
+            80% {
+                transform: translate(3px, 2px) rotate(0.5deg);
             }
         }
 
@@ -730,6 +772,21 @@
             }
             85% {
                 transform: translate(3px, -2px) rotate(-0.2deg);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(2px, -3px) rotate(0.3deg);
+            }
+            50% {
+                transform: translate(-1px, -2px) rotate(-0.2deg);
+            }
+            75% {
+                transform: translate(-2px, 1px) rotate(0.1deg);
             }
         }
 
@@ -778,13 +835,14 @@
 
         #legendarium-logo-link {
             position: fixed;
-            right: 2vw;
-            bottom: 2vh;
-            z-index: 2000;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
             display: block;
-            width: 10vw;
-            max-width: 110px;
-            min-width: 60px;
+            width: 15vw;
+            max-width: 180px;
+            min-width: 80px;
             height: auto;
             cursor: pointer;
             opacity: 0;
@@ -815,9 +873,9 @@
         /* Viewer Window Styles */
         #viewer-window {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: 5%;
+            left: 35%;
+            transform: none;
             aspect-ratio: 1/1;
             background: #000000;
             border: none;
@@ -829,17 +887,38 @@
             user-select: none;
             display: flex;
             flex-direction: column;
-            max-height: 95vh;
-            max-width: 95vw;
-            width: 90vmin;
-            height: 90vmin;
+            max-height: none;
+            max-width: none;
+            width: 828px; 
+            height: 828px;
             opacity: 0;
             transition: opacity 0.8s ease-in-out, width 0.3s ease-out, height 0.3s ease-out;
             resize: both;
             overflow: hidden;
         }
 
-
+        @media (max-width: 768px) {
+            #viewer-window {
+                /* Mobile viewer window positioning (unchanged) */
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                width: 50vw !important;
+                height: 50vw !important;
+                max-height: none !important;
+                max-width: none !important;
+                min-width: 50vw !important;
+                min-height: 50vw !important;
+                transform: none !important;
+                cursor: default !important;
+                resize: none !important;
+                opacity: 1 !important;
+                top: auto !important;
+                right: auto !important;
+                z-index: 5 !important;
+                display: block !important;
+            }
+        }
 
         /* Add resize handle */
         .viewer-resize-handle {
@@ -1000,11 +1079,9 @@
             display: none !important;
         }
 
-        /* Cover Window Styles */
+        /* Cover Window Styles - Desktop Hidden */
         #cover-window {
             position: fixed;
-            top: 20%;
-            left: 20%;
             transform: none;
             background: #000000;
             border: none;
@@ -1017,11 +1094,18 @@
             display: flex;
             flex-direction: column;
             width: 300px;
-            height: 333px; /* Slightly taller to account for header (25px) + bottom (8px) = 33px extra */
+            height: 333px;
             opacity: 0;
-            transition: opacity 0.8s ease-in-out, width 0.3s ease-out, height 0.3s ease-out;
+            transition: opacity 0.8s ease-in-out;
             resize: both;
             overflow: hidden;
+        }
+
+        /* Hide cover window on desktop */
+        @media screen and (min-width: 769px) {
+            #cover-window {
+                display: none !important;
+            }
         }
 
         #cover-window.visible {
@@ -1031,7 +1115,7 @@
         .cover-header {
             width: 100%;
             height: 25px;
-            background-image: url('./assets/skins/viewerHeader.png');
+            background-image: url('./assets/skins/coverHeader.png');
             background-repeat: no-repeat;
             background-size: 100% 100%;
             background-position: center;
@@ -1071,14 +1155,25 @@
         .cover-content {
             flex: 1;
             background: #000000;
-            border-left: 2px dotted rgba(255, 255, 255, 0.8);
-            border-right: 2px dotted rgba(255, 255, 255, 0.8);
             position: relative;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0;
+        }
+
+        #cover-window::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 2px;
+            right: 2px;
+            bottom: 0;
+            border-left: 2px dotted rgba(255, 255, 255, 0.8);
+            border-right: 2px dotted rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            z-index: 1;
         }
 
         .cover-image-container {
@@ -1118,7 +1213,6 @@
             border-bottom: 2px dotted rgba(255, 255, 255, 0.8);
         }
 
-        /* Create double dotted line effect for cover side borders - matching viewer style */
         .cover-content::before {
             content: '';
             position: absolute;
@@ -1132,7 +1226,6 @@
             z-index: 1;
         }
 
-        /* Add resize handle */
         .cover-resize-handle {
             position: absolute;
             right: 0;
@@ -1163,13 +1256,7 @@
                 width: 100% !important;
             }
             
-            /* Disable webamp window dragging and movement on mobile */
-            #webamp .window {
-                pointer-events: auto !important;
-                position: fixed !important;
-            }
-            
-            /* Position webamp container - let API handle positioning */
+            /* Position webamp container */
             #webamp-container {
                 position: fixed !important;
                 top: 0 !important;
@@ -1177,18 +1264,6 @@
                 z-index: 10 !important;
             }
             
-
-            
-            /* Disable dragging and movement on mobile */
-            #webamp .window {
-                pointer-events: auto !important;
-            }
-            
-            /* Ensure playlist shows only 4 tracks on mobile */
-            #webamp .playlist-window .playlist-tracks {
-                max-height: 60px !important; /* Roughly 4 tracks */
-                overflow: hidden !important;
-            }
             
             /* Mobile viewer window positioning */
             #viewer-window {
@@ -1210,10 +1285,33 @@
                 z-index: 5 !important;
                 /* Remove flex layout since header is hidden */
                 display: block !important;
+                transition: all 0.3s ease-in-out !important;
+            }
+            
+            /* Lightbox state for viewer */
+            #viewer-window.lightbox {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vw !important;
+                max-height: 100vh !important;
+                z-index: 1000 !important;
+                transform-origin: bottom left !important;
             }
             
             /* Make viewer content fill entire window */
             #viewer-window .viewer-content {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                flex: none !important;
+            }
+            
+            /* Lightbox content for viewer */
+            #viewer-window.lightbox .viewer-content {
                 position: absolute !important;
                 top: 0 !important;
                 left: 0 !important;
@@ -1261,11 +1359,22 @@
                 top: auto !important;
                 left: auto !important;
                 z-index: 5 !important;
-                /* Remove flex layout since header is hidden */
                 display: block !important;
+                transition: all 0.3s ease-in-out !important;
             }
             
-            /* Make cover content fill entire window */
+            /* Lightbox state for cover */
+            #cover-window.lightbox {
+                position: fixed !important;
+                bottom: 0 !important;
+                right: 0 !important;
+                width: 100vw !important;
+                height: 100vw !important;
+                max-height: 100vh !important;
+                z-index: 1000 !important;
+                transform-origin: bottom right !important;
+            }
+            
             #cover-window .cover-content {
                 position: absolute !important;
                 top: 0 !important;
@@ -1275,92 +1384,27 @@
                 flex: none !important;
             }
             
-            /* Hide cover header completely on mobile */
+            /* Lightbox content for cover */
+            #cover-window.lightbox .cover-content {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                flex: none !important;
+            }
+            
             .cover-header {
                 display: none !important;
             }
             
-            /* Hide cover resize handle on mobile */
             .cover-resize-handle {
                 display: none !important;
             }
             
-            /* Enhance cover border to match webamp style */
             .cover-content {
                 border: 3px dotted rgba(255, 255, 255, 0.9) !important;
                 border-style: dotted !important;
-            }
-            
-            .cover-content::before {
-                border: 3px dotted rgba(255, 255, 255, 0.9) !important;
-                border-style: dotted !important;
-            }
-            
-            /* Keep deity messages draggable but disable other dragging */
-            .deity-message-window {
-                cursor: move !important;
-            }
-            
-            /* Ensure content areas remain interactive */
-            .viewer-content,
-            .cover-content {
-                pointer-events: auto !important;
-            }
-            
-            /* Adjust Legendarium logo for mobile */
-            #legendarium-logo-link {
-                right: 2vw !important;
-                bottom: 52vw !important; /* Position above the bottom windows */
-                width: 12vw !important;
-                max-width: 80px !important;
-                min-width: 50px !important;
-            }
-            
-            /* Remove logo hover animation on mobile */
-            #legendarium-logo-link:hover #legendarium-logo {
-                transform: none !important;
-            }
-            
-            /* Scale deity messages but keep them draggable on mobile */
-            .deity-message-window {
-                cursor: move !important;
-                transform: scale(0.75) !important;
-                transform-origin: center !important;
-            }
-            
-            /* Ensure password overlay works on mobile */
-            #password-overlay {
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100vw !important;
-                height: 100vh !important;
-            }
-            
-            #password-container {
-                width: 90vw !important;
-                max-width: 300px !important;
-            }
-            
-            /* Additional mobile safeguards */
-            #webamp .window.dynamic-shadow {
-                filter: none !important; /* Disable dynamic shadows on mobile */
-            }
-            
-            /* Force remove any transforms on mobile */
-            #viewer-window *, #cover-window * {
-                transform: none !important;
-            }
-            
-            /* Ensure windows are always on top on mobile */
-            #viewer-window, #cover-window {
-                z-index: 5 !important;
-            }
-            
-            /* Remove bottom borders since headers are hidden */
-            .viewer-bottom,
-            .cover-bottom {
-                display: none !important;
             }
         }
 
@@ -1794,18 +1838,56 @@
             
             positionRandomly(element) {
                 const margin = 50;
-                const maxX = window.innerWidth - element.offsetWidth - margin;
-                const maxY = window.innerHeight - element.offsetHeight - margin;
                 
                 // Ensure we have valid dimensions
                 const elementWidth = 315; // Updated to match new scaled width
                 const elementHeight = 120; // Estimated height
                 
-                const x = Math.max(margin, Math.random() * (window.innerWidth - elementWidth - margin));
-                const y = Math.max(margin, Math.random() * (window.innerHeight - elementHeight - margin));
+                // Check if we're on mobile
+                const isMobile = window.innerWidth <= 768;
                 
-                element.style.left = x + 'px';
-                element.style.top = y + 'px';
+                if (isMobile) {
+                    // Mobile: Always center the message like a text message
+                    const screenWidth = window.innerWidth;
+                    const screenHeight = window.innerHeight;
+                    
+                    const x = (screenWidth - elementWidth) / 2;
+                    const y = (screenHeight - elementHeight) / 2;
+                    
+                    element.style.left = x + 'px';
+                    element.style.top = y + 'px';
+                } else {
+                    // Desktop: Use the original right-third positioning
+                    // Calculate the right third of the screen
+                    const screenWidth = window.innerWidth;
+                    const rightThirdStart = screenWidth * (2/3); // Start at 2/3 of screen width
+                    const rightThirdWidth = screenWidth * (1/3); // Right third width
+                    
+                    // Calculate the middle third of the right column (vertically)
+                    const screenHeight = window.innerHeight;
+                    const middleThirdStart = screenHeight * (1/3); // Start at 1/3 of screen height
+                    const middleThirdHeight = screenHeight * (1/3); // Middle third height
+                    
+                    // Calculate available area within the restricted zone
+                    const availableWidth = rightThirdWidth - elementWidth - margin;
+                    const availableHeight = middleThirdHeight - elementHeight - margin;
+                    
+                    // Ensure we have enough space
+                    if (availableWidth < 0 || availableHeight < 0) {
+                        // Fallback to center of the restricted area if element is too large
+                        const x = rightThirdStart + (rightThirdWidth - elementWidth) / 2;
+                        const y = middleThirdStart + (middleThirdHeight - elementHeight) / 2;
+                        element.style.left = x + 'px';
+                        element.style.top = y + 'px';
+                    } else {
+                        // Random position within the restricted zone
+                        const x = rightThirdStart + margin + Math.random() * availableWidth;
+                        const y = middleThirdStart + margin + Math.random() * availableHeight;
+                        
+                        element.style.left = x + 'px';
+                        element.style.top = y + 'px';
+                    }
+                }
             },
             
             makeDraggable(element) {
@@ -2154,11 +2236,14 @@
             // Set up viewer buttons
             setupViewerControls();
 
-            // Make the cover window draggable
-            makeCoverDraggable();
+            // Set up mobile lightbox functionality
+            setupMobileLightbox();
+
+            // Make the cover window draggable - COMMENTED OUT
+            // makeCoverDraggable();
             
-            // Set up cover window controls
-            setupCoverControls();
+            // Set up cover window controls - COMMENTED OUT
+            // setupCoverControls();
         }
 
         // Function to check if we're on mobile
@@ -2444,17 +2529,12 @@
                     // Mobile: Fixed position at bottom-left, handled by CSS
                     // No need to set positions here, CSS handles it
                 } else {
-                    // Desktop: Reset transform to use absolute positioning
+                    // Desktop: Fixed pixel size and position
                     viewerWindow.style.transform = 'none';
-                    
-                    // Get square size based on viewport (90% of smaller viewport dimension)
-                    const squareSize = Math.min(window.innerWidth, window.innerHeight) * 0.9;
-                    
-                    // Center it on screen
-                    viewerWindow.style.top = `${(window.innerHeight - squareSize) / 2}px`;
-                    viewerWindow.style.left = `${(window.innerWidth - squareSize) / 2}px`;
-                    viewerWindow.style.width = `${squareSize}px`;
-                    viewerWindow.style.height = `${squareSize}px`;
+                    viewerWindow.style.width = '828px';
+                    viewerWindow.style.height = '828px';
+                    viewerWindow.style.top = '5%';
+                    viewerWindow.style.left = '35%';
                 }
             });
             
@@ -2509,7 +2589,8 @@
             }
         }
 
-        // Function to make the cover window draggable
+        // Function to make the cover window draggable - COMMENTED OUT
+        /*
         function makeCoverDraggable() {
             const coverWindow = document.getElementById('cover-window');
             
@@ -2590,8 +2671,54 @@
                 if (isDragging) e.preventDefault();
             });
         }
+        */
 
-        // Set up cover window controls
+        // Set up mobile lightbox functionality
+        function setupMobileLightbox() {
+            if (!isMobile()) return;
+            
+            const viewerWindow = document.getElementById('viewer-window');
+            const coverWindow = document.getElementById('cover-window');
+            
+            // Viewer lightbox
+            if (viewerWindow) {
+                viewerWindow.addEventListener('click', (e) => {
+                    // Don't trigger if clicking on close button or resize handle
+                    if (e.target.closest('.viewer-close-button') || e.target.closest('.viewer-resize-handle')) {
+                        return;
+                    }
+                    
+                    if (viewerWindow.classList.contains('lightbox')) {
+                        // Exit lightbox
+                        viewerWindow.classList.remove('lightbox');
+                    } else {
+                        // Enter lightbox
+                        viewerWindow.classList.add('lightbox');
+                    }
+                });
+            }
+            
+            // Cover lightbox
+            if (coverWindow) {
+                coverWindow.addEventListener('click', (e) => {
+                    // Don't trigger if clicking on close button or resize handle
+                    if (e.target.closest('.cover-close-button') || e.target.closest('.cover-resize-handle')) {
+                        return;
+                    }
+                    
+                    if (coverWindow.classList.contains('lightbox')) {
+                        // Exit lightbox
+                        coverWindow.classList.remove('lightbox');
+                    } else {
+                        // Enter lightbox
+                        coverWindow.classList.add('lightbox');
+                    }
+                });
+            }
+        }
+
+        // Set up cover window controls - COMMENTED OUT
+        /*
         function setupCoverControls() {
             const coverWindow = document.getElementById('cover-window');
             const closeButton = coverWindow.querySelector('.cover-close-button');
@@ -2610,11 +2737,27 @@
                     // Mobile: Fixed position at bottom-right, handled by CSS
                     // No need to set positions here, CSS handles it
                 } else {
-                    // Desktop: Position it to the right side of the screen
+                    // Desktop: Position it near the equalizer window
                     const initialWidth = 300;
                     const initialHeight = 333; // Slightly rectangular for square image area
-                    coverWindow.style.top = `${(window.innerHeight - initialHeight) / 2}px`;
-                    coverWindow.style.left = `${window.innerWidth - initialWidth - 50}px`;
+                    
+                    // Convert vh to pixels for fixed positioning
+                    const bottomPixels = Math.round(window.innerHeight * 0.15); // 15vh in pixels
+                    
+                    // Calculate position relative to window width
+                    const rightOffset = Math.round(window.innerWidth * 0.15); // 15% from right
+                    
+                    // Set absolute pixel positions
+                    coverWindow.style.position = 'fixed';
+                    coverWindow.style.bottom = `${bottomPixels}px`;
+                    coverWindow.style.width = `${initialWidth}px`;
+                    coverWindow.style.height = `${initialHeight}px`;
+                    coverWindow.style.top = 'auto';
+                    coverWindow.style.left = 'auto';
+                    
+                    // Store initial position in data attributes for reference
+                    coverWindow.dataset.initialBottom = bottomPixels;
+                    coverWindow.dataset.initialRight = rightOffset;
                 }
             });
             
@@ -2673,6 +2816,7 @@
                 }
             }
         }
+        */
         
 
 
@@ -2761,78 +2905,52 @@
             if (!webampInstance || !webampInstance.store) return;
 
             const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
+            const isMobile = window.innerWidth <= 768;
 
-            // Mobile layout: Center webamp in available space above bottom windows
-            if (isMobile()) {
-                // Set small playlist size for mobile (4 tracks)
-                webampInstance.store.dispatch({
-                    type: 'SET_PLAYLIST_WINDOW_SIZE',
-                    size: [0, 1] // Show only 1 extra track (4 total with header)
-                });
+            // Position windows based on device type
+            let posX, posY, eqY, playlistY;
+            
+            if (isMobile) {
+                // Mobile positioning logic with equalizer between transport and playlist
+                const mainWindowWidth = 275;
+                const mainWindowHeight = 116;
+                const equalizerHeight = 116;
                 
-                // Calculate center position in available space
-                const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
+                posX = Math.floor((window.innerWidth / zoomFactor) / 2) - Math.floor(mainWindowWidth / 2);
                 
-                // Available space above bottom windows (50vw = 50% of viewport width)
-                const bottomWindowHeight = window.innerHeight * 0.5; // 50vw converted to pixels
-                const availableHeight = window.innerHeight - bottomWindowHeight;
+                const tracksToShow = window.mobilePlaylistSize || 4;
+                const playlistHeaderHeight = 30;
+                const trackHeight = 14;
+                const playlistHeight = playlistHeaderHeight + (tracksToShow * trackHeight);
                 
-                // Total webamp height (main + playlist only, no equalizer)
-                const webampTotalHeight = (116 + 60) * zoomFactor; // Main + playlist height
+                const centerY = (window.innerHeight / 2) / zoomFactor;
+                playlistY = Math.floor(centerY - playlistHeight);
+                eqY = Math.floor(playlistY - equalizerHeight - 5); // EQ window above playlist
+                posY = Math.floor(eqY - mainWindowHeight - 5); // Main window above EQ
                 
-                // Center vertically in available space
-                const centerY = (availableHeight - webampTotalHeight) / 2;
-                const centerX = (window.innerWidth - (275 * zoomFactor)) / 2; // Center horizontally
+                if (posY < 5) {
+                    posY = 5;
+                    eqY = posY + mainWindowHeight + 5;
+                    playlistY = eqY + equalizerHeight + 5;
+                }
                 
-                // Convert to webamp coordinate system (divide by zoom)
-                const posX = Math.floor(centerX / zoomFactor);
-                const posY = Math.floor(centerY / zoomFactor);
-                
-                window.lastKnownPositions = {
-                    main: { x: posX, y: posY },
-                    playlist: { x: posX, y: posY + 116 } // Playlist where EQ was
-                };
-                
-                webampInstance.store.dispatch({
-                    type: 'UPDATE_WINDOW_POSITIONS',
-                    positions: window.lastKnownPositions,
-                    absolute: true
-                });
-                
-                return;
+                posX = Math.max(0, Math.min(posX, (window.innerWidth / zoomFactor) - mainWindowWidth));
+            } else {
+                // Desktop: Stack windows on the left side
+                posX = Math.floor((window.innerWidth * 0.08) / zoomFactor); // 8% from left edge
+                posY = Math.floor((window.innerHeight * 0.12) / zoomFactor); // 12% from top
+                eqY = posY + 116; // EQ window starts right after main window
+                playlistY = eqY + 116; // Playlist starts right after EQ window
             }
 
-            // Desktop: Position on left side, vertically centered based on total player height
-            const mainWindowWidth = 275;
-            const mainWindowHeight = 116;
-            const equalizerHeight = 116;
-            const gapBetweenWindows = 5;
-            
-            // Get current playlist size from Webamp state
-            const state = webampInstance.store.getState();
-            const playlistSize = state?.windows?.genWindows?.playlist?.size?.[1] || 5;
-            
-            // Calculate playlist height based on number of tracks
-            const playlistHeaderHeight = 30; // Approximate header height
-            const trackHeight = 14; // Each track is about 14px high
-            const playlistHeight = playlistHeaderHeight + (playlistSize * trackHeight);
-            
-            // Calculate total height of all windows
-            const totalHeight = mainWindowHeight + equalizerHeight + gapBetweenWindows + playlistHeight;
-            
-            // Position on left side with some margin from edge
-            const posX = Math.floor(50 / zoomFactor);
-            
-            // Vertically center the entire player based on total height
-            const posY = Math.floor(window.innerHeight / (2 * zoomFactor)) - Math.floor(totalHeight / 2);
-            
-            // Position playlist below equalizer (main + equalizer + gap)
-            const playlistY = posY + mainWindowHeight + equalizerHeight + gapBetweenWindows;
-
             // Store these positions for animation reference
-            window.lastKnownPositions = {
+            window.lastKnownPositions = isMobile ? {
                 main: { x: posX, y: posY },
-                equalizer: { x: posX, y: posY + mainWindowHeight }, // Position equalizer directly below main window
+                equalizer: { x: posX, y: eqY },
+                playlist: { x: posX, y: playlistY }
+            } : {
+                main: { x: posX, y: posY },
+                equalizer: { x: posX, y: eqY },
                 playlist: { x: posX, y: playlistY }
             };
 
@@ -3256,34 +3374,25 @@
 
 
 
-                // *** PLAYLIST HEIGHT CONTROL - CHANGE THIS NUMBER TO ADJUST PLAYLIST WINDOW HEIGHT ***
-                const initialPlaylistSize = isMobile() ? 4.2 : 5; // Mobile: 4 tracks total, Desktop: 5 tracks
+                // Set consistent playlist size for both mobile and desktop
+                const initialPlaylistSize = 4.4; // Show 12 tracks
                 
                 // Set initial position (can be dragged anywhere later)
                 const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
                 
-                // Desktop: Position on left side, vertically centered based on total player height
+                // Window dimensions
                 const mainWindowWidth = 275;
                 const mainWindowHeight = 116;
                 const equalizerHeight = 116;
-                const gapBetweenWindows = 5;
-                
-                // Calculate playlist height based on number of tracks
-                const playlistHeaderHeight = 30; // Approximate header height
-                const trackHeight = 14; // Each track is about 14px high
+                const playlistHeaderHeight = 30;
+                const trackHeight = 14;
                 const playlistHeight = playlistHeaderHeight + (initialPlaylistSize * trackHeight);
                 
-                // Calculate total height of all windows
-                const totalHeight = mainWindowHeight + equalizerHeight + gapBetweenWindows + playlistHeight;
-                
-                // Position on left side with some margin from edge
-                const posX = Math.floor(50 / zoomFactor);
-                
-                // Vertically center the entire player based on total height
-                const posY = Math.floor((window.innerHeight / zoomFactor) / 2) - Math.floor(totalHeight / 2);
-                
-                // Position playlist below equalizer (main + equalizer + gap)
-                const playlistY = posY + mainWindowHeight + equalizerHeight + gapBetweenWindows;
+                // Position windows stacked on the left side
+                const leftPosX = Math.floor((window.innerWidth * 0.08) / zoomFactor); // 8% from left edge
+                const mainPosY = Math.floor((window.innerHeight * 0.12) / zoomFactor); // 12% from top
+                const eqPosY = mainPosY + mainWindowHeight; // EQ window starts right after main window
+                const playlistPosY = eqPosY + equalizerHeight; // Playlist starts right after EQ window
                 
                 // Initialize Webamp with preloaded tracks
                 const webampOptions = {
@@ -3291,21 +3400,12 @@
                     initialSkin: skinOption,
                     zIndex: 100,
                     enableHotkeys: false,
-                    __initialWindowLayout: isMobile() ? {
-                        // Mobile: Main + Playlist only (no equalizer), positioned 10% higher
-                        main: { position: { x: Math.floor((window.innerWidth - 275 * 1.3) / (2 * 1.3)), y: Math.floor(((window.innerHeight * 0.4) - 176 * 1.3) / (2 * 1.3)) } },
-                        equalizer: { closed: true }, // Explicitly close equalizer on mobile
+                    __initialWindowLayout: {
+                        main: { position: { x: leftPosX, y: mainPosY } },
+                        equalizer: { position: { x: leftPosX, y: eqPosY } },
                         playlist: { 
-                            position: { x: Math.floor((window.innerWidth - 275 * 1.3) / (2 * 1.3)), y: Math.floor(((window.innerHeight * 0.4) - 176 * 1.3) / (2 * 1.3)) + 116 },
+                            position: { x: leftPosX, y: playlistPosY },
                             size: [0, initialPlaylistSize]
-                        }
-                    } : {
-                        // Desktop: Full positioning control
-                        main: { position: { x: posX, y: posY } },
-                        equalizer: { position: { x: posX, y: posY + 116 } }, // Directly below main window
-                        playlist: { 
-                            position: { x: posX, y: playlistY }, // Below equalizer
-                            size: [0, initialPlaylistSize] // Use calculated size
                         }
                     }
                 };
@@ -3351,70 +3451,7 @@
                 // Center windows
                 centerWindows();
                 
-                // Hide equalizer on mobile using Webamp API
-                if (isMobile()) {
-                    // Initial hide
-                    webampInstance.store.dispatch({
-                        type: 'SET_WINDOW_VISIBILITY',
-                        windowId: 'equalizer',
-                        hidden: true
-                    });
-
-                    // Set up a mutation observer to ensure equalizer stays hidden
-                    const observer = new MutationObserver((mutations) => {
-                        const eqWindow = document.querySelector('#webamp .equalizer-window');
-                        if (eqWindow && !eqWindow.style.display === 'none') {
-                            webampInstance.store.dispatch({
-                                type: 'SET_WINDOW_VISIBILITY',
-                                windowId: 'equalizer',
-                                hidden: true
-                            });
-                        }
-                    });
-
-                    // Start observing after a short delay to ensure Webamp is fully rendered
-                    setTimeout(() => {
-                        const webampContainer = document.querySelector('#webamp');
-                        if (webampContainer) {
-                            observer.observe(webampContainer, {
-                                childList: true,
-                                subtree: true,
-                                attributes: true
-                            });
-                        }
-
-                        // Additional forceful approaches
-                        const eqWindow = document.querySelector('#webamp .equalizer-window');
-                        if (eqWindow) {
-                            eqWindow.style.display = 'none';
-                            eqWindow.style.visibility = 'hidden';
-                        }
-
-                        // Also try closing through the window state
-                        webampInstance.store.dispatch({
-                            type: 'CLOSE_WINDOW',
-                            windowId: 'equalizer'
-                        });
-                    }, 100);
-
-                    // Periodically check and hide if somehow shown
-                    const hideInterval = setInterval(() => {
-                        const state = webampInstance.store.getState();
-                        if (state?.windows?.genWindows?.equalizer && !state.windows.genWindows.equalizer.hidden) {
-                            webampInstance.store.dispatch({
-                                type: 'SET_WINDOW_VISIBILITY',
-                                windowId: 'equalizer',
-                                hidden: true
-                            });
-                        }
-                    }, 1000);
-
-                    // Clean up interval when Webamp closes
-                    webampInstance.onWillClose(() => {
-                        clearInterval(hideInterval);
-                        observer.disconnect();
-                    });
-                }
+                // Equalizer is now enabled on both mobile and desktop
 
 
 
@@ -3461,8 +3498,7 @@
 
 
                 
-                // Start the haunted animation for both desktop and mobile
-                startHauntedAnimation();
+                // Haunted animation disabled in favor of CSS floating animation
 
                 // Add essential click handlers
                 const playlistContainer = document.querySelector('#webamp .playlist-window');
@@ -3695,7 +3731,7 @@
             const passwordInput = document.getElementById('password-input');
             const accessIndicator = document.getElementById('access-indicator');
             const passwordOverlay = document.getElementById('password-overlay');
-            const correctPassword = 'trustincrust';
+            const correctPassword = ' ';
             
             // Show/hide the password label based on input
             passwordInput.addEventListener('input', function() {
@@ -3738,9 +3774,11 @@
                             const viewerWindow = document.getElementById('viewer-window');
                             viewerWindow.classList.add('visible');
                             
-                            // Show the cover window
+                            // Show the cover window (mobile only)
                             const coverWindow = document.getElementById('cover-window');
-                            coverWindow.classList.add('visible');
+                            if (isMobile()) {
+                                coverWindow.classList.add('visible');
+                            }
                             
                             // On mobile, ensure both windows are always visible and positioned correctly
                             if (isMobile()) {
@@ -3920,29 +3958,8 @@
 
         // Handle window resize for mobile layout adjustments
         function handleResize() {
-            if (webampInstance && webampInstance.store) {
-                // Re-center windows when window resizes
-                centerWindows();
-                
-                // Hide equalizer on mobile after resize using API
-                if (isMobile()) {
-                    setTimeout(() => {
-                        webampInstance.store.dispatch({
-                            type: 'SET_WINDOW_VISIBILITY',
-                            windowId: 'equalizer',
-                            hidden: true
-                        });
-                        
-                        const state = webampInstance.store.getState();
-                        if (state?.windows?.genWindows?.equalizer && !state.windows.genWindows.equalizer.hidden) {
-                            webampInstance.store.dispatch({
-                                type: 'TOGGLE_WINDOW',
-                                windowId: 'equalizer'
-                            });
-                        }
-                    }, 200);
-                }
-            }
+            // Windows should maintain their positions after initial placement
+            // Only handle other resize-related adjustments if needed
         }
 
         // Initialize everything when page loads
