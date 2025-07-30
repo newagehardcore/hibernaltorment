@@ -2737,28 +2737,9 @@
             }, 5000);
         }
 
-        // Initialize preloading immediately when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            // Start with lazy preloading - only preload first video initially
-            const preloadManager = preloadBackgroundsLazy();
+        // Remove duplicate DOMContentLoaded listener - handled in main initialization
 
-            // Start progressive loading of other videos
-            startProgressiveLoading();
 
-            // Optional: Add loading indicator
-            preloadManager.onProgress = (progress) => {
-                const percent = ((progress.loaded + progress.failed) / progress.total) * 100;
-                console.log(`Preload progress: ${percent.toFixed(1)}%`);
-            };
-
-            preloadManager.onComplete = (result) => {
-                console.log('All videos preloaded:', result);
-            };
-
-            preloadManager.onError = (error) => {
-                console.error('Preload error:', error);
-            };
-        });
 
         // Modified track change handler with detailed logging
         function handleTrackChange(trackInfo) {
@@ -4272,16 +4253,88 @@
             // Only handle other resize-related adjustments if needed
         }
 
-        // Initialize everything when page loads
-        document.addEventListener('DOMContentLoaded', () => {
+        // Mobile-first loading optimization
+        function initializeMobile() {
+            console.log('Mobile fast-track initialization');
+            
+            // Setup password validation immediately
+            setupPasswordValidation();
+            
+            // Show password overlay immediately
+            const passwordOverlay = document.getElementById('password-overlay');
+            if (passwordOverlay) {
+                passwordOverlay.style.opacity = '1';
+                passwordOverlay.style.pointerEvents = 'auto';
+            }
+
+            // Focus on password input
+            setTimeout(() => {
+                const passwordInput = document.getElementById('password-input');
+                if (passwordInput) {
+                    passwordInput.focus();
+                }
+            }, 100);
+        }
+
+        // Desktop initialization with full features
+        function initializeDesktop() {
+            console.log('Desktop full initialization');
+            
             // Initialize starfield background
             starField = new StarField();
-
-            // Start preloading backgrounds immediately
+            
+            // Start preloading backgrounds
             preloadBackgrounds();
-
+            
             // Setup password validation
             setupPasswordValidation();
+            
+            // Show password overlay
+            const passwordOverlay = document.getElementById('password-overlay');
+            if (passwordOverlay) {
+                passwordOverlay.style.opacity = '1';
+                passwordOverlay.style.pointerEvents = 'auto';
+            }
+
+            // Focus on password input
+            setTimeout(() => {
+                const passwordInput = document.getElementById('password-input');
+                if (passwordInput) {
+                    passwordInput.focus();
+                }
+            }, 500);
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Force timeout to prevent hanging
+            const forceLoadTimeout = setTimeout(() => {
+                console.log('Force loading timeout - showing site anyway');
+                const passwordOverlay = document.getElementById('password-overlay');
+                if (passwordOverlay && passwordOverlay.style.opacity !== '1') {
+                    passwordOverlay.style.opacity = '1';
+                    passwordOverlay.style.pointerEvents = 'auto';
+                    setupPasswordValidation();
+                }
+            }, 3000); // 3 second timeout
+
+            try {
+                if (isMobile()) {
+                    initializeMobile();
+                } else {
+                    initializeDesktop();
+                }
+                clearTimeout(forceLoadTimeout);
+            } catch (error) {
+                console.error('Initialization error:', error);
+                // Fallback to basic initialization
+                setupPasswordValidation();
+                const passwordOverlay = document.getElementById('password-overlay');
+                if (passwordOverlay) {
+                    passwordOverlay.style.opacity = '1';
+                    passwordOverlay.style.pointerEvents = 'auto';
+                }
+            }
 
             // Remove animation toggle button setup
             window.basePositions = null;
