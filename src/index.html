@@ -2505,7 +2505,22 @@
                 onComplete: null
             };
 
-            // Load only the first video immediately, others on demand
+            // Mobile optimization - skip video preloading entirely on mobile
+            if (isMobile()) {
+                console.log('Mobile detected - skipping video preloading for faster loading');
+                setTimeout(() => {
+                    if (preloadManager.onComplete) {
+                        preloadManager.onComplete({
+                            successCount: 0,
+                            total: 0,
+                            failed: 0
+                        });
+                    }
+                }, 100);
+                return preloadManager;
+            }
+
+            // Load only the first video immediately on desktop, others on demand
             async function preloadFirstVideo() {
                 try {
                     const firstBackground = trackBackgrounds[0];
@@ -2521,7 +2536,7 @@
                             firstBackground.preloadedVideo = video;
                             preloadProgress.loaded++;
                             console.log('First video preloaded successfully');
-                            
+
                             if (preloadManager.onComplete) {
                                 preloadManager.onComplete({
                                     successCount: 1,
@@ -2534,7 +2549,7 @@
                         video.onerror = () => {
                             preloadProgress.failed++;
                             console.error('Error preloading first video');
-                            
+
                             if (preloadManager.onComplete) {
                                 preloadManager.onComplete({
                                     successCount: 0,
@@ -2564,21 +2579,34 @@
                 return Promise.resolve(background?.preloadedVideo || null);
             }
 
+            // Skip video preloading on mobile for performance
+            if (isMobile()) {
+                console.log(`Skipping video preload on mobile for track ${trackIndex}`);
+                return Promise.resolve(null);
+            }
+
             return new Promise((resolve) => {
                 const video = document.createElement('video');
                 video.src = background.url;
                 video.muted = true;
                 video.playsInline = true;
                 video.loop = true;
-                video.preload = 'auto';
+                video.preload = 'metadata'; // Use metadata instead of auto for faster loading
+
+                const timeout = setTimeout(() => {
+                    console.log(`Video preload timeout for track ${trackIndex}`);
+                    resolve(null);
+                }, 8000); // 8 second timeout
 
                 video.onloadeddata = () => {
+                    clearTimeout(timeout);
                     background.preloadedVideo = video;
                     console.log(`On-demand video preloaded: ${trackIndex}`);
                     resolve(video);
                 };
 
                 video.onerror = () => {
+                    clearTimeout(timeout);
                     console.error(`Error preloading video ${trackIndex}`);
                     resolve(null);
                 };
@@ -2682,8 +2710,14 @@
             return preloadManager;
         }
 
-        // Progressive background loading - load more videos in background
+        // Progressive background loading - load more videos in background (desktop only)
         function startProgressiveLoading() {
+            // Skip progressive loading on mobile to save bandwidth and improve performance
+            if (isMobile()) {
+                console.log('Mobile detected - skipping progressive video loading');
+                return;
+            }
+
             // Load videos 2-5 after a short delay
             setTimeout(() => {
                 for (let i = 1; i <= 4; i++) {
@@ -2707,7 +2741,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Start with lazy preloading - only preload first video initially
             const preloadManager = preloadBackgroundsLazy();
-            
+
             // Start progressive loading of other videos
             startProgressiveLoading();
 
