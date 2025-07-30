@@ -1613,6 +1613,7 @@
                         brightness: Math.random() * 1.8 + 0.6, // Brighter base brightness
                         twinkleSpeed: Math.random() * 2.1 + 0.02, // Individual twinkle speed
                         twinklePhase: Math.random() * Math.PI * 2, // Random starting phase
+                        glowPhase: Math.random() < 0.3 ? Math.random() * Math.PI * 2 : undefined, // 30% of stars get random glow
                         x: this.centerX + Math.cos(angle) * initialDistance,
                         y: this.centerY + Math.sin(angle) * initialDistance
                     });
@@ -1649,27 +1650,57 @@
                     // Base opacity increases from center to edge
                     let opacity = distance / maxDistance * 1.5; // Increased overall brightness by 50%
 
-                    // Add twinkle effect
-                    let twinkle = Math.sin(this.time * star.twinkleSpeed * this.twinkleSpeedMultiplier * 10 + star.twinklePhase) * 0.15 + 0.85;
+                    // Enhanced sparkle effect with much longer dark periods
+                    let twinkleBase = Math.sin(this.time * star.twinkleSpeed * this.twinkleSpeedMultiplier * 2 + star.twinklePhase);
+                    // Create sparkle effect - stars are mostly dark (0.05) with occasional bright sparkles
+                    let twinkle = Math.pow(Math.max(0, twinkleBase * 0.5 + 0.5), 4.5) * 0.95 + 0.05;
 
-                    // Combine base opacity with twinkle and brightness
-                    opacity = Math.min(opacity * star.brightness * twinkle, 1);
+                    // Random glow enhancement for some stars
+                    let randomGlow = 1.0;
+                    if (star.glowPhase !== undefined) {
+                        let glowCycle = Math.sin(this.time * 0.3 + star.glowPhase);
+                        randomGlow = glowCycle > 0.7 ? 1.0 + (glowCycle - 0.7) * 2.0 : 1.0;
+                    }
+
+                    // Combine base opacity with twinkle, brightness, and random glow
+                    opacity = Math.min(opacity * star.brightness * twinkle * randomGlow, 1);
 
                     if (opacity > 0) {
-                        // Draw main star
+                        // Draw main star with enhanced glow
                         this.ctx.fillStyle = `rgba(255,255,255,${opacity})`;
                         this.ctx.beginPath();
                         this.ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
                         this.ctx.fill();
 
-                        // Add subtle glow when star is bright
-                        if (opacity > 0.5) {
-                            this.ctx.globalAlpha = opacity * 0.3;
-                            this.ctx.shadowColor = 'rgba(255,255,255,0.5)';
-                            this.ctx.shadowBlur = star.size * 2;
+                        // Enhanced glow system with multiple layers
+                        if (opacity > 0.3) {
+                            // Inner glow
+                            this.ctx.globalAlpha = opacity * 0.4;
+                            this.ctx.shadowColor = 'rgba(255,255,255,0.8)';
+                            this.ctx.shadowBlur = star.size * 3;
                             this.ctx.beginPath();
-                            this.ctx.arc(star.x, star.y, star.size * 0.8, 0, Math.PI * 2);
+                            this.ctx.arc(star.x, star.y, star.size * 1.2, 0, Math.PI * 2);
                             this.ctx.fill();
+
+                            // Outer glow for brighter stars
+                            if (opacity > 0.6) {
+                                this.ctx.globalAlpha = opacity * 0.2;
+                                this.ctx.shadowBlur = star.size * 6;
+                                this.ctx.beginPath();
+                                this.ctx.arc(star.x, star.y, star.size * 2, 0, Math.PI * 2);
+                                this.ctx.fill();
+                            }
+
+                            // Extra sparkle for very bright stars
+                            if (opacity > 0.8 && randomGlow > 1.2) {
+                                this.ctx.globalAlpha = (opacity - 0.8) * 0.3;
+                                this.ctx.shadowBlur = star.size * 10;
+                                this.ctx.shadowColor = 'rgba(200,220,255,0.6)';
+                                this.ctx.beginPath();
+                                this.ctx.arc(star.x, star.y, star.size * 3, 0, Math.PI * 2);
+                                this.ctx.fill();
+                            }
+
                             this.ctx.globalAlpha = 1;
                             this.ctx.shadowBlur = 0;
                         }
@@ -2151,15 +2182,15 @@
         // Define the music files with their metadata - exact file names from the directory
         const tracksData = [
             {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753888614/01_Gross_Excelations_v2.mp3",
-                defaultName: "Gross Excelations",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753891932/01_Gross_Excalations_v3.mp3",
+                defaultName: "Gross Excalations",
                 duration: 68.784,
                 metaData: {
-                    title: "Gross Excelations"
+                    title: "Gross Excalations"
                 }
             },
             {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753888634/02_Two_Travelers_v2.mp3",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753891952/02_Two_Travelers_v3.mp3",
                 defaultName: "Two Travelers",
                 duration: 208.152,
                 metaData: {
@@ -2167,7 +2198,7 @@
                 }
             },
             {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753888654/03_Chambers_of_the_Starwatcher_v2.mp3",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753891962/03_Chambers_of_the_Starwatcher_v3.mp3",
                 defaultName: "Chambers of the Starwatcher",
                 duration: 218.5665,
                 metaData: {
@@ -2175,7 +2206,7 @@
                 }
             },
             {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753888674/04_Hibernal_Torment_v2.mp3",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753891972/04_Hibernal_Torment_v3.mp3",
                 defaultName: "Hibernal Torment",
                 duration: 216,
                 metaData: {
@@ -2183,7 +2214,7 @@
                 }
             },
             {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753888718/05_Rats_v2.mp3",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753892009/05_Rats_v3.mp3",
                 defaultName: "Rats",
                 duration: 233.64,
                 metaData: {
@@ -2191,7 +2222,7 @@
                 }
             },
             {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753888738/06_Entrusted_to_Fools_v2.mp3",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753892029/06_Entrusted_to_Fools_v3.mp3",
                 defaultName: "Entrusted to Fools",
                 duration: 196.008,
                 metaData: {
@@ -2199,15 +2230,15 @@
                 }
             },
             {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753888758/07_Stale_Biscuits_v2.mp3",
-                defaultName: "Stale Biscuits",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753892049/07_Heavy_Load_v3.mp3",
+                defaultName: "Heavy Load",
                 duration: 192,
                 metaData: {
-                    title: "Stale Biscuits"
+                    title: "Heavy Load"
                 }
             },
             {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753888778/08_Crusted_Aucklet_v2.mp3",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753893189/08_Crusted_Aucklet_v3.mp3",
                 defaultName: "Crusted Aucklet",
                 duration: 71.016,
                 metaData: {
@@ -2215,7 +2246,7 @@
                 }
             },
             {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753888798/09_Ill_Wind_v2.mp3",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753893209/09_Ill_Wind_v3.mp3",
                 defaultName: "Ill Wind",
                 duration: 216,
                 metaData: {
@@ -2223,7 +2254,7 @@
                 }
             },
             {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753888818/10_Breadmaker_v2.mp3",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753893229/10_Breadmaker_v3.mp3",
                 defaultName: "Breadmaker",
                 duration: 193.824,
                 metaData: {
@@ -2231,15 +2262,7 @@
                 }
             },
             {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753888829/11_Taste_of_my_Chime_v2.mp3",
-                defaultName: "Taste of my Chime",
-                duration: 138,
-                metaData: {
-                    title: "Taste of my Chime"
-                }
-            },
-            {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753888839/12_Doom_Fruit_v2.mp3",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753893249/11_Doom_Fruit_v3.mp3",
                 defaultName: "Doom Fruit",
                 duration: 210,
                 metaData: {
@@ -2247,7 +2270,15 @@
                 }
             },
             {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753888849/13_Bone_Window_v2.mp3",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753894796/12_Taste_of_my_Chime_v3.mp3",
+                defaultName: "Taste of my Chime",
+                duration: 138,
+                metaData: {
+                    title: "Taste of my Chime"
+                }
+            },
+            {
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753894816/13_Bone_Window_v3.mp3",
                 defaultName: "Bone Window",
                 duration: 141.648,
                 metaData: {
