@@ -2492,7 +2492,102 @@
             });
         }
 
-        // Function to preload all background videos
+        // Optimized lazy loading function - only preload first video initially
+        function preloadBackgroundsLazy() {
+            const preloadProgress = {
+                total: Object.keys(trackBackgrounds).length,
+                loaded: 0,
+                failed: 0
+            };
+
+            const preloadManager = {
+                onProgress: null,
+                onComplete: null
+            };
+
+            // Load only the first video immediately, others on demand
+            async function preloadFirstVideo() {
+                try {
+                    const firstBackground = trackBackgrounds[0];
+                    if (firstBackground) {
+                        const video = document.createElement('video');
+                        video.src = firstBackground.url;
+                        video.muted = true;
+                        video.playsInline = true;
+                        video.loop = true;
+                        video.preload = 'auto';
+
+                        video.onloadeddata = () => {
+                            firstBackground.preloadedVideo = video;
+                            preloadProgress.loaded++;
+                            console.log('First video preloaded successfully');
+                            
+                            if (preloadManager.onComplete) {
+                                preloadManager.onComplete({
+                                    successCount: 1,
+                                    total: 1,
+                                    failed: 0
+                                });
+                            }
+                        };
+
+                        video.onerror = () => {
+                            preloadProgress.failed++;
+                            console.error('Error preloading first video');
+                            
+                            if (preloadManager.onComplete) {
+                                preloadManager.onComplete({
+                                    successCount: 0,
+                                    total: 1,
+                                    failed: 1
+                                });
+                            }
+                        };
+
+                        video.load();
+                    }
+                } catch (error) {
+                    console.error('Failed to preload first video:', error);
+                }
+            }
+
+            // Start loading first video
+            preloadFirstVideo();
+
+            return preloadManager;
+        }
+
+        // Function to preload a specific video on demand
+        function preloadVideoOnDemand(trackIndex) {
+            const background = trackBackgrounds[trackIndex];
+            if (!background || background.preloadedVideo) {
+                return Promise.resolve(background?.preloadedVideo || null);
+            }
+
+            return new Promise((resolve) => {
+                const video = document.createElement('video');
+                video.src = background.url;
+                video.muted = true;
+                video.playsInline = true;
+                video.loop = true;
+                video.preload = 'auto';
+
+                video.onloadeddata = () => {
+                    background.preloadedVideo = video;
+                    console.log(`On-demand video preloaded: ${trackIndex}`);
+                    resolve(video);
+                };
+
+                video.onerror = () => {
+                    console.error(`Error preloading video ${trackIndex}`);
+                    resolve(null);
+                };
+
+                video.load();
+            });
+        }
+
+        // Function to preload all background videos (original function for fallback)
         function preloadBackgrounds() {
             const preloadProgress = {
                 total: Object.keys(trackBackgrounds).length,
@@ -2587,9 +2682,34 @@
             return preloadManager;
         }
 
+        // Progressive background loading - load more videos in background
+        function startProgressiveLoading() {
+            // Load videos 2-5 after a short delay
+            setTimeout(() => {
+                for (let i = 1; i <= 4; i++) {
+                    if (trackBackgrounds[i] && !trackBackgrounds[i].preloadedVideo) {
+                        preloadVideoOnDemand(i);
+                    }
+                }
+            }, 2000);
+
+            // Load remaining videos after longer delay
+            setTimeout(() => {
+                for (let i = 5; i < Object.keys(trackBackgrounds).length; i++) {
+                    if (trackBackgrounds[i] && !trackBackgrounds[i].preloadedVideo) {
+                        preloadVideoOnDemand(i);
+                    }
+                }
+            }, 5000);
+        }
+
         // Initialize preloading immediately when the page loads
         document.addEventListener('DOMContentLoaded', () => {
-            const preloadManager = preloadBackgrounds();
+            // Start with lazy preloading - only preload first video initially
+            const preloadManager = preloadBackgroundsLazy();
+            
+            // Start progressive loading of other videos
+            startProgressiveLoading();
 
             // Optional: Add loading indicator
             preloadManager.onProgress = (progress) => {
@@ -2651,6 +2771,13 @@
                 if (trackIndex !== -1) {
                     const trackDuration = tracksData[trackIndex]?.duration || 180;
                     deityMessageSystem.onTrackChange(trackDuration);
+
+                    // Preload video on demand if not already loaded
+                    if (trackBackgrounds[trackIndex] && !trackBackgrounds[trackIndex].preloadedVideo) {
+                        preloadVideoOnDemand(trackIndex).then(() => {
+                            console.log(`Video for track ${trackIndex} loaded on demand`);
+                        });
+                    }
 
                     if (trackBackgrounds[trackIndex]) {
                         switchBackground(trackIndex);
