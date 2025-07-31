@@ -191,6 +191,15 @@
             transition: opacity 2s ease-out;
         }
 
+        /* Mobile emergency fix - show password overlay immediately */
+        @media (max-width: 768px) {
+            #password-overlay {
+                opacity: 1 !important;
+                pointer-events: auto !important;
+                display: flex !important;
+            }
+        }
+
         #password-container {
             position: relative;
             width: 300px;
@@ -1576,6 +1585,50 @@
     <script src="https://unpkg.com/webamp@1.4.2/built/webamp.bundle.min.js"></script>
 
     <script>
+        // Emergency mobile bypass - show site immediately on mobile
+        (function() {
+            const isMobileDevice = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isMobileDevice) {
+                console.log('EMERGENCY MOBILE BYPASS - Loading site immediately');
+                
+                // Force show password overlay immediately
+                document.addEventListener('DOMContentLoaded', function() {
+                    const passwordOverlay = document.getElementById('password-overlay');
+                    if (passwordOverlay) {
+                        passwordOverlay.style.opacity = '1';
+                        passwordOverlay.style.pointerEvents = 'auto';
+                        passwordOverlay.style.display = 'flex';
+                    }
+                    
+                    // Setup basic password validation immediately
+                    const passwordInput = document.getElementById('password-input');
+                    if (passwordInput) {
+                        passwordInput.focus();
+                        
+                        passwordInput.addEventListener('keypress', function(e) {
+                            if (e.key === 'Enter' && this.value.toLowerCase() === ' ') {
+                                // Hide overlay and show basic site
+                                passwordOverlay.style.opacity = '0';
+                                passwordOverlay.style.pointerEvents = 'none';
+                                
+                                // Initialize minimal Webamp for mobile
+                                setTimeout(() => {
+                                    if (typeof initWebamp === 'function') {
+                                        initWebamp();
+                                    }
+                                }, 500);
+                            }
+                        });
+                    }
+                });
+                
+                // Skip all heavy initialization
+                window.MOBILE_BYPASS = true;
+                return;
+            }
+        })();
+
         // Starfield System
         class StarField {
             constructor() {
@@ -4307,6 +4360,12 @@
 
         // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', () => {
+            // Check if mobile bypass is active
+            if (window.MOBILE_BYPASS) {
+                console.log('Mobile bypass active - skipping full initialization');
+                return;
+            }
+
             // Force timeout to prevent hanging
             const forceLoadTimeout = setTimeout(() => {
                 console.log('Force loading timeout - showing site anyway');
