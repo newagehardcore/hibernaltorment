@@ -1586,43 +1586,112 @@
 
     <script>
         // Emergency mobile bypass - show site immediately on mobile
-        (function() {
+        (function () {
             const isMobileDevice = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
+
             if (isMobileDevice) {
                 console.log('EMERGENCY MOBILE BYPASS - Loading site immediately');
-                
+
                 // Force show password overlay immediately
-                document.addEventListener('DOMContentLoaded', function() {
+                document.addEventListener('DOMContentLoaded', function () {
                     const passwordOverlay = document.getElementById('password-overlay');
                     if (passwordOverlay) {
                         passwordOverlay.style.opacity = '1';
                         passwordOverlay.style.pointerEvents = 'auto';
                         passwordOverlay.style.display = 'flex';
                     }
-                    
-                    // Setup basic password validation immediately
+
+                    // Setup mobile password validation immediately
                     const passwordInput = document.getElementById('password-input');
+                    const accessIndicator = document.getElementById('access-indicator');
+                    
                     if (passwordInput) {
                         passwordInput.focus();
                         
-                        passwordInput.addEventListener('keypress', function(e) {
-                            if (e.key === 'Enter' && this.value.toLowerCase() === ' ') {
-                                // Hide overlay and show basic site
-                                passwordOverlay.style.opacity = '0';
-                                passwordOverlay.style.pointerEvents = 'none';
-                                
-                                // Initialize minimal Webamp for mobile
+                        // Show/hide password label
+                        passwordInput.addEventListener('input', function () {
+                            const label = document.getElementById('password-label');
+                            if (this.value) {
+                                label.style.opacity = '0';
+                            } else {
+                                label.style.opacity = '1';
+                            }
+                            
+                            // Add flashing effect
+                            this.classList.add('flashing');
+                            setTimeout(() => {
+                                this.classList.remove('flashing');
+                            }, 500);
+                        });
+
+                        // Mobile password validation
+                        function checkMobilePassword() {
+                            if (passwordInput.value.toLowerCase() === ' ') {
+                                // Show success indicator
+                                if (accessIndicator) {
+                                    accessIndicator.classList.add('granted');
+                                }
+
+                                // Wait for animation, then initialize
                                 setTimeout(() => {
-                                    if (typeof initWebamp === 'function') {
-                                        initWebamp();
-                                    }
+                                    passwordOverlay.style.opacity = '0';
+                                    passwordOverlay.style.pointerEvents = 'none';
+                                    
+                                    // Initialize mobile Webamp
+                                    setTimeout(() => {
+                                        initMobileWebamp();
+                                    }, 500);
+                                }, 1000);
+                            } else {
+                                // Wrong password - shake effect
+                                passwordInput.classList.add('shake');
+                                setTimeout(() => {
+                                    passwordInput.classList.remove('shake');
                                 }, 500);
+                            }
+                        }
+
+                        passwordInput.addEventListener('keypress', function (e) {
+                            if (e.key === 'Enter') {
+                                checkMobilePassword();
                             }
                         });
                     }
+                    
+                    // Mobile-specific Webamp initialization
+                    window.initMobileWebamp = function() {
+                        console.log('Initializing mobile Webamp');
+                        
+                        // Show viewer and cover windows for mobile
+                        const viewerWindow = document.getElementById('viewer-window');
+                        const coverWindow = document.getElementById('cover-window');
+                        
+                        if (viewerWindow) {
+                            viewerWindow.classList.add('visible');
+                            viewerWindow.style.opacity = '1';
+                        }
+                        
+                        if (coverWindow) {
+                            coverWindow.classList.add('visible');
+                            coverWindow.style.opacity = '1';
+                        }
+                        
+                        // Initialize basic Webamp without heavy features
+                        if (typeof Webamp !== 'undefined') {
+                            const webamp = new Webamp({
+                                initialTracks: tracksData || [],
+                                initialSkin: { url: "./assets/skins/D-A-S-H-a-m-p_by_Fred_Mitchell.wsz" },
+                                enableHotkeys: false,
+                                zIndex: 10
+                            });
+                            
+                            webamp.renderWhenReady(document.getElementById('webamp-container'));
+                            window.webampInstance = webamp;
+                        }
+                    };
+                }
                 });
-                
+
                 // Skip all heavy initialization
                 window.MOBILE_BYPASS = true;
                 return;
@@ -4309,10 +4378,10 @@
         // Mobile-first loading optimization
         function initializeMobile() {
             console.log('Mobile fast-track initialization');
-            
+
             // Setup password validation immediately
             setupPasswordValidation();
-            
+
             // Show password overlay immediately
             const passwordOverlay = document.getElementById('password-overlay');
             if (passwordOverlay) {
@@ -4332,16 +4401,16 @@
         // Desktop initialization with full features
         function initializeDesktop() {
             console.log('Desktop full initialization');
-            
+
             // Initialize starfield background
             starField = new StarField();
-            
+
             // Start preloading backgrounds
             preloadBackgrounds();
-            
+
             // Setup password validation
             setupPasswordValidation();
-            
+
             // Show password overlay
             const passwordOverlay = document.getElementById('password-overlay');
             if (passwordOverlay) {
