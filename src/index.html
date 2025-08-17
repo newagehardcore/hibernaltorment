@@ -1604,10 +1604,10 @@
                     // Setup mobile password validation immediately
                     const passwordInput = document.getElementById('password-input');
                     const accessIndicator = document.getElementById('access-indicator');
-                    
+
                     if (passwordInput) {
                         passwordInput.focus();
-                        
+
                         // Show/hide password label
                         passwordInput.addEventListener('input', function () {
                             const label = document.getElementById('password-label');
@@ -1616,7 +1616,7 @@
                             } else {
                                 label.style.opacity = '1';
                             }
-                            
+
                             // Add flashing effect
                             this.classList.add('flashing');
                             setTimeout(() => {
@@ -1626,7 +1626,7 @@
 
                         // Mobile password validation
                         function checkMobilePassword() {
-                            if (passwordInput.value.toLowerCase() === ' ') {
+                            if (passwordInput.value.toLowerCase() === 'trustincrust') {
                                 // Show success indicator
                                 if (accessIndicator) {
                                     accessIndicator.classList.add('granted');
@@ -1636,7 +1636,7 @@
                                 setTimeout(() => {
                                     passwordOverlay.style.opacity = '0';
                                     passwordOverlay.style.pointerEvents = 'none';
-                                    
+
                                     // Initialize mobile Webamp
                                     setTimeout(() => {
                                         initMobileWebamp();
@@ -1657,25 +1657,25 @@
                             }
                         });
                     }
-                    
+
                     // Mobile-specific Webamp initialization
-                    window.initMobileWebamp = function() {
+                    window.initMobileWebamp = function () {
                         console.log('Initializing mobile Webamp');
-                        
+
                         // Show viewer and cover windows for mobile
                         const viewerWindow = document.getElementById('viewer-window');
                         const coverWindow = document.getElementById('cover-window');
-                        
+
                         if (viewerWindow) {
                             viewerWindow.classList.add('visible');
                             viewerWindow.style.opacity = '1';
                         }
-                        
+
                         if (coverWindow) {
                             coverWindow.classList.add('visible');
                             coverWindow.style.opacity = '1';
                         }
-                        
+
                         // Initialize basic Webamp without heavy features
                         if (typeof Webamp !== 'undefined') {
                             const webamp = new Webamp({
@@ -1684,13 +1684,13 @@
                                 enableHotkeys: false,
                                 zIndex: 10
                             });
-                            
+
                             webamp.renderWhenReady(document.getElementById('webamp-container'));
                             window.webampInstance = webamp;
                         }
                     };
-                }
                 });
+
 
                 // Skip all heavy initialization
                 window.MOBILE_BYPASS = true;
@@ -2301,6 +2301,84 @@
             }
         }
 
+        // Function to preload only the first track and video for initial load
+        async function preloadFirstTrackOnly() {
+            console.log('Preloading first track only...');
+
+            // Preload first audio track
+            const firstTrack = tracksData[0];
+            const firstTrackBlobUrl = await preloadAudioFile(firstTrack.url);
+
+            // Preload first video
+            if (trackBackgrounds[0] && !trackBackgrounds[0].preloadedVideo) {
+                await preloadVideoOnDemand(0);
+            }
+
+            // Create tracks array with first track preloaded, others as placeholders
+            const tracks = tracksData.map((track, index) => {
+                if (index === 0) {
+                    return {
+                        ...track,
+                        url: firstTrackBlobUrl,
+                        blob: true
+                    };
+                } else {
+                    return { ...track }; // Keep original URL for now
+                }
+            });
+
+            window.preloadedTracks = tracks;
+            console.log('First track preloaded successfully');
+            return tracks;
+        }
+
+        // Function to preload remaining tracks in background after password validation
+        async function preloadRemainingTracks() {
+            console.log('Preloading remaining tracks in background...');
+
+            if (!window.preloadedTracks) return;
+
+            // Preload remaining audio tracks one by one to avoid overwhelming the browser
+            const preloadTrack = async (index) => {
+                try {
+                    const blobUrl = await preloadAudioFile(tracksData[index].url);
+                    window.preloadedTracks[index] = {
+                        ...tracksData[index],
+                        url: blobUrl,
+                        blob: true
+                    };
+                    console.log(`Track ${index + 1} preloaded and ready`);
+                } catch (error) {
+                    console.error(`Error preloading track ${index + 1}:`, error);
+                }
+            };
+
+            // Preload tracks in small batches to avoid blocking
+            for (let i = 1; i < tracksData.length; i++) {
+                setTimeout(() => preloadTrack(i), (i - 1) * 1000); // Stagger by 1 second each
+            }
+
+            // Preload remaining videos in batches
+            setTimeout(() => {
+                console.log('Starting background video preloading...');
+                for (let i = 1; i <= 4; i++) {
+                    if (trackBackgrounds[i] && !trackBackgrounds[i].preloadedVideo) {
+                        preloadVideoOnDemand(i);
+                    }
+                }
+            }, 3000); // Start after 3 seconds
+
+            setTimeout(() => {
+                for (let i = 5; i < Object.keys(trackBackgrounds).length; i++) {
+                    if (trackBackgrounds[i] && !trackBackgrounds[i].preloadedVideo) {
+                        preloadVideoOnDemand(i);
+                    }
+                }
+            }, 8000); // Start after 8 seconds
+
+            console.log('Background preloading initiated');
+        }
+
         // Define the music files with their metadata - exact file names from the directory
         const tracksData = [
             {
@@ -2436,7 +2514,7 @@
                 fadeOut: 0   // no fade out
             },
             4: {  // Track 5 - Rats
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1752626056/05Loop_afjott.mp4",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1755040804/Rats05Loop_ydkavt.mp4",
                 preloadedVideo: null,
                 fadeIn: 1,     // 1 second fade in
                 fadeOut: 0     // no fade out
@@ -2466,9 +2544,9 @@
                 fadeOut: 0     // no fade out
             },
             9: {  // Track 10 - Breadmaker
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749267106/10Loop_jcbrof.mp4",
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1755043970/HandWall_tfq6ok.mp4",
                 preloadedVideo: null,
-                fadeIn: 1,     // 1 second fade in
+                fadeIn: 4,     // 1 second fade in
                 fadeOut: 0     // no fade out
             },
             10: {  // Track 11 - Doom Fruit
@@ -2908,6 +2986,21 @@
                 if (trackIndex !== -1) {
                     const trackDuration = tracksData[trackIndex]?.duration || 180;
                     deityMessageSystem.onTrackChange(trackDuration);
+
+                    // Check if audio track needs to be loaded on demand
+                    if (window.preloadedTracks && window.preloadedTracks[trackIndex] && !window.preloadedTracks[trackIndex].blob) {
+                        console.log(`Loading audio for track ${trackIndex + 1} on demand...`);
+                        preloadAudioFile(tracksData[trackIndex].url).then(blobUrl => {
+                            window.preloadedTracks[trackIndex] = {
+                                ...tracksData[trackIndex],
+                                url: blobUrl,
+                                blob: true
+                            };
+                            console.log(`Track ${trackIndex + 1} audio loaded on demand`);
+                        }).catch(error => {
+                            console.error(`Error loading track ${trackIndex + 1} on demand:`, error);
+                        });
+                    }
 
                     // Preload video on demand if not already loaded
                     if (trackBackgrounds[trackIndex] && !trackBackgrounds[trackIndex].preloadedVideo) {
@@ -3774,16 +3867,14 @@
                     }
                 }
 
-                // First, preload all audio files
-                const tracks = await Promise.all(tracksData.map(async (track) => {
-                    // Create a blob URL for each track
-                    const blobUrl = await preloadAudioFile(track.url);
-                    return {
-                        ...track,
-                        url: blobUrl,
-                        blob: true // Tell Webamp this is a blob URL
-                    };
-                }));
+                // Use preloaded tracks if available, otherwise create placeholder tracks
+                let tracks;
+                if (window.preloadedTracks) {
+                    tracks = window.preloadedTracks;
+                } else {
+                    // Fallback: create tracks with original URLs (shouldn't happen with new flow)
+                    tracks = tracksData.map(track => ({ ...track }));
+                }
 
 
 
@@ -4144,7 +4235,7 @@
             const passwordInput = document.getElementById('password-input');
             const accessIndicator = document.getElementById('access-indicator');
             const passwordOverlay = document.getElementById('password-overlay');
-            const correctPassword = ' ';
+            const correctPassword = 'trustincrust';
 
             // Show/hide the password label based on input
             passwordInput.addEventListener('input', function () {
@@ -4177,6 +4268,9 @@
 
                     // Initialize Webamp here before showing it
                     initWebamp().then((instance) => {
+                        // Start preloading remaining tracks in background
+                        preloadRemainingTracks();
+
                         // Wait a moment, then fade out the overlay
                         setTimeout(() => {
                             passwordOverlay.style.opacity = '0';
@@ -4400,13 +4494,10 @@
 
         // Desktop initialization with full features
         function initializeDesktop() {
-            console.log('Desktop full initialization');
+            console.log('Desktop optimized initialization');
 
             // Initialize starfield background
             starField = new StarField();
-
-            // Start preloading backgrounds
-            preloadBackgrounds();
 
             // Setup password validation
             setupPasswordValidation();
@@ -4428,14 +4519,24 @@
         }
 
         // Initialize everything when page loads
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             // Check if mobile bypass is active
             if (window.MOBILE_BYPASS) {
                 console.log('Mobile bypass active - skipping full initialization');
                 return;
             }
 
-            // Force timeout to prevent hanging
+            // Start with optimized preloading - only first track and video
+            try {
+                console.log('Starting optimized preloading...');
+                await preloadFirstTrackOnly();
+                console.log('Initial preload complete, showing password screen');
+            } catch (error) {
+                console.error('Error during initial preload:', error);
+                // Continue anyway with fallback
+            }
+
+            // Force timeout to prevent hanging (reduced since we're loading less initially)
             const forceLoadTimeout = setTimeout(() => {
                 console.log('Force loading timeout - showing site anyway');
                 const passwordOverlay = document.getElementById('password-overlay');
@@ -4444,7 +4545,7 @@
                     passwordOverlay.style.pointerEvents = 'auto';
                     setupPasswordValidation();
                 }
-            }, 3000); // 3 second timeout
+            }, 1500); // Reduced to 1.5 seconds since we're loading much less
 
             try {
                 if (isMobile()) {
