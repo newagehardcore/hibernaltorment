@@ -2337,9 +2337,24 @@
         // Function to preload an audio file and get its blob URL
         async function preloadAudioFile(url) {
             try {
-                const response = await fetch(url);
+                console.log('Preloading audio file:', url);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+                const response = await fetch(url, {
+                    signal: controller.signal,
+                    mode: 'cors'
+                });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
                 const blob = await response.blob();
-                return URL.createObjectURL(blob);
+                const blobUrl = URL.createObjectURL(blob);
+                console.log('Audio file preloaded successfully');
+                return blobUrl;
             } catch (error) {
                 console.error('Error preloading audio:', error);
                 return url; // Fallback to original URL if fetch fails
@@ -2350,31 +2365,51 @@
         async function preloadFirstTrackOnly() {
             console.log('Preloading first track only...');
 
-            // Preload first audio track
-            const firstTrack = tracksData[0];
-            const firstTrackBlobUrl = await preloadAudioFile(firstTrack.url);
+            try {
+                // Preload first audio track
+                const firstTrack = tracksData[0];
+                let firstTrackBlobUrl;
 
-            // Preload first video
-            if (trackBackgrounds[0] && !trackBackgrounds[0].preloadedVideo) {
-                await preloadVideoOnDemand(0);
-            }
-
-            // Create tracks array with first track preloaded, others as placeholders
-            const tracks = tracksData.map((track, index) => {
-                if (index === 0) {
-                    return {
-                        ...track,
-                        url: firstTrackBlobUrl,
-                        blob: true
-                    };
-                } else {
-                    return { ...track }; // Keep original URL for now
+                try {
+                    firstTrackBlobUrl = await preloadAudioFile(firstTrack.url);
+                } catch (error) {
+                    console.error('Error preloading first audio track:', error);
+                    firstTrackBlobUrl = firstTrack.url; // Fallback to original URL
                 }
-            });
 
-            window.preloadedTracks = tracks;
-            console.log('First track preloaded successfully');
-            return tracks;
+                // Preload first video (skip on mobile for performance)
+                if (!isMobile() && trackBackgrounds[0] && !trackBackgrounds[0].preloadedVideo) {
+                    try {
+                        await preloadVideoOnDemand(0);
+                    } catch (error) {
+                        console.error('Error preloading first video:', error);
+                        // Continue without video
+                    }
+                }
+
+                // Create tracks array with first track preloaded, others as placeholders
+                const tracks = tracksData.map((track, index) => {
+                    if (index === 0) {
+                        return {
+                            ...track,
+                            url: firstTrackBlobUrl,
+                            blob: firstTrackBlobUrl !== firstTrack.url
+                        };
+                    } else {
+                        return { ...track }; // Keep original URL for now
+                    }
+                });
+
+                window.preloadedTracks = tracks;
+                console.log('First track preloaded successfully');
+                return tracks;
+            } catch (error) {
+                console.error('Error in preloadFirstTrackOnly:', error);
+                // Fallback: return tracks with original URLs
+                const tracks = tracksData.map(track => ({ ...track }));
+                window.preloadedTracks = tracks;
+                return tracks;
+            }
         }
 
         // Function to preload remaining tracks in background after password validation
@@ -3923,6 +3958,8 @@
         // Main function to initialize Webamp
         async function initWebamp() {
             try {
+                console.log('Starting Webamp initialization...');
+
                 // Clean up any previous instances
                 cleanup();
 
@@ -3951,13 +3988,18 @@
                 let skinOption = undefined;
 
                 if (usesCustomSkin) {
-                    const skinUrl = "./assets/skins/GKSkin.wsz";
-                    const skinBase64 = await fetchAndConvertToBase64(skinUrl);
+                    try {
+                        const skinUrl = "./assets/skins/GKSkin.wsz";
+                        const skinBase64 = await fetchAndConvertToBase64(skinUrl);
 
-                    if (skinBase64) {
-                        skinOption = {
-                            url: `data:application/zip;base64,${skinBase64}`
-                        };
+                        if (skinBase64) {
+                            skinOption = {
+                                url: `data:application/zip;base64,${skinBase64}`
+                            };
+                        }
+                    } catch (error) {
+                        console.error('Error loading custom skin:', error);
+                        // Continue without custom skin
                     }
                 }
 
@@ -3966,9 +4008,12 @@
                 if (window.preloadedTracks) {
                     tracks = window.preloadedTracks;
                 } else {
-                    // Fallback: create tracks with original URLs (shouldn't happen with new flow)
+                    // Fallback: create tracks with original URLs
                     tracks = tracksData.map(track => ({ ...track }));
+                    console.log('Using fallback tracks (preloaded tracks not available)');
                 }
+
+                console.log('Tracks prepared:', tracks.length);
 
 
 
@@ -4011,14 +4056,44 @@
                 console.log('Initializing Webamp with options:', webampOptions);
                 webampInstance = new Webamp(webampOptions);
 
-                // Render Webamp and set up the player
-                await webampInstance.renderWhenReady(document.getElementById('webamp-container'));
+                console.log('Rendering Webamp...');
+                // Render Webamp and set up the player with timeout
+                const renderPromise = webampInstance.renderWhenReady(document.getElementById('webamp-container'));
 
-                // Wait for skin to be loaded
-                await webampInstance.skinIsLoaded();
+                // Add timeout for render
+                const renderTimeout = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('Webamp render timeout')), isMobile() ? 15000 : 10000);
+                });
+
+                await Promise.race([renderPromise, renderTimeout]);
+                console.log('Webamp rendered successfully');
+
+                // Wait for skin to be loaded with timeout
+                if (skinOption) {
+                    console.log('Waiting for skin to load...');
+                    const skinPromise = webampInstance.skinIsLoaded();
+                    const skinTimeout = new Promise((_, reject) => {
+                        setTimeout(() => reject(new Error('Skin load timeout')), 8000);
+                    });
+
+                    try {
+                        await Promise.race([skinPromise, skinTimeout]);
+                        console.log('Skin loaded successfully');
+                    } catch (error) {
+                        console.error('Skin loading failed or timed out:', error);
+                        // Continue anyway
+                    }
+                } else {
+                    console.log('No custom skin, skipping skin load wait');
+                }
 
                 // Set up audio analyzer
-                await setupAudioAnalyzer();
+                try {
+                    await setupAudioAnalyzer();
+                } catch (error) {
+                    console.error('Audio analyzer setup failed:', error);
+                    // Continue without analyzer
+                }
 
                 // Intercept Redux store to prevent playlist reordering
                 const originalDispatch = webampInstance.store.dispatch;
@@ -4035,26 +4110,47 @@
                 // Mobile: Set up touch event simulation to make single tap work like double tap
                 if (isMobile()) {
                     setTimeout(() => {
-                        setupMobileTouchFix();
+                        try {
+                            setupMobileTouchFix();
+                        } catch (error) {
+                            console.error('Mobile touch fix setup failed:', error);
+                        }
                     }, 1500);
                 }
 
                 // Show the player
                 const container = document.getElementById('webamp-container');
-                container.style.opacity = '1';
+                if (container) {
+                    container.style.opacity = '1';
+                    console.log('Webamp container made visible');
+                } else {
+                    console.error('Webamp container not found');
+                }
 
-                // Initialize viewer system
-                initBackgroundSystem();
+                // Initialize viewer system (skip heavy parts on mobile)
+                try {
+                    initBackgroundSystem();
+                } catch (error) {
+                    console.error('Background system initialization failed:', error);
+                }
 
                 // Set up track change handler
                 webampInstance.onTrackDidChange(trackInfo => {
-                    handleTrackChange(trackInfo);
-                    // Try to set up audio analyzer again for new track
-                    setupAudioAnalyzer();
+                    try {
+                        handleTrackChange(trackInfo);
+                        // Try to set up audio analyzer again for new track
+                        setupAudioAnalyzer();
+                    } catch (error) {
+                        console.error('Track change handler error:', error);
+                    }
                 });
 
                 // Center windows
-                centerWindows();
+                try {
+                    centerWindows();
+                } catch (error) {
+                    console.error('Window centering failed:', error);
+                }
 
                 // Equalizer is now enabled on both mobile and desktop
 
@@ -4162,10 +4258,31 @@
 
 
 
+                console.log('Webamp initialization complete');
                 return webampInstance;
             } catch (error) {
                 console.error("Error initializing Webamp:", error);
-                return null;
+
+                // Try to show something even if Webamp fails
+                const container = document.getElementById('webamp-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div style="color: white; padding: 20px; text-align: center; font-family: monospace;">
+                            <div style="margin-bottom: 20px;">Audio player failed to load</div>
+                            <div style="margin-bottom: 20px;">
+                                <button onclick="location.reload()" style="padding: 10px 20px; background: #333; color: white; border: 1px solid #666; cursor: pointer;">
+                                    Refresh Page
+                                </button>
+                            </div>
+                            <div style="font-size: 12px; opacity: 0.7;">
+                                If this persists, try a different browser or device
+                            </div>
+                        </div>
+                    `;
+                    container.style.opacity = '1';
+                }
+
+                throw error; // Re-throw to trigger the timeout handler
             }
         }
 
@@ -4359,58 +4476,103 @@
                     // Show success indicator
                     accessIndicator.classList.add('granted');
 
+                    // Initialize Webamp with timeout protection
+                    const initTimeout = setTimeout(() => {
+                        console.error('Webamp initialization timeout - forcing continue');
+                        continueAfterPassword();
+                    }, 20000); // 20 second timeout
+
                     // Initialize Webamp here before showing it
                     initWebamp().then((instance) => {
-                        // Start preloading remaining tracks in background
-                        preloadRemainingTracks();
+                        clearTimeout(initTimeout);
+                        console.log('Webamp initialized successfully');
+                        continueAfterPassword();
+
+                        // Start background preloading AFTER the site is shown
+                        setTimeout(() => {
+                            console.log('Starting background preloading...');
+                            preloadRemainingTracks();
+                        }, 2000);
+                    }).catch((error) => {
+                        clearTimeout(initTimeout);
+                        console.error('Webamp initialization failed:', error);
+                        // Continue anyway to prevent hanging
+                        continueAfterPassword();
+                    });
+
+                    function continueAfterPassword() {
+                        console.log('Continuing after password validation...');
 
                         // Wait a moment, then fade out the overlay
                         setTimeout(() => {
+                            console.log('Fading out password overlay...');
                             passwordOverlay.style.opacity = '0';
                             passwordOverlay.style.pointerEvents = 'none';
                             passwordUnlocked = true;
 
                             // Show the viewer window
                             const viewerWindow = document.getElementById('viewer-window');
-                            viewerWindow.classList.add('visible');
+                            if (viewerWindow) {
+                                viewerWindow.classList.add('visible');
+                                console.log('Viewer window made visible');
+                            }
 
                             // Show the cover window (always show on mobile, hide on desktop)
                             const coverWindow = document.getElementById('cover-window');
-                            if (isMobile()) {
-                                coverWindow.classList.add('visible');
-                                // Mobile positioning is handled by CSS media queries
-                                console.log('Mobile layout: viewer and cover windows positioned by CSS');
-                            } else {
-                                // Desktop: hide cover window as intended
-                                coverWindow.style.display = 'none';
+                            if (coverWindow) {
+                                if (isMobile()) {
+                                    coverWindow.classList.add('visible');
+                                    console.log('Mobile layout: viewer and cover windows positioned by CSS');
+                                } else {
+                                    coverWindow.style.display = 'none';
+                                    console.log('Desktop: cover window hidden');
+                                }
                             }
 
                             // After password overlay fades out, start playback
                             setTimeout(() => {
-                                console.log('Starting first track...');
+                                console.log('Starting post-password initialization...');
 
-                                // Initialize the first track's video in viewer window
-                                switchBackground(0);
+                                try {
+                                    // Initialize the first track's video in viewer window
+                                    console.log('Switching to first track background...');
+                                    switchBackground(0);
 
-                                if (webampInstance) {
-                                    playFirstTrack();
+                                    if (webampInstance) {
+                                        console.log('Starting first track playback...');
+                                        playFirstTrack();
+                                    } else {
+                                        console.warn('Webamp instance not available for playback');
+                                    }
+                                } catch (error) {
+                                    console.error('Error starting playback:', error);
                                 }
+
                                 // Fade in the logo and start animation
                                 const logoLink = document.getElementById('legendarium-logo-link');
                                 if (logoLink) {
                                     logoLink.classList.add('visible');
-                                    // Start animation after visible (if not already started)
+                                    console.log('Logo made visible');
                                     if (!window.legendariumLogoAnimStarted) {
                                         window.legendariumLogoAnimStarted = true;
                                         startLegendariumLogoAnimation();
                                     }
                                 }
+
+                                // Delay deity messages more on mobile
                                 setTimeout(() => {
-                                    deityMessageSystem.init();
-                                }, 5000);
-                            }, 2000);
+                                    try {
+                                        console.log('Initializing deity message system...');
+                                        deityMessageSystem.init();
+                                    } catch (error) {
+                                        console.error('Error initializing deity messages:', error);
+                                    }
+                                }, isMobile() ? 8000 : 5000);
+
+                                console.log('Post-password initialization complete');
+                            }, isMobile() ? 1000 : 2000); // Shorter delay on mobile
                         }, 700);
-                    });
+                    }
                 } else {
                     // Show failure indication (shake the input)
                     passwordInput.style.animation = 'none';
@@ -4547,7 +4709,7 @@
         function initializeMobile() {
             console.log('Mobile optimized initialization');
 
-            // Initialize starfield background (lighter version for mobile)
+            // Initialize starfield background
             starField = new StarField();
 
             // Setup password validation
@@ -4597,35 +4759,16 @@
 
         // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', async () => {
+            console.log('DOM loaded, starting initialization...');
+            console.log('Mobile device detected:', isMobileDevice);
 
-            // Start with optimized preloading - only first track and video
+            // Show password screen immediately on all devices
             try {
-                console.log('Starting optimized preloading...');
-                await preloadFirstTrackOnly();
-                console.log('Initial preload complete, showing password screen');
-            } catch (error) {
-                console.error('Error during initial preload:', error);
-                // Continue anyway with fallback
-            }
-
-            // Force timeout to prevent hanging
-            const forceLoadTimeout = setTimeout(() => {
-                console.log('Force loading timeout - showing site anyway');
-                const passwordOverlay = document.getElementById('password-overlay');
-                if (passwordOverlay && passwordOverlay.style.opacity !== '1') {
-                    passwordOverlay.style.opacity = '1';
-                    passwordOverlay.style.pointerEvents = 'auto';
-                    setupPasswordValidation();
-                }
-            }, isMobileDevice ? 2000 : 1500); // Slightly longer timeout on mobile
-
-            try {
-                if (isMobile()) {
+                if (isMobileDevice) {
                     initializeMobile();
                 } else {
                     initializeDesktop();
                 }
-                clearTimeout(forceLoadTimeout);
             } catch (error) {
                 console.error('Initialization error:', error);
                 // Fallback to basic initialization
@@ -4637,20 +4780,17 @@
                 }
             }
 
-            // Remove animation toggle button setup
-            window.basePositions = null;
-
-            // Hide the password overlay
-            const passwordOverlay = document.getElementById('password-overlay');
-            if (passwordOverlay) {
-                passwordOverlay.style.opacity = '1';
-                passwordOverlay.style.pointerEvents = 'auto';
-            }
-
-            // Focus on the password input
-            setTimeout(() => {
-                document.getElementById('password-input').focus();
-            }, 500);
+            // Start preloading in background after a short delay
+            setTimeout(async () => {
+                try {
+                    console.log('Starting background preload...');
+                    await preloadFirstTrackOnly();
+                    console.log('Background preload complete');
+                } catch (error) {
+                    console.error('Background preload failed:', error);
+                    // Continue anyway - the site will still work with original URLs
+                }
+            }, 1000);
 
             // Call the animation function if needed
             if (!window.legendariumLogoAnimStarted) {
