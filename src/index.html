@@ -254,11 +254,15 @@
         @media (max-width: 768px) {
             #password-overlay {
                 display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
 
             #password-container {
                 width: 90%;
                 max-width: 300px;
+                margin: 0 auto;
+                /* Ensure centering */
             }
         }
 
@@ -4024,6 +4028,13 @@
                     return originalDispatch(action);
                 };
 
+                // Mobile: Set up touch event simulation to make single tap work like double tap
+                if (isMobile()) {
+                    setTimeout(() => {
+                        setupMobileTouchFix();
+                    }, 1500);
+                }
+
                 // Show the player
                 const container = document.getElementById('webamp-container');
                 container.style.opacity = '1';
@@ -4090,32 +4101,7 @@
 
                 // Haunted animation disabled in favor of CSS floating animation
 
-                // Add essential click handlers
-                const playlistContainer = document.querySelector('#webamp .playlist-window');
-                if (playlistContainer) {
-                    // Prevent right-click
-                    playlistContainer.addEventListener('contextmenu', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        return false;
-                    }, true);
-
-                    // Handle double-clicks for play
-                    playlistContainer.addEventListener('dblclick', (e) => {
-                        const trackEl = e.target.closest('.playlist-track');
-                        if (trackEl) {
-                            const tracks = document.querySelectorAll('#webamp .playlist-track');
-                            const index = Array.from(tracks).indexOf(trackEl);
-                            if (index !== -1) {
-                                webampInstance.store.dispatch({
-                                    type: "SET_CURRENT_TRACK",
-                                    id: index
-                                });
-                                setTimeout(() => webampInstance.play(), 50);
-                            }
-                        }
-                    });
-                }
+                // Let Webamp handle all playlist interactions with default desktop behavior
 
 
 
@@ -4169,6 +4155,8 @@
                         setupAudioAnalyzer();
                     }
                 });
+
+
 
                 return webampInstance;
             } catch (error) {
@@ -4236,31 +4224,7 @@
             setTimeout(() => {
                 if (!webampInstance) return;
 
-                // Set up double-click handler using Webamp's API
-                const handleDoubleClick = (e) => {
-                    const trackEl = e.target.closest('.playlist-track');
-                    if (trackEl) {
-                        const tracks = document.querySelectorAll('#webamp .playlist-track');
-                        const index = Array.from(tracks).indexOf(trackEl);
-                        if (index !== -1) {
-                            // Use Webamp's store to change tracks
-                            webampInstance.store.dispatch({
-                                type: "SET_CURRENT_TRACK",
-                                id: index
-                            });
-                            // Play the track
-                            setTimeout(() => webampInstance.play(), 50);
-                        }
-                    }
-                };
-
-                // Add double-click listener to playlist
-                const playlistEl = document.querySelector('#webamp .playlist-window');
-                if (playlistEl) {
-                    playlistEl.addEventListener('dblclick', handleDoubleClick);
-                }
-
-                // Use official Webamp API for track changes
+                // Use official Webamp API for track changes only
                 webampInstance.onTrackDidChange(trackInfo => {
                     handleTrackChange(trackInfo);
                     // Try to set up audio analyzer again for new track
@@ -4268,6 +4232,45 @@
                 });
             }, 1000);
         }
+
+        // Mobile touch fix: Convert single taps to double taps on playlist items
+        function setupMobileTouchFix() {
+            if (!isMobile() || !webampInstance) return;
+
+            console.log('Setting up mobile touch fix for playlist');
+
+            // Find the playlist container
+            const playlistContainer = document.querySelector('#webamp #playlist-window .playlist-tracks');
+            if (!playlistContainer) {
+                console.log('Playlist container not found, retrying...');
+                setTimeout(setupMobileTouchFix, 500);
+                return;
+            }
+
+            // Override touch events on the playlist
+            playlistContainer.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const target = e.target;
+                console.log('Mobile: Touch detected on playlist, simulating double-click');
+
+                // Create and dispatch a double-click event
+                const doubleClickEvent = new MouseEvent('dblclick', {
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: e.changedTouches[0].clientX,
+                    clientY: e.changedTouches[0].clientY
+                });
+
+                target.dispatchEvent(doubleClickEvent);
+
+            }, { passive: false });
+
+            console.log('Mobile touch fix setup complete');
+        }
+
+
 
         // Add cleanup for background transition timeouts
         function cleanup() {
