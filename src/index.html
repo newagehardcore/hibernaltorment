@@ -3066,6 +3066,11 @@
             requestAnimationFrame(() => {
                 if (!trackInfo) return;
 
+                // Update media session metadata for background playback
+                if (window.updateMediaSessionMetadata) {
+                    window.updateMediaSessionMetadata(trackInfo);
+                }
+
                 // Find the track index by matching the title
                 let trackIndex = -1;
 
@@ -4150,6 +4155,13 @@
                     }
                 });
 
+                // Set up Media Session API for background playback
+                try {
+                    setupMediaSession();
+                } catch (error) {
+                    console.error('Media Session setup failed:', error);
+                }
+
                 // Center windows
                 try {
                     centerWindows();
@@ -4318,6 +4330,11 @@
 
                     // Set up audio analyzer after playback starts
                     setTimeout(setupAudioAnalyzer, 1000);
+
+                    // Update media session for background playback
+                    if (window.updateMediaSessionMetadata && tracksData[0]) {
+                        window.updateMediaSessionMetadata(tracksData[0]);
+                    }
                 }, 200);
             } catch (e) {
                 console.error("Error playing track:", e);
@@ -4587,6 +4604,76 @@
             }
         }
 
+        // Media Session API for background playback and media controls
+        function setupMediaSession() {
+            if (!('mediaSession' in navigator)) {
+                console.log('Media Session API not supported');
+                return;
+            }
+
+            console.log('Setting up Media Session API for background playback');
+
+            // Set up media session metadata
+            function updateMediaSessionMetadata(trackInfo) {
+                if (!trackInfo) return;
+
+                const metadata = {
+                    title: trackInfo.metaData?.title || trackInfo.defaultName || 'Unknown Track',
+                    artist: 'GATEKEEPER',
+                    album: 'HIBERNAL TORMENT',
+                    artwork: [
+                        {
+                            src: 'https://res.cloudinary.com/dtwix3ubl/image/upload/v1751300090/gkHourglass8_np2lyy.jpg',
+                            sizes: '512x512',
+                            type: 'image/jpeg'
+                        }
+                    ]
+                };
+
+                navigator.mediaSession.metadata = new MediaMetadata(metadata);
+                console.log('Media session metadata updated:', metadata.title);
+            }
+
+            // Set up media session action handlers
+            navigator.mediaSession.setActionHandler('play', () => {
+                console.log('Media session: play');
+                if (webampInstance) {
+                    webampInstance.play();
+                }
+            });
+
+            navigator.mediaSession.setActionHandler('pause', () => {
+                console.log('Media session: pause');
+                if (webampInstance) {
+                    webampInstance.pause();
+                }
+            });
+
+            navigator.mediaSession.setActionHandler('previoustrack', () => {
+                console.log('Media session: previous track');
+                if (webampInstance) {
+                    webampInstance.previousTrack();
+                }
+            });
+
+            navigator.mediaSession.setActionHandler('nexttrack', () => {
+                console.log('Media session: next track');
+                if (webampInstance) {
+                    webampInstance.nextTrack();
+                }
+            });
+
+            // Store the update function for use in track changes
+            window.updateMediaSessionMetadata = updateMediaSessionMetadata;
+
+            // Set initial metadata if we have track info
+            const state = webampInstance?.store?.getState();
+            const currentTrack = state?.playlist?.currentTrack;
+            if (currentTrack !== null && tracksData[currentTrack]) {
+                updateMediaSessionMetadata(tracksData[currentTrack]);
+            }
+        }
+
         // Set up audio analyzer
         async function setupAudioAnalyzer() {
             try {
@@ -4805,6 +4892,21 @@
 
             // Add resize listener for mobile layout adjustments
             window.addEventListener('resize', handleResize);
+
+            // Handle visibility changes to maintain background playback
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    console.log('Page hidden - maintaining audio context for background playback');
+                    // Keep audio context active
+                    if (webampInstance?.audioContext && webampInstance.audioContext.state === 'suspended') {
+                        webampInstance.audioContext.resume().catch(err => {
+                            console.log('Could not resume audio context:', err);
+                        });
+                    }
+                } else {
+                    console.log('Page visible - resuming normal operation');
+                }
+            });
 
             // Cleanup on page unload
             window.addEventListener('beforeunload', () => {
