@@ -87,6 +87,15 @@
             transition: all 0.5s ease-in-out;
             pointer-events: none;
             /* Allow dragging through the container */
+            padding: 10px;
+            /* Add padding to prevent edge touching */
+        }
+
+        /* Mobile specific container adjustments */
+        @media screen and (max-width: 768px) {
+            #webamp-container {
+                /* No padding on mobile - maximize space */
+            }
         }
 
         #webamp-container>div {
@@ -101,9 +110,46 @@
             transition: all 0.5s ease-in-out;
         }
 
-        /* Consistent zoom across all devices */
+        /* Responsive zoom across all devices */
         :root {
             --webamp-zoom: 1.3;
+            /* Desktop default - UNCHANGED */
+        }
+
+        /* Mobile responsive scaling - slightly increased */
+        @media screen and (max-width: 480px) {
+            :root {
+                --webamp-zoom: 1.1;
+                /* Small phones - slightly larger */
+            }
+        }
+
+        @media screen and (min-width: 481px) and (max-width: 768px) {
+            :root {
+                --webamp-zoom: 1.2;
+                /* Larger phones/small tablets - bit larger */
+            }
+        }
+
+        @media screen and (min-width: 769px) and (max-width: 1024px) {
+            :root {
+                --webamp-zoom: 1.0;
+                /* Tablets - RESTORED to original */
+            }
+        }
+
+        @media screen and (min-width: 1025px) and (max-width: 1440px) {
+            :root {
+                --webamp-zoom: 1.2;
+                /* Small desktops - RESTORED to original */
+            }
+        }
+
+        @media screen and (min-width: 1441px) {
+            :root {
+                --webamp-zoom: 1.4;
+                /* Large desktops - RESTORED to original */
+            }
         }
 
         /* Remove any position constraints from windows */
@@ -136,7 +182,20 @@
             /* 300% slower */
         }
 
-        /* Keep floating animation on mobile - removed restriction */
+        /* Mobile floating animation - same as desktop for testing */
+        @media screen and (max-width: 768px) {
+            #webamp #main-window {
+                animation: float-main 36s ease-in-out infinite;
+            }
+
+            #webamp #equalizer-window {
+                animation: float-eq 36s ease-in-out infinite;
+            }
+
+            #webamp #playlist-window {
+                animation: float-playlist 36s ease-in-out infinite;
+            }
+        }
 
         /* Ensure draggable elements work on touch devices */
         #webamp .title-bar,
@@ -191,12 +250,15 @@
             transition: opacity 2s ease-out;
         }
 
-        /* Mobile emergency fix - show password overlay immediately */
+        /* Mobile password overlay - ensure it shows properly */
         @media (max-width: 768px) {
             #password-overlay {
-                opacity: 1 !important;
-                pointer-events: auto !important;
                 display: flex !important;
+            }
+
+            #password-container {
+                width: 90%;
+                max-width: 300px;
             }
         }
 
@@ -367,6 +429,24 @@
             image-rendering: -moz-crisp-edges;
             image-rendering: crisp-edges;
             backdrop-filter: blur(1px);
+        }
+
+        /* Mobile deity message scaling */
+        @media screen and (max-width: 768px) {
+            .deity-message-window {
+                width: 280px;
+                /* Slightly smaller on mobile */
+                font-size: 14px;
+                /* Smaller font */
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .deity-message-window {
+                width: 250px;
+                /* Even smaller on small phones */
+                font-size: 13px;
+            }
         }
 
         /* Add floating animation to viewer and cover windows */
@@ -948,6 +1028,67 @@
             }
         }
 
+        /* Mobile-specific floating animations - more subtle */
+        @keyframes float-main-mobile {
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            25% {
+                transform: translate(1px, -2px) rotate(0.2deg);
+            }
+
+            50% {
+                transform: translate(-1px, -1px) rotate(-0.1deg);
+            }
+
+            75% {
+                transform: translate(-1px, 1px) rotate(0.1deg);
+            }
+        }
+
+        @keyframes float-eq-mobile {
+
+            0%,
+            100% {
+                transform: translate(-1px, 1px) rotate(-0.1deg);
+            }
+
+            25% {
+                transform: translate(-2px, -1px) rotate(0.2deg);
+            }
+
+            50% {
+                transform: translate(1px, -2px) rotate(-0.1deg);
+            }
+
+            75% {
+                transform: translate(1px, 1px) rotate(0.1deg);
+            }
+        }
+
+        @keyframes float-playlist-mobile {
+
+            0%,
+            100% {
+                transform: translate(1px, -1px) rotate(0.1deg);
+            }
+
+            25% {
+                transform: translate(-1px, 0px) rotate(-0.1deg);
+            }
+
+            50% {
+                transform: translate(0px, 2px) rotate(0.2deg);
+            }
+
+            75% {
+                transform: translate(-1px, -1px) rotate(-0.1deg);
+            }
+        }
+
         #legendarium-logo-link {
             position: fixed;
             top: 50%;
@@ -1019,7 +1160,7 @@
 
         @media (max-width: 768px) {
             #viewer-window {
-                /* Mobile viewer window positioning (unchanged) */
+                /* Mobile viewer window positioning - bottom left */
                 position: fixed !important;
                 bottom: 0 !important;
                 left: 0 !important;
@@ -1225,10 +1366,16 @@
             overflow: hidden;
         }
 
-        /* Hide cover window on desktop */
+        /* Show cover window on mobile, hide on desktop */
         @media screen and (min-width: 769px) {
             #cover-window {
                 display: none !important;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            #cover-window {
+                display: flex !important;
             }
         }
 
@@ -1391,7 +1538,7 @@
             }
 
 
-            /* Mobile viewer window positioning */
+            /* Mobile viewer window positioning - bottom left */
             #viewer-window {
                 position: fixed !important;
                 bottom: 0 !important;
@@ -1409,7 +1556,6 @@
                 top: auto !important;
                 right: auto !important;
                 z-index: 5 !important;
-                /* Remove flex layout since header is hidden */
                 display: block !important;
                 transition: all 0.3s ease-in-out !important;
             }
@@ -1446,7 +1592,7 @@
                 flex: none !important;
             }
 
-            /* Hide viewer header completely on mobile */
+            /* Hide viewer header on mobile */
             .viewer-header {
                 display: none !important;
             }
@@ -1456,7 +1602,7 @@
                 display: none !important;
             }
 
-            /* Enhance viewer border to match webamp style */
+            /* Enhanced viewer border for mobile */
             .viewer-content {
                 border: 3px dotted rgba(255, 255, 255, 0.9) !important;
                 border-style: dotted !important;
@@ -1467,7 +1613,7 @@
                 border-style: dotted !important;
             }
 
-            /* Mobile cover window positioning */
+            /* Mobile cover window positioning - bottom right */
             #cover-window {
                 position: fixed !important;
                 bottom: 0 !important;
@@ -1585,118 +1731,8 @@
     <script src="https://unpkg.com/webamp@1.4.2/built/webamp.bundle.min.js"></script>
 
     <script>
-        // Emergency mobile bypass - show site immediately on mobile
-        (function () {
-            const isMobileDevice = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-            if (isMobileDevice) {
-                console.log('EMERGENCY MOBILE BYPASS - Loading site immediately');
-
-                // Force show password overlay immediately
-                document.addEventListener('DOMContentLoaded', function () {
-                    const passwordOverlay = document.getElementById('password-overlay');
-                    if (passwordOverlay) {
-                        passwordOverlay.style.opacity = '1';
-                        passwordOverlay.style.pointerEvents = 'auto';
-                        passwordOverlay.style.display = 'flex';
-                    }
-
-                    // Setup mobile password validation immediately
-                    const passwordInput = document.getElementById('password-input');
-                    const accessIndicator = document.getElementById('access-indicator');
-
-                    if (passwordInput) {
-                        passwordInput.focus();
-
-                        // Show/hide password label
-                        passwordInput.addEventListener('input', function () {
-                            const label = document.getElementById('password-label');
-                            if (this.value) {
-                                label.style.opacity = '0';
-                            } else {
-                                label.style.opacity = '1';
-                            }
-
-                            // Add flashing effect
-                            this.classList.add('flashing');
-                            setTimeout(() => {
-                                this.classList.remove('flashing');
-                            }, 500);
-                        });
-
-                        // Mobile password validation
-                        function checkMobilePassword() {
-                            if (passwordInput.value.toLowerCase() === 'trustincrust') {
-                                // Show success indicator
-                                if (accessIndicator) {
-                                    accessIndicator.classList.add('granted');
-                                }
-
-                                // Wait for animation, then initialize
-                                setTimeout(() => {
-                                    passwordOverlay.style.opacity = '0';
-                                    passwordOverlay.style.pointerEvents = 'none';
-
-                                    // Initialize mobile Webamp
-                                    setTimeout(() => {
-                                        initMobileWebamp();
-                                    }, 500);
-                                }, 1000);
-                            } else {
-                                // Wrong password - shake effect
-                                passwordInput.classList.add('shake');
-                                setTimeout(() => {
-                                    passwordInput.classList.remove('shake');
-                                }, 500);
-                            }
-                        }
-
-                        passwordInput.addEventListener('keypress', function (e) {
-                            if (e.key === 'Enter') {
-                                checkMobilePassword();
-                            }
-                        });
-                    }
-
-                    // Mobile-specific Webamp initialization
-                    window.initMobileWebamp = function () {
-                        console.log('Initializing mobile Webamp');
-
-                        // Show viewer and cover windows for mobile
-                        const viewerWindow = document.getElementById('viewer-window');
-                        const coverWindow = document.getElementById('cover-window');
-
-                        if (viewerWindow) {
-                            viewerWindow.classList.add('visible');
-                            viewerWindow.style.opacity = '1';
-                        }
-
-                        if (coverWindow) {
-                            coverWindow.classList.add('visible');
-                            coverWindow.style.opacity = '1';
-                        }
-
-                        // Initialize basic Webamp without heavy features
-                        if (typeof Webamp !== 'undefined') {
-                            const webamp = new Webamp({
-                                initialTracks: tracksData || [],
-                                initialSkin: { url: "./assets/skins/D-A-S-H-a-m-p_by_Fred_Mitchell.wsz" },
-                                enableHotkeys: false,
-                                zIndex: 10
-                            });
-
-                            webamp.renderWhenReady(document.getElementById('webamp-container'));
-                            window.webampInstance = webamp;
-                        }
-                    };
-                });
-
-
-                // Skip all heavy initialization
-                window.MOBILE_BYPASS = true;
-                return;
-            }
-        })();
+        // Mobile detection for later use
+        const isMobileDevice = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         // Starfield System
         class StarField {
@@ -2115,18 +2151,19 @@
                 const elementHeight = 120; // Estimated height
 
                 // Check if we're on mobile
-                const isMobile = window.innerWidth <= 768;
+                const isMobileCheck = window.innerWidth <= 768;
 
-                if (isMobile) {
+                if (isMobileCheck) {
                     // Mobile: Always center the message like a text message
                     const screenWidth = window.innerWidth;
                     const screenHeight = window.innerHeight;
 
+                    // Center horizontally, position in upper half to avoid webamp
                     const x = (screenWidth - elementWidth) / 2;
-                    const y = (screenHeight - elementHeight) / 2;
+                    const y = (screenHeight * 0.3); // Position in upper 30% of screen
 
-                    element.style.left = x + 'px';
-                    element.style.top = y + 'px';
+                    element.style.left = Math.max(10, x) + 'px';
+                    element.style.top = Math.max(50, y) + 'px';
                 } else {
                     // Desktop: Use the original right-third positioning
                     // Calculate the right third of the screen
@@ -2705,18 +2742,52 @@
                 onComplete: null
             };
 
-            // Mobile optimization - skip video preloading entirely on mobile
+            // Mobile optimization - load only first video on mobile for performance
             if (isMobile()) {
-                console.log('Mobile detected - skipping video preloading for faster loading');
-                setTimeout(() => {
-                    if (preloadManager.onComplete) {
-                        preloadManager.onComplete({
-                            successCount: 0,
-                            total: 0,
-                            failed: 0
-                        });
+                console.log('Mobile detected - loading only first video for performance');
+                // Still load the first video on mobile, but skip the rest
+                async function preloadFirstVideoMobile() {
+                    try {
+                        const firstBackground = trackBackgrounds[0];
+                        if (firstBackground) {
+                            const video = document.createElement('video');
+                            video.src = firstBackground.url;
+                            video.muted = true;
+                            video.playsInline = true;
+                            video.loop = true;
+                            video.preload = 'metadata'; // Use metadata instead of auto for mobile
+
+                            video.onloadeddata = () => {
+                                firstBackground.preloadedVideo = video;
+                                console.log('First video preloaded on mobile');
+                                if (preloadManager.onComplete) {
+                                    preloadManager.onComplete({
+                                        successCount: 1,
+                                        total: 1,
+                                        failed: 0
+                                    });
+                                }
+                            };
+
+                            video.onerror = () => {
+                                console.log('Mobile video preload failed, continuing anyway');
+                                if (preloadManager.onComplete) {
+                                    preloadManager.onComplete({
+                                        successCount: 0,
+                                        total: 1,
+                                        failed: 1
+                                    });
+                                }
+                            };
+
+                            video.load();
+                        }
+                    } catch (error) {
+                        console.log('Mobile video preload error, continuing anyway');
                     }
-                }, 100);
+                }
+
+                preloadFirstVideoMobile();
                 return preloadManager;
             }
 
@@ -3095,89 +3166,117 @@
             }
         }
 
-        // Function to make the cover window draggable - COMMENTED OUT
-        /*
+        // Function to make the cover window draggable
         function makeCoverDraggable() {
             const coverWindow = document.getElementById('cover-window');
-            
+
             if (!coverWindow || isMobile()) return; // Skip on mobile
-            
+
             let isDragging = false;
             let startX = 0;
             let startY = 0;
             let startLeft = 0;
             let startTop = 0;
-            
+
             // Use the header as the drag handle
             const dragHandle = coverWindow.querySelector('.cover-header');
-            
+
             if (dragHandle) {
                 dragHandle.addEventListener('mousedown', dragStart, { passive: false });
                 document.addEventListener('mousemove', drag, { passive: false });
                 document.addEventListener('mouseup', dragEnd, { passive: false });
             }
-            
+
             function dragStart(e) {
                 // Ignore if clicking on buttons
                 if (e.target.closest('.cover-close-button')) {
                     return;
                 }
-                
+
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 isDragging = true;
                 startX = e.clientX;
                 startY = e.clientY;
-                
+
                 // Get current position
                 const rect = coverWindow.getBoundingClientRect();
                 startLeft = rect.left;
                 startTop = rect.top;
-                
+
                 dragHandle.style.cursor = 'grabbing';
                 coverWindow.style.zIndex = '6'; // Bring to front while dragging
             }
-            
+
             function drag(e) {
                 if (!isDragging) return;
-                
+
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 const deltaX = e.clientX - startX;
                 const deltaY = e.clientY - startY;
-                
+
                 let newLeft = startLeft + deltaX;
                 let newTop = startTop + deltaY;
-                
+
                 // Constrain to screen bounds with some flexibility
                 const rect = coverWindow.getBoundingClientRect();
                 const elementWidth = rect.width;
                 const elementHeight = rect.height;
-                
+
                 // Allow more flexibility - only constrain when completely off-screen
                 newLeft = Math.max(-elementWidth + 100, Math.min(window.innerWidth - 50, newLeft));
                 newTop = Math.max(-50, Math.min(window.innerHeight - 50, newTop));
-                
+
                 coverWindow.style.left = newLeft + 'px';
                 coverWindow.style.top = newTop + 'px';
             }
-            
+
             function dragEnd(e) {
                 if (!isDragging) return;
-                
+
                 isDragging = false;
                 dragHandle.style.cursor = 'move';
                 coverWindow.style.zIndex = '5'; // Reset z-index
             }
-            
+
             // Prevent text selection during drag
             coverWindow.addEventListener('selectstart', (e) => {
                 if (isDragging) e.preventDefault();
             });
         }
-        */
+
+        // Function to randomize mobile window positions
+        function randomizeMobileWindowPositions() {
+            if (!isMobile()) return;
+
+            const viewerWindow = document.getElementById('viewer-window');
+            const coverWindow = document.getElementById('cover-window');
+
+            if (viewerWindow) {
+                // Random position for viewer window
+                const maxX = window.innerWidth - 220; // Account for window width + padding
+                const maxY = window.innerHeight - 220; // Account for window height + padding
+                const randomX = Math.random() * Math.max(0, maxX - 20) + 20; // 20px minimum from edge
+                const randomY = Math.random() * Math.max(0, maxY - 20) + 20;
+
+                viewerWindow.style.left = randomX + 'px';
+                viewerWindow.style.top = randomY + 'px';
+            }
+
+            if (coverWindow) {
+                // Random position for cover window (avoid overlap with viewer)
+                const maxX = window.innerWidth - 200;
+                const maxY = window.innerHeight - 220;
+                const randomX = Math.random() * Math.max(0, maxX - 20) + 20;
+                const randomY = Math.random() * Math.max(0, maxY - 20) + 20;
+
+                coverWindow.style.left = randomX + 'px';
+                coverWindow.style.top = randomY + 'px';
+            }
+        }
 
         // Set up mobile lightbox functionality
         function setupMobileLightbox() {
@@ -3417,30 +3516,17 @@
             let posX, posY, eqY, playlistY;
 
             if (isMobile) {
-                // Mobile positioning logic with equalizer between transport and playlist
+                // Mobile: Simple positioning in starfield area
                 const mainWindowWidth = 275;
-                const mainWindowHeight = 116;
-                const equalizerHeight = 116;
 
-                posX = Math.floor((window.innerWidth / zoomFactor) / 2) - Math.floor(mainWindowWidth / 2);
+                posX = Math.floor((window.innerWidth / zoomFactor - mainWindowWidth) / 2); // Center horizontally
 
-                const tracksToShow = window.mobilePlaylistSize || 4;
-                const playlistHeaderHeight = 30;
-                const trackHeight = 14;
-                const playlistHeight = playlistHeaderHeight + (tracksToShow * trackHeight);
+                // Position at a fixed percentage of the available starfield space
+                // Bottom squares take up 50vw, so starfield is roughly the top 50-70% of screen
+                posY = Math.floor((window.innerHeight * 0.08) / zoomFactor); // Start at 8% from top
 
-                const centerY = (window.innerHeight / 2) / zoomFactor;
-                playlistY = Math.floor(centerY - playlistHeight);
-                eqY = Math.floor(playlistY - equalizerHeight - 5); // EQ window above playlist
-                posY = Math.floor(eqY - mainWindowHeight - 5); // Main window above EQ
-
-                if (posY < 5) {
-                    posY = 5;
-                    eqY = posY + mainWindowHeight + 5;
-                    playlistY = eqY + equalizerHeight + 5;
-                }
-
-                posX = Math.max(0, Math.min(posX, (window.innerWidth / zoomFactor) - mainWindowWidth));
+                eqY = posY + 116; // EQ window starts right after main window
+                playlistY = eqY + 116; // Playlist starts right after EQ window
             } else {
                 // Desktop: Stack windows on the left side
                 posX = Math.floor((window.innerWidth * 0.08) / zoomFactor); // 8% from left edge
@@ -3962,7 +4048,7 @@
                 // Set playlist size to the specified number of tracks explicitly
                 setTimeout(() => {
                     if (webampInstance && webampInstance.store) {
-                        const playlistSize = isMobile() ? 1 : initialPlaylistSize;
+                        const playlistSize = isMobile() ? 4 : initialPlaylistSize; // Mobile playlist size
                         console.log(`Setting playlist size to ${playlistSize} tracks (mobile: ${isMobile()})`);
                         webampInstance.store.dispatch({
                             type: 'SET_PLAYLIST_WINDOW_SIZE',
@@ -4281,34 +4367,15 @@
                             const viewerWindow = document.getElementById('viewer-window');
                             viewerWindow.classList.add('visible');
 
-                            // Show the cover window (mobile only)
+                            // Show the cover window (always show on mobile, hide on desktop)
                             const coverWindow = document.getElementById('cover-window');
                             if (isMobile()) {
                                 coverWindow.classList.add('visible');
-                            }
-
-                            // On mobile, ensure both windows are always visible and positioned correctly
-                            if (isMobile()) {
-                                // Force visibility and positioning for mobile
-                                viewerWindow.style.opacity = '1';
-                                coverWindow.style.opacity = '1';
-
-                                // Force mobile positioning
-                                setTimeout(() => {
-                                    viewerWindow.style.position = 'fixed';
-                                    viewerWindow.style.bottom = '0';
-                                    viewerWindow.style.left = '0';
-                                    viewerWindow.style.width = '50vw';
-                                    viewerWindow.style.height = '50vw';
-                                    viewerWindow.style.transform = 'none';
-
-                                    coverWindow.style.position = 'fixed';
-                                    coverWindow.style.bottom = '0';
-                                    coverWindow.style.right = '0';
-                                    coverWindow.style.width = '50vw';
-                                    coverWindow.style.height = '50vw';
-                                    coverWindow.style.transform = 'none';
-                                }, 100);
+                                // Mobile positioning is handled by CSS media queries
+                                console.log('Mobile layout: viewer and cover windows positioned by CSS');
+                            } else {
+                                // Desktop: hide cover window as intended
+                                coverWindow.style.display = 'none';
                             }
 
                             // After password overlay fades out, start playback
@@ -4471,12 +4538,15 @@
 
         // Mobile-first loading optimization
         function initializeMobile() {
-            console.log('Mobile fast-track initialization');
+            console.log('Mobile optimized initialization');
 
-            // Setup password validation immediately
+            // Initialize starfield background (lighter version for mobile)
+            starField = new StarField();
+
+            // Setup password validation
             setupPasswordValidation();
 
-            // Show password overlay immediately
+            // Show password overlay
             const passwordOverlay = document.getElementById('password-overlay');
             if (passwordOverlay) {
                 passwordOverlay.style.opacity = '1';
@@ -4520,11 +4590,6 @@
 
         // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', async () => {
-            // Check if mobile bypass is active
-            if (window.MOBILE_BYPASS) {
-                console.log('Mobile bypass active - skipping full initialization');
-                return;
-            }
 
             // Start with optimized preloading - only first track and video
             try {
@@ -4536,7 +4601,7 @@
                 // Continue anyway with fallback
             }
 
-            // Force timeout to prevent hanging (reduced since we're loading less initially)
+            // Force timeout to prevent hanging
             const forceLoadTimeout = setTimeout(() => {
                 console.log('Force loading timeout - showing site anyway');
                 const passwordOverlay = document.getElementById('password-overlay');
@@ -4545,7 +4610,7 @@
                     passwordOverlay.style.pointerEvents = 'auto';
                     setupPasswordValidation();
                 }
-            }, 1500); // Reduced to 1.5 seconds since we're loading much less
+            }, isMobileDevice ? 2000 : 1500); // Slightly longer timeout on mobile
 
             try {
                 if (isMobile()) {
