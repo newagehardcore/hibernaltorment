@@ -1545,6 +1545,11 @@
                 z-index: 10 !important;
             }
 
+            /* Hide equalizer window on mobile */
+            #webamp #equalizer-window {
+                display: none !important;
+            }
+
 
             /* Mobile viewer window positioning - bottom left */
             #viewer-window {
@@ -3559,7 +3564,7 @@
             let posX, posY, eqY, playlistY;
 
             if (isMobile) {
-                // Mobile: Simple positioning in starfield area
+                // Mobile: Hide EQ, position playlist directly below main window
                 const mainWindowWidth = 275;
 
                 posX = Math.floor((window.innerWidth / zoomFactor - mainWindowWidth) / 2); // Center horizontally
@@ -3568,8 +3573,9 @@
                 // Bottom squares take up 50vw, so starfield is roughly the top 50-70% of screen
                 posY = Math.floor((window.innerHeight * 0.08) / zoomFactor); // Start at 8% from top
 
-                eqY = posY + 116; // EQ window starts right after main window
-                playlistY = eqY + 116; // Playlist starts right after EQ window
+                // Hide EQ by positioning it off-screen
+                eqY = -1000; // Move EQ off-screen
+                playlistY = posY + 116; // Playlist starts right after main window (no EQ gap)
             } else {
                 // Desktop: Stack windows on the left side
                 posX = Math.floor((window.innerWidth * 0.08) / zoomFactor); // 8% from left edge
@@ -3579,11 +3585,7 @@
             }
 
             // Store these positions for animation reference
-            window.lastKnownPositions = isMobile ? {
-                main: { x: posX, y: posY },
-                equalizer: { x: posX, y: eqY },
-                playlist: { x: posX, y: playlistY }
-            } : {
+            window.lastKnownPositions = {
                 main: { x: posX, y: posY },
                 equalizer: { x: posX, y: eqY },
                 playlist: { x: posX, y: playlistY }
@@ -4152,7 +4154,18 @@
                     console.error('Window centering failed:', error);
                 }
 
-                // Equalizer is now enabled on both mobile and desktop
+                // Close equalizer on mobile
+                if (isMobile()) {
+                    setTimeout(() => {
+                        if (webampInstance && webampInstance.store) {
+                            webampInstance.store.dispatch({
+                                type: 'CLOSE_WINDOW',
+                                windowId: 'equalizer'
+                            });
+                            console.log('Equalizer window closed on mobile');
+                        }
+                    }, 100);
+                }
 
 
 
