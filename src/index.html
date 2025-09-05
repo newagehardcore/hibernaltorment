@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>GATEKEEPER - HIBERNAL TORMENT - 2025</title>
     <link rel="icon" type="image/svg+xml"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 10 L30 50 L50 40 L70 50 Z' fill='%23FFA500'/><path d='M40 50 L50 30 L60 50 L50 70 Z' fill='%23FF8C00'/></svg>">
@@ -1036,6 +1036,93 @@
             }
         }
 
+        /* Square border overlays for mobile */
+        .square-border-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-position: center;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        /* Show square overlays only on mobile */
+        @media screen and (max-width: 768px) {
+            .square-border-overlay {
+                opacity: 1;
+                z-index: 10;
+            }
+            
+            /* Square-1 for viewer window (left side) */
+            #viewer-window .square-border-overlay {
+                background-image: url('./assets/images/Square-1.png');
+            }
+            
+            /* Square-2 for cover window (right side) */
+            #cover-window .square-border-overlay {
+                background-image: url('./assets/images/Square-2.png');
+            }
+            
+            /* Hide ALL dotted borders on mobile when square overlays are active */
+            #viewer-window,
+            #viewer-window::before,
+            #cover-window,
+            #cover-window::before {
+                border: none !important;
+            }
+            
+            /* Hide all dotted border elements for viewer */
+            .viewer-content,
+            .viewer-content::before,
+            .viewer-bottom,
+            .viewer-bottom::after {
+                border: none !important;
+                display: block !important;
+            }
+            
+            .viewer-content::before {
+                display: none !important;
+            }
+            
+            .viewer-bottom::after {
+                display: none !important;
+            }
+            
+            /* Hide all dotted border elements for cover */
+            .cover-content,
+            .cover-content::before,
+            .cover-bottom,
+            .cover-bottom::after {
+                border: none !important;
+                display: block !important;
+            }
+            
+            .cover-content::before {
+                display: none !important;
+            }
+            
+            .cover-bottom::after {
+                display: none !important;
+            }
+            
+            /* Ensure square overlays scale with lightbox and stay on top */
+            #viewer-window.lightbox .square-border-overlay,
+            #cover-window.lightbox .square-border-overlay {
+                transform: scale(1);
+                transition: transform 0.3s ease, opacity 0.3s ease;
+                z-index: 1001;
+            }
+        }
+
         /* Mobile-specific floating animations - more subtle */
         @keyframes float-main-mobile {
 
@@ -1615,16 +1702,7 @@
                 display: none !important;
             }
 
-            /* Enhanced viewer border for mobile */
-            .viewer-content {
-                border: 3px dotted rgba(255, 255, 255, 0.9) !important;
-                border-style: dotted !important;
-            }
-
-            .viewer-content::before {
-                border: 3px dotted rgba(255, 255, 255, 0.9) !important;
-                border-style: dotted !important;
-            }
+            /* Remove conflicting dotted borders - they are handled by square overlay rules */
 
             /* Mobile cover window positioning - bottom right */
             #cover-window {
@@ -1687,10 +1765,7 @@
                 display: none !important;
             }
 
-            .cover-content {
-                border: 3px dotted rgba(255, 255, 255, 0.9) !important;
-                border-style: dotted !important;
-            }
+            /* Remove conflicting dotted borders for cover - they are handled by square overlay rules */
         }
     </style>
 </head>
@@ -1709,6 +1784,7 @@
         </div>
         <div class="viewer-bottom"></div>
         <div class="viewer-resize-handle"></div>
+        <div class="square-border-overlay"></div>
     </div>
 
     <!-- Cover window for album art -->
@@ -1725,6 +1801,7 @@
         </div>
         <div class="cover-bottom"></div>
         <div class="cover-resize-handle"></div>
+        <div class="square-border-overlay"></div>
     </div>
 
     <!-- Password protection overlay -->
@@ -1744,6 +1821,39 @@
     <script src="https://unpkg.com/webamp@1.4.2/built/webamp.bundle.min.js"></script>
 
     <script>
+        // Dynamic viewport scaling function
+        function setDynamicViewportScale() {
+            const isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                // Calculate scale based on Webamp dimensions and desired padding
+                const webampWidth = 275; // Main window width
+                const desiredPadding = 20; // 20px padding on each side
+                const availableWidth = window.innerWidth - (desiredPadding * 2);
+
+                // Calculate the scale needed to fit Webamp with padding
+                const scale = Math.min(1.0, availableWidth / webampWidth);
+
+                // Update the viewport meta tag
+                const viewportMeta = document.querySelector('meta[name="viewport"]');
+                if (viewportMeta) {
+                    viewportMeta.setAttribute('content',
+                        `width=device-width, initial-scale=${scale.toFixed(3)}, user-scalable=no`
+                    );
+                }
+
+                console.log(`Dynamic viewport scale set to: ${scale.toFixed(3)} for width: ${window.innerWidth}px`);
+            }
+        }
+
+        // Set initial scale
+        setDynamicViewportScale();
+
+        // Update scale on orientation change
+        window.addEventListener('orientationchange', () => {
+            setTimeout(setDynamicViewportScale, 100);
+        });
+
         // Mobile detection for later use
         const isMobileDevice = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -3578,8 +3688,8 @@
                 // Bottom squares take up 50vw, so starfield is roughly the top 50-70% of screen
                 posY = Math.floor((window.innerHeight * 0.08) / zoomFactor); // Start at 8% from top
 
-                eqY = posY + 116; // EQ window starts right after main window
-                playlistY = eqY + 116; // Playlist starts right after EQ window
+                eqY = posY + 116; // EQ window starts right after main window (but hidden)
+                playlistY = posY + 116; // Playlist starts right after main window (skip EQ space)
             } else {
                 // Desktop: Stack windows on the left side
                 posX = Math.floor((window.innerWidth * 0.08) / zoomFactor); // 8% from left edge
@@ -3591,7 +3701,7 @@
             // Store these positions for animation reference
             window.lastKnownPositions = isMobile ? {
                 main: { x: posX, y: posY },
-                equalizer: { x: posX, y: eqY },
+                equalizer: { x: posX, y: posY }, // Position EQ at same location as main (since it's hidden)
                 playlist: { x: posX, y: playlistY }
             } : {
                 main: { x: posX, y: posY },
@@ -4041,11 +4151,22 @@
                 const trackHeight = 14;
                 const playlistHeight = playlistHeaderHeight + (initialPlaylistSize * trackHeight);
 
-                // Position windows stacked on the left side
-                const leftPosX = Math.floor((window.innerWidth * 0.08) / zoomFactor); // 8% from left edge
-                const mainPosY = Math.floor((window.innerHeight * 0.12) / zoomFactor); // 12% from top
-                const eqPosY = mainPosY + mainWindowHeight; // EQ window starts right after main window
-                const playlistPosY = eqPosY + equalizerHeight; // Playlist starts right after EQ window
+                // Position windows based on device type
+                let leftPosX, mainPosY, eqPosY, playlistPosY;
+
+                if (isMobile()) {
+                    // Mobile: Center horizontally, position playlist right after main window
+                    leftPosX = Math.floor((window.innerWidth / zoomFactor - mainWindowWidth) / 2);
+                    mainPosY = Math.floor((window.innerHeight * 0.08) / zoomFactor);
+                    eqPosY = mainPosY; // Position EQ at same location as main (since it's hidden)
+                    playlistPosY = mainPosY + mainWindowHeight; // Playlist starts right after main window
+                } else {
+                    // Desktop: Stack windows on the left side
+                    leftPosX = Math.floor((window.innerWidth * 0.08) / zoomFactor); // 8% from left edge
+                    mainPosY = Math.floor((window.innerHeight * 0.12) / zoomFactor); // 12% from top
+                    eqPosY = mainPosY + mainWindowHeight; // EQ window starts right after main window
+                    playlistPosY = eqPosY + equalizerHeight; // Playlist starts right after EQ window
+                }
 
                 // Initialize Webamp with preloaded tracks
                 const webampOptions = {
