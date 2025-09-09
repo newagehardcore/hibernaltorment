@@ -4136,6 +4136,7 @@
                         // 1. Prepare fullscreen background but keep it invisible
                         fullscreenBackgroundVideo.classList.add('active');
                         fullscreenBackgroundVideo.style.opacity = '0';
+                        fullscreenBackgroundVideo.style.transition = 'none'; // Prevent CSS transition conflicts during animation
                         fullscreenBackgroundVideo.play().catch(err => {
                             console.error('Fullscreen video play failed:', err);
                         });
@@ -4144,36 +4145,53 @@
                         // Still activate the fullscreen background (it will be black)
                         fullscreenBackgroundVideo.classList.add('active');
                         fullscreenBackgroundVideo.style.opacity = '0';
+                        fullscreenBackgroundVideo.style.transition = 'none'; // Prevent CSS transition conflicts during animation
                     }
                     
-                    // 2. Add grow-glitch animation to container (ONLY this class for scaling)
+                    // 2. Apply TV effects + growing effect (need to remove lightbox constraints for growing)
+                    // Remove lightbox class so growing can scale beyond screen edges
+                    viewerWindow.classList.remove('lightbox');
+                    
+                    // Add the growing effect (like cover window) - this needs to scale freely
                     viewerWindow.classList.add('tv-growing-to-background');
                     
-                    // Apply lighting effect directly to the VIDEO ELEMENT (as per memory guidance)
+                    // ALSO keep the TV effects that work (don't change this!)
+                    viewerWindow.classList.add('tv-disappearing');
+                    
+                    // Also add tv-appearing to video for additional lighting (like desktop)
                     const mobileViewerVideo = viewerWindow.querySelector('.viewer-video');
                     if (mobileViewerVideo) {
                         mobileViewerVideo.classList.add('tv-appearing');
-                        console.log('Applied tv-appearing to mobile viewer video element for lighting effect');
+                        console.log('Applied both growing and TV effects to mobile viewer');
                     }
                     
-                    // 3. Start fading in background after grow effect starts
+                    // 3. Use TV turn-on effect for background video (like desktop version)
                     setTimeout(() => {
-                        fullscreenBackgroundVideo.style.transition = 'opacity 0.8s ease-in';
-                        fullscreenBackgroundVideo.style.opacity = '1';
-                    }, 500); // Start fade midway through grow animation
+                        fullscreenBackgroundVideo.classList.add('tv-appearing');
+                        console.log('Applied tv-appearing to mobile fullscreen background video');
+                    }, 400); // Start slightly before the container animation completes
                     
-                    // 4. After grow-glitch completes, clean up
+                    // 4. After effects complete, clean up both growing and TV effects
                     setTimeout(() => {
-                        // Remove grow effect from container, lighting effect from video
-                        viewerWindow.classList.remove('tv-growing-to-background');
+                        // Remove all animations - growing, tv-disappearing from container and tv-appearing from video
+                        viewerWindow.classList.remove('tv-growing-to-background', 'tv-disappearing');
                         const cleanupViewerVideo = viewerWindow.querySelector('.viewer-video');
                         if (cleanupViewerVideo) {
                             cleanupViewerVideo.classList.remove('tv-appearing');
                         }
+                        
+                        // Add fullscreen-mode (no need to remove lightbox since we removed it earlier)
                         viewerWindow.classList.add('fullscreen-mode');
-                        fullscreenBackgroundVideo.style.transition = '';
-                        fullscreenBackgroundVideo.style.opacity = '';
-                    }, 1200); // Match grow animation duration
+                        
+                        // Ensure background video stays visible after animation (desktop pattern)
+                        setTimeout(() => {
+                            fullscreenBackgroundVideo.classList.remove('tv-appearing');
+                            // Ensure opacity stays at 1 and active class remains
+                            fullscreenBackgroundVideo.style.opacity = '1';
+                            fullscreenBackgroundVideo.style.transition = 'none';
+                            console.log('Removed tv-appearing from mobile background, video should stay visible');
+                        }, 1200); // Wait for full tv-appearing animation to complete
+                    }, 1200); // Use longer duration to match both animations
                     
                     // DON'T hide cover window during viewer fullscreen - just reduce opacity
                     const coverWindow = document.getElementById('cover-window');
