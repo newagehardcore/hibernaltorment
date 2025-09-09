@@ -993,11 +993,46 @@
             }
         }
         
-        /* Dedicated animation for video elements to match tvGrowToBackground filters */
-        @keyframes tvGrowToBackgroundVideo {
+        /* Background glitch - EXACT copy of tvTurnOff filters but with scaling instead of closing */
+        @keyframes backgroundGlitch {
             0% {
-                filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg);
+                opacity: 1;
+                transform: scale(1);
+                filter: brightness(1) contrast(1) saturate(1);
             }
+
+            15% {
+                transform: scale(1.5);
+                filter: brightness(1.5) contrast(1.5) saturate(0.9);
+            }
+
+            35% {
+                transform: scale(3);
+                filter: brightness(3) contrast(3) saturate(0.5);
+            }
+
+            55% {
+                transform: scale(6);
+                filter: brightness(8) contrast(8) saturate(0.1);
+            }
+
+            75% {
+                transform: scale(12);
+                filter: brightness(15) contrast(15) saturate(0);
+            }
+
+            90% {
+                opacity: 0.3;
+                transform: scale(20);
+                filter: brightness(20) contrast(20) saturate(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(30);
+                filter: brightness(0) contrast(0) saturate(0);
+            }
+        }
             10% {
                 filter: brightness(1.2) contrast(1.3) saturate(1.1) hue-rotate(3deg);
             }
@@ -1033,6 +1068,23 @@
             }
         }
 
+        /* Desktop viewer window background glitch effect - uses tvTurnOff timing */
+        #viewer-window.background-glitch {
+            animation: backgroundGlitch 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards !important;
+            /* Position and scaling setup */
+            position: fixed !important;
+            z-index: 1000 !important;
+            /* Transform from center so it grows in all directions */
+            transform-origin: center center !important;
+            /* Remove any constraints that prevent overflow */
+            overflow: visible !important;
+            max-width: none !important;
+            max-height: none !important;
+            min-width: unset !important;
+            min-height: unset !important;
+            resize: none !important;
+        }
+
         /* Apply the grow animation to windows - force lightbox state during animation */
         #viewer-window.tv-growing-to-background {
             animation: tvGrowToBackground 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
@@ -1063,15 +1115,13 @@
             animation: fadeOut 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
         
-        /* Ensure ALL child elements inherit filters during grow animation */
+        /* Ensure ALL child elements inherit filters during grow animation - SAME AS COVER WINDOW */
         #viewer-window.tv-growing-to-background * {
             filter: inherit !important;
             -webkit-filter: inherit !important;
-            /* Force immediate inheritance from parent animation */
-            animation: inherit;
         }
         
-        /* Specific rules for viewer content and video elements */
+        /* Specific rules for viewer content and video elements - SAME PATTERN AS COVER WINDOW */
         #viewer-window.tv-growing-to-background .viewer-content,
         #viewer-window.tv-growing-to-background .viewer-loop-container,
         #viewer-window.tv-growing-to-background .viewer-video,
@@ -1080,8 +1130,6 @@
             -webkit-filter: inherit !important;
             transform: translateZ(0) !important;
             will-change: filter, transform !important;
-            /* Ensure filters are applied immediately without delay */
-            animation-delay: 0s !important;
         }
 
         #cover-window.tv-growing-to-background {
@@ -3666,15 +3714,180 @@
             }
 
             // All interaction is now handled in setupMobileLightbox for mobile
-            // Desktop double-click support can be added here if needed
+            // Desktop double-click support - TV glitch effect to background
             if (!isMobile()) {
-                // Desktop-specific controls can go here
+                // Track desktop fullscreen state for independent cycling
+                let desktopViewerInFullscreen = false;
+                let desktopViewerTransitioning = false;
+
                 viewerWindow.addEventListener('dblclick', (e) => {
                     if (e.target.closest('.viewer-close-button') || e.target.closest('.viewer-resize-handle')) {
                         return;
                     }
-                    // Desktop fullscreen toggle could go here
+
+                    // Prevent rapid double-clicks during transitions
+                    if (desktopViewerTransitioning) {
+                        console.log('Desktop viewer transition in progress, ignoring double-click');
+                        return;
+                    }
+
+                    console.log('Desktop double-click detected, current fullscreen state:', desktopViewerInFullscreen);
+                    desktopViewerTransitioning = true;
+
+                    if (!desktopViewerInFullscreen) {
+                        // Enter fullscreen with TV glitch effect
+                        console.log('Desktop: Entering viewer fullscreen mode via double-click');
+                        enterDesktopViewerFullscreen();
+                        desktopViewerInFullscreen = true;
+                        // Clear transition flag after animation completes
+                        setTimeout(() => { desktopViewerTransitioning = false; }, 1200);
+                    } else {
+                        // Exit fullscreen with TV glitch effect
+                        console.log('Desktop: Exiting viewer fullscreen mode via double-click');
+                        exitDesktopViewerFullscreen();
+                        desktopViewerInFullscreen = false;
+                        // Clear transition flag after exit completes
+                        setTimeout(() => { desktopViewerTransitioning = false; }, 2000);
+                    }
                 });
+
+                // Desktop-specific fullscreen functions (independent from mobile)
+                function enterDesktopViewerFullscreen() {
+                    console.log('Entering desktop viewer fullscreen mode');
+                    const fullscreenBackgroundVideo = document.getElementById('fullscreen-background-video');
+                    
+                    // Get current video from viewer window
+                    const viewerVideo = viewerWindow.querySelector('.viewer-video');
+                    
+                    // Always proceed with fullscreen transition, even if no video is loaded
+                    console.log('Desktop viewer video found:', !!viewerVideo, 'Has src:', !!viewerVideo?.src);
+                    
+                    if (viewerVideo && viewerVideo.src) {
+                        console.log('Desktop setting up fullscreen video with src:', viewerVideo.src);
+                        // Clone the video source to fullscreen background
+                        fullscreenBackgroundVideo.src = viewerVideo.src;
+                        fullscreenBackgroundVideo.currentTime = viewerVideo.currentTime;
+                        
+                        // Start the "grow and glitch out" effect:
+                        // 1. Prepare fullscreen background but keep it invisible
+                        fullscreenBackgroundVideo.classList.add('active');
+                        fullscreenBackgroundVideo.style.opacity = '0';
+                        fullscreenBackgroundVideo.style.transition = 'none'; // Remove CSS transition during animation
+                        fullscreenBackgroundVideo.play().catch(err => {
+                            console.error('Desktop fullscreen video play failed:', err);
+                        });
+                    } else {
+                        console.log('Desktop no video source available, proceeding with fullscreen transition anyway');
+                        // Still activate the fullscreen background (it will be black)
+                        fullscreenBackgroundVideo.classList.add('active');
+                        fullscreenBackgroundVideo.style.opacity = '0';
+                        fullscreenBackgroundVideo.style.transition = 'none'; // Remove CSS transition during animation
+                    }
+                    
+                    // 2. Apply tvTurnOff to container and tvTurnOn to video for combined effect
+                    console.log('About to add tv-disappearing to viewer window');
+                    console.log('Viewer window element:', viewerWindow);
+                    console.log('Viewer window classes before:', viewerWindow.className);
+                    
+                    // Apply tvTurnOff to the container (working scaling/lighting)
+                    viewerWindow.classList.add('tv-disappearing');
+                    
+                    // Also apply tvTurnOn to the video element for additional lighting
+                    const desktopViewerVideo = viewerWindow.querySelector('.viewer-video');
+                    if (desktopViewerVideo) {
+                        desktopViewerVideo.classList.add('tv-appearing');
+                        console.log('Applied tv-appearing to viewer video element for additional lighting');
+                    }
+                    
+                    console.log('Applied tv-disappearing to container and tv-appearing to video');
+                    console.log('Viewer window classes after:', viewerWindow.className);
+                    
+                    // 3. Use TV turn-on effect for background video instead of opacity fade
+                    setTimeout(() => {
+                        fullscreenBackgroundVideo.classList.add('tv-appearing');
+                        console.log('Applied tv-appearing to fullscreen background video');
+                    }, 400); // Start slightly before the container animation completes
+                    
+                    // 4. After glitch effects complete, clean up
+                    setTimeout(() => {
+                        // Remove both animations - tvTurnOff from container and tvTurnOn from video
+                        viewerWindow.classList.remove('tv-disappearing');
+                        const cleanupDesktopViewerVideo = viewerWindow.querySelector('.viewer-video');
+                        if (cleanupDesktopViewerVideo) {
+                            cleanupDesktopViewerVideo.classList.remove('tv-appearing');
+                        }
+                        
+                        // Ensure background video stays visible after animation
+                        setTimeout(() => {
+                            fullscreenBackgroundVideo.classList.remove('tv-appearing');
+                            // Ensure opacity stays at 1 and active class remains
+                            fullscreenBackgroundVideo.style.opacity = '1';
+                            fullscreenBackgroundVideo.style.transition = 'none'; // Remove transition to prevent opacity conflicts
+                            console.log('Removed tv-appearing from background, video should stay visible with forced opacity');
+                        }, 1200); // Wait for full tv-appearing animation to complete
+                        
+                        viewerWindow.classList.add('fullscreen-mode');
+                    }, 800); // Match tvTurnOff duration
+                    
+                    // Hide Legendarium logo
+                    const legendariumLogo = document.getElementById('legendarium-logo-link');
+                    if (legendariumLogo) {
+                        legendariumLogo.classList.add('hidden-behind-fullscreen');
+                    }
+
+                    // Add desktop double-click handler to fullscreen background for exit
+                    fullscreenBackgroundVideo.addEventListener('dblclick', handleDesktopBackgroundDoubleClick);
+                }
+
+                function exitDesktopViewerFullscreen() {
+                    console.log('Exiting desktop viewer fullscreen mode');
+                    const fullscreenBackgroundVideo = document.getElementById('fullscreen-background-video');
+                    
+                    // Remove desktop double-click handler from fullscreen background
+                    fullscreenBackgroundVideo.removeEventListener('dblclick', handleDesktopBackgroundDoubleClick);
+                    
+                    // Add TV turn-off effect to fullscreen background video
+                    fullscreenBackgroundVideo.classList.add('tv-disappearing');
+                    
+                    // After TV turn-off completes, hide fullscreen background video
+                    setTimeout(() => {
+                        fullscreenBackgroundVideo.classList.remove('active', 'tv-disappearing');
+                        fullscreenBackgroundVideo.pause();
+                        fullscreenBackgroundVideo.src = '';
+                    }, 800); // Match tvTurnOff duration
+                    
+                    // CRITICAL: Always restore viewer window to visible position
+                    viewerWindow.classList.remove('fullscreen-mode');
+                    viewerWindow.classList.add('tv-appearing', 'visible');
+                    viewerWindow.style.display = 'flex'; // Force visible
+                    
+                    // After TV turn-on completes, remove the animation class
+                    setTimeout(() => {
+                        viewerWindow.classList.remove('tv-appearing');
+                    }, 1200); // Match tvTurnOn duration
+                    
+                    // Show Legendarium logo again
+                    const legendariumLogo = document.getElementById('legendarium-logo-link');
+                    if (legendariumLogo) {
+                        legendariumLogo.classList.remove('hidden-behind-fullscreen');
+                    }
+                }
+
+                // Handler for double-clicking fullscreen background to exit
+                function handleDesktopBackgroundDoubleClick(e) {
+                    // Prevent double-clicks during transitions
+                    if (desktopViewerTransitioning) {
+                        console.log('Desktop viewer transition in progress, ignoring background double-click');
+                        return;
+                    }
+
+                    console.log('Desktop background double-click detected, exiting fullscreen');
+                    desktopViewerTransitioning = true;
+                    exitDesktopViewerFullscreen();
+                    desktopViewerInFullscreen = false;
+                    // Clear transition flag after exit completes
+                    setTimeout(() => { desktopViewerTransitioning = false; }, 2000);
+                }
             }
 
             // Add click handler to fullscreen background for mobile cycling
@@ -3933,13 +4146,15 @@
                         fullscreenBackgroundVideo.style.opacity = '0';
                     }
                     
-                    // 2. Add grow-glitch animation (always run this)
+                    // 2. Add grow-glitch animation to container (ONLY this class for scaling)
                     viewerWindow.classList.add('tv-growing-to-background');
                     
-                    // Add simple TV lighting effect to video (same as shrinking uses)
-                    viewerWindow.classList.add('tv-appearing');
-                    
-                    // No need to apply separate animation to video - CSS filter inheritance handles it
+                    // Apply lighting effect directly to the VIDEO ELEMENT (as per memory guidance)
+                    const mobileViewerVideo = viewerWindow.querySelector('.viewer-video');
+                    if (mobileViewerVideo) {
+                        mobileViewerVideo.classList.add('tv-appearing');
+                        console.log('Applied tv-appearing to mobile viewer video element for lighting effect');
+                    }
                     
                     // 3. Start fading in background after grow effect starts
                     setTimeout(() => {
@@ -3949,8 +4164,12 @@
                     
                     // 4. After grow-glitch completes, clean up
                     setTimeout(() => {
-                        // Remove grow effect, add fullscreen mode
-                        viewerWindow.classList.remove('tv-growing-to-background', 'tv-appearing');
+                        // Remove grow effect from container, lighting effect from video
+                        viewerWindow.classList.remove('tv-growing-to-background');
+                        const cleanupViewerVideo = viewerWindow.querySelector('.viewer-video');
+                        if (cleanupViewerVideo) {
+                            cleanupViewerVideo.classList.remove('tv-appearing');
+                        }
                         viewerWindow.classList.add('fullscreen-mode');
                         fullscreenBackgroundVideo.style.transition = '';
                         fullscreenBackgroundVideo.style.opacity = '';
