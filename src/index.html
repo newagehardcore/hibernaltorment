@@ -375,18 +375,12 @@
             opacity: 0;
             object-fit: cover;
             object-position: center;
-            will-change: opacity, filter, transform;
-            /* Ensure filter inheritance for hardware acceleration compatibility */
-            filter: inherit !important;
-            transform: translateZ(0);
-            -webkit-filter: inherit !important;
+            will-change: opacity;
         }
 
         .viewer-video.active {
             opacity: 1;
             /* Full opacity in viewer */
-            filter: inherit !important;
-            -webkit-filter: inherit !important;
         }
 
         /* Fullscreen background video styles */
@@ -497,7 +491,6 @@
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
-            will-change: transform; /* Optimize for dragging */
 
 
             filter:
@@ -837,16 +830,6 @@
             }
         }
 
-        /* Simple fade out animation for overlays */
-        @keyframes fadeOut {
-            0% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-            }
-        }
-
         @keyframes tvTurnOn {
             0% {
                 opacity: 0;
@@ -924,308 +907,6 @@
                 opacity: 0;
                 transform: scaleY(0) scaleX(0);
                 filter: brightness(0) contrast(0) saturate(0);
-            }
-        }
-
-        /* TV "grow backwards" effect for lightbox-to-fullscreen transition */
-        @keyframes tvGrowToBackground {
-            0% {
-                transform: scale(1);
-                opacity: 1;
-                z-index: 1000;
-                filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg);
-            }
-            10% {
-                transform: scale(1.3);
-                opacity: 0.98;
-                filter: brightness(1.2) contrast(1.3) saturate(1.1) hue-rotate(3deg);
-            }
-            20% {
-                transform: scale(2);
-                opacity: 0.92;
-                filter: brightness(1.5) contrast(1.8) saturate(0.9) hue-rotate(-8deg);
-            }
-            30% {
-                transform: scale(3.2);
-                opacity: 0.85;
-                filter: brightness(2.5) contrast(3) saturate(0.7) hue-rotate(15deg);
-            }
-            40% {
-                transform: scale(5);
-                opacity: 0.75;
-                filter: brightness(4) contrast(5) saturate(0.5) hue-rotate(-20deg);
-            }
-            50% {
-                transform: scale(7.5);
-                opacity: 0.6;
-                filter: brightness(8) contrast(10) saturate(0.3) hue-rotate(30deg);
-            }
-            60% {
-                transform: scale(11);
-                opacity: 0.45;
-                filter: brightness(15) contrast(18) saturate(0.15) hue-rotate(-35deg);
-            }
-            70% {
-                transform: scale(16);
-                opacity: 0.3;
-                filter: brightness(25) contrast(30) saturate(0.05) hue-rotate(45deg);
-            }
-            80% {
-                transform: scale(22);
-                opacity: 0.18;
-                filter: brightness(40) contrast(50) saturate(0) hue-rotate(-60deg);
-            }
-            90% {
-                transform: scale(30);
-                opacity: 0.08;
-                filter: brightness(60) contrast(80) saturate(0) hue-rotate(80deg);
-            }
-            95% {
-                transform: scale(40);
-                opacity: 0.03;
-                filter: brightness(80) contrast(100) saturate(0) hue-rotate(-100deg);
-            }
-            100% {
-                transform: scale(50);
-                opacity: 0;
-                z-index: 1;
-                filter: brightness(100) contrast(150) saturate(0) hue-rotate(120deg);
-            }
-        }
-        
-        /* Background glitch - EXACT copy of tvTurnOff filters but with scaling instead of closing */
-        @keyframes backgroundGlitch {
-            0% {
-                opacity: 1;
-                transform: scale(1);
-                filter: brightness(1) contrast(1) saturate(1);
-            }
-
-            15% {
-                transform: scale(1.5);
-                filter: brightness(1.5) contrast(1.5) saturate(0.9);
-            }
-
-            35% {
-                transform: scale(3);
-                filter: brightness(3) contrast(3) saturate(0.5);
-            }
-
-            55% {
-                transform: scale(6);
-                filter: brightness(8) contrast(8) saturate(0.1);
-            }
-
-            75% {
-                transform: scale(12);
-                filter: brightness(15) contrast(15) saturate(0);
-            }
-
-            90% {
-                opacity: 0.3;
-                transform: scale(20);
-                filter: brightness(20) contrast(20) saturate(0);
-            }
-
-            100% {
-                opacity: 0;
-                transform: scale(30);
-                filter: brightness(0) contrast(0) saturate(0);
-            }
-        }
-            10% {
-                filter: brightness(1.2) contrast(1.3) saturate(1.1) hue-rotate(3deg);
-            }
-            20% {
-                filter: brightness(1.5) contrast(1.8) saturate(0.9) hue-rotate(-8deg);
-            }
-            30% {
-                filter: brightness(2.5) contrast(3) saturate(0.7) hue-rotate(15deg);
-            }
-            40% {
-                filter: brightness(4) contrast(5) saturate(0.5) hue-rotate(-20deg);
-            }
-            50% {
-                filter: brightness(8) contrast(10) saturate(0.3) hue-rotate(30deg);
-            }
-            60% {
-                filter: brightness(15) contrast(18) saturate(0.15) hue-rotate(-35deg);
-            }
-            70% {
-                filter: brightness(25) contrast(30) saturate(0.05) hue-rotate(45deg);
-            }
-            80% {
-                filter: brightness(40) contrast(50) saturate(0) hue-rotate(-60deg);
-            }
-            90% {
-                filter: brightness(60) contrast(80) saturate(0) hue-rotate(80deg);
-            }
-            95% {
-                filter: brightness(80) contrast(100) saturate(0) hue-rotate(-100deg);
-            }
-            100% {
-                filter: brightness(100) contrast(150) saturate(0) hue-rotate(120deg);
-            }
-        }
-
-        /* Desktop viewer window background glitch effect - uses tvTurnOff timing */
-        #viewer-window.background-glitch {
-            animation: backgroundGlitch 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards !important;
-            /* Position and scaling setup */
-            position: fixed !important;
-            z-index: 1000 !important;
-            /* Transform from center so it grows in all directions */
-            transform-origin: center center !important;
-            /* Remove any constraints that prevent overflow */
-            overflow: visible !important;
-            max-width: none !important;
-            max-height: none !important;
-            min-width: unset !important;
-            min-height: unset !important;
-            resize: none !important;
-        }
-
-        /* Apply the grow animation to windows - force lightbox state during animation */
-        #viewer-window.tv-growing-to-background {
-            animation: tvGrowToBackground 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-            /* Ensure it stays in lightbox position during animation but can grow beyond */
-            position: fixed !important;
-            bottom: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vw !important;
-            max-height: 100vh !important;
-            z-index: 1000 !important;
-            /* Transform from center so it grows in all directions */
-            transform-origin: center center !important;
-            /* Remove any constraints that prevent overflow - CRITICAL for grow effect */
-            overflow: visible !important;
-            max-width: none !important;
-            min-width: unset !important;
-            min-height: unset !important;
-            /* Override the default overflow:hidden from #viewer-window base styles */
-            resize: none !important;
-            /* CRITICAL: Establish filter inheritance context immediately */
-            filter: inherit;
-            -webkit-filter: inherit;
-        }
-        
-        /* Fade out square overlay during viewer grow transition */
-        #viewer-window.tv-growing-to-background .square-border-overlay {
-            animation: fadeOut 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
-        
-        /* Ensure ALL child elements inherit filters during grow animation - SAME AS COVER WINDOW */
-        #viewer-window.tv-growing-to-background * {
-            filter: inherit !important;
-            -webkit-filter: inherit !important;
-        }
-        
-        /* Specific rules for viewer content and video elements - SAME PATTERN AS COVER WINDOW */
-        #viewer-window.tv-growing-to-background .viewer-content,
-        #viewer-window.tv-growing-to-background .viewer-loop-container,
-        #viewer-window.tv-growing-to-background .viewer-video,
-        #viewer-window.tv-growing-to-background .viewer-loop {
-            filter: inherit !important;
-            -webkit-filter: inherit !important;
-            transform: translateZ(0) !important;
-            will-change: filter, transform !important;
-        }
-
-        #cover-window.tv-growing-to-background {
-            animation: tvGrowToBackground 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-            /* Ensure it stays in lightbox position during animation but can grow beyond */
-            position: fixed !important;
-            bottom: 0 !important;
-            right: 0 !important;
-            width: 100vw !important;
-            height: 100vw !important;
-            max-height: 100vh !important;
-            z-index: 1000 !important;
-            /* Transform from center so it grows in all directions */
-            transform-origin: center center !important;
-            /* Remove any constraints that prevent overflow */
-            overflow: visible !important;
-            max-width: none !important;
-            min-width: unset !important;
-            min-height: unset !important;
-            /* CRITICAL: Establish filter inheritance context immediately */
-            filter: inherit;
-            -webkit-filter: inherit;
-        }
-        
-        /* Fade out square overlay during cover grow transition */
-        #cover-window.tv-growing-to-background .square-border-overlay {
-            animation: fadeOut 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
-        
-        /* Ensure ALL child elements inherit filters during grow animation for cover window */
-        #cover-window.tv-growing-to-background * {
-            filter: inherit !important;
-            -webkit-filter: inherit !important;
-        }
-        
-        /* Specific rules for cover content and image elements */
-        #cover-window.tv-growing-to-background .cover-content,
-        #cover-window.tv-growing-to-background .cover-image-container,
-        #cover-window.tv-growing-to-background #cover-image {
-            filter: inherit !important;
-            -webkit-filter: inherit !important;
-            transform: translateZ(0) !important;
-            will-change: filter, transform !important;
-        }
-
-        /* Override any conflicting mobile styles during grow animation */
-        @media screen and (max-width: 768px) {
-            #viewer-window.tv-growing-to-background,
-            #cover-window.tv-growing-to-background {
-                /* Remove all size constraints during animation */
-                width: 100vw !important;
-                height: 100vh !important;
-                max-width: none !important;
-                max-height: none !important;
-                min-width: unset !important;
-                min-height: unset !important;
-                /* Allow content to overflow and grow beyond screen */
-                overflow: visible !important;
-                /* Ensure it can grow from center in all directions */
-                transform-origin: center center !important;
-            }
-            
-            /* Make sure the content inside can also grow */
-            #viewer-window.tv-growing-to-background .viewer-content,
-            #cover-window.tv-growing-to-background .cover-content {
-                overflow: visible !important;
-                max-width: none !important;
-                max-height: none !important;
-                transform-origin: center center !important;
-            }
-            
-            /* Also ensure viewer video can scale during grow animation */
-            #viewer-window.tv-growing-to-background .viewer-video,
-            #viewer-window.tv-growing-to-background .viewer-loop-container {
-                overflow: visible !important;
-                max-width: none !important;
-                max-height: none !important;
-                transform-origin: center center !important;
-            }
-            
-            /* CRITICAL: Ensure filter inheritance for viewer video elements during grow animation */
-            #viewer-window.tv-growing-to-background .viewer-video,
-            #viewer-window.tv-growing-to-background .viewer-loop {
-                filter: inherit !important;
-                -webkit-filter: inherit !important;
-                transform: translateZ(0) !important;
-                will-change: filter, transform !important;
-            }
-            
-            /* CRITICAL: Ensure filter inheritance for cover image elements during grow animation */
-            #cover-window.tv-growing-to-background .cover-image-container,
-            #cover-window.tv-growing-to-background #cover-image {
-                filter: inherit !important;
-                -webkit-filter: inherit !important;
-                transform: translateZ(0) !important;
-                will-change: filter, transform !important;
             }
         }
 
@@ -1620,8 +1301,9 @@
             border: none;
             border-radius: 0;
             z-index: 5;
-            cursor: auto;
-            will-change: transform, filter;
+            cursor: move;
+            filter: none;
+            will-change: transform;
             user-select: none;
             display: flex;
             flex-direction: column;
@@ -1666,9 +1348,9 @@
 
         @media (max-width: 768px) {
             #viewer-window {
-                /* Mobile viewer window positioning - default bottom left */
+                /* Mobile viewer window positioning - default bottom left, but allow dragging */
                 position: fixed !important;
-                /* Default to bottom-left */
+                /* Default to bottom-left but allow dragging */
                 bottom: 0 !important;
                 left: 0 !important;
                 width: 50vw !important;
@@ -1678,18 +1360,13 @@
                 min-width: 50vw !important;
                 min-height: 50vw !important;
                 transform: none !important;
-                cursor: auto !important;
+                cursor: move !important; /* Allow dragging */
                 resize: none !important;
                 opacity: 1 !important;
                 top: auto !important;
                 right: auto !important;
                 z-index: 5 !important;
                 display: block !important;
-                touch-action: auto !important;
-                user-select: none !important;
-                -webkit-user-select: none !important;
-                -moz-user-select: none !important;
-                -ms-user-select: none !important;
             }
         }
 
@@ -1786,10 +1463,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Ensure filter inheritance for lighting effects */
-            filter: inherit !important;
-            -webkit-filter: inherit !important;
-            will-change: filter, transform;
         }
 
         .viewer-loop-container {
@@ -1797,10 +1470,6 @@
             height: 100%;
             position: relative;
             overflow: hidden;
-            /* Ensure filter inheritance for lighting effects */
-            filter: inherit !important;
-            -webkit-filter: inherit !important;
-            will-change: filter, transform;
         }
 
         .viewer-loop {
@@ -1813,20 +1482,14 @@
             object-fit: cover;
             /* Cover instead of contain to avoid black bars */
             object-position: center;
-            will-change: opacity, filter, transform;
+            will-change: opacity;
             transition: opacity 0.5s ease-in-out;
-            /* Ensure filter inheritance for hardware acceleration compatibility */
-            filter: inherit !important;
-            transform: translateZ(0);
-            -webkit-filter: inherit !important;
         }
 
 
 
         .viewer-loop.active {
             opacity: 1;
-            filter: inherit !important;
-            -webkit-filter: inherit !important;
         }
 
         .viewer-bottom {
@@ -1874,8 +1537,9 @@
             border: none;
             border-radius: 0;
             z-index: 5;
-            cursor: auto;
-            will-change: transform, filter;
+            cursor: move;
+            filter: none;
+            will-change: transform;
             user-select: none;
             display: flex;
             flex-direction: column;
@@ -1902,27 +1566,6 @@
 
         #cover-window.visible {
             opacity: 1;
-        }
-
-        /* TV animations for cover window - ONLY for fullscreen transitions */
-        #cover-window.tv-appearing {
-            animation: tvTurnOn 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
-
-        #cover-window.tv-disappearing {
-            animation: tvTurnOff 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
-        }
-
-        /* Add white flash effect for cover content during TV off (like deity messages) */
-        #cover-window.tv-disappearing .cover-content {
-            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7), rgba(0, 0, 0, 0.1));
-            animation: whiteFlashFill 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
-        }
-
-        /* Hide cover window when in fullscreen mode */
-        #cover-window.fullscreen-mode {
-            opacity: 0 !important;
-            pointer-events: none !important;
         }
 
         .cover-header {
@@ -1974,10 +1617,6 @@
             align-items: center;
             justify-content: center;
             padding: 0;
-            /* Ensure filter inheritance for lighting effects */
-            filter: inherit !important;
-            -webkit-filter: inherit !important;
-            will-change: filter, transform;
         }
 
         #cover-window::before {
@@ -2001,10 +1640,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Ensure filter inheritance for lighting effects */
-            filter: inherit !important;
-            -webkit-filter: inherit !important;
-            will-change: filter, transform;
         }
 
         #cover-image {
@@ -2013,11 +1648,6 @@
             object-fit: cover;
             object-position: center;
             image-rendering: auto;
-            /* Ensure filter inheritance for lighting effects */
-            filter: inherit !important;
-            -webkit-filter: inherit !important;
-            transform: translateZ(0);
-            will-change: filter, transform;
         }
 
         .cover-bottom {
@@ -2110,7 +1740,7 @@
                 min-width: 50vw !important;
                 min-height: 50vw !important;
                 transform: none !important;
-                cursor: auto !important;
+                cursor: move !important; /* Allow dragging on mobile */
                 resize: none !important;
                 opacity: 1 !important;
                 top: auto !important;
@@ -2118,11 +1748,6 @@
                 z-index: 5 !important;
                 display: block !important;
                 transition: all 0.3s ease-in-out !important;
-                touch-action: auto !important;
-                user-select: none !important;
-                -webkit-user-select: none !important;
-                -moz-user-select: none !important;
-                -ms-user-select: none !important;
             }
 
             /* Lightbox state for viewer */
@@ -2169,9 +1794,10 @@
 
             /* Remove conflicting dotted borders - they are handled by square overlay rules */
 
-            /* Mobile cover window positioning - fixed, non-draggable */
+            /* Mobile cover window positioning - default bottom right, but allow dragging */
             #cover-window {
                 position: fixed !important;
+                /* Default to bottom-right but allow dragging */
                 bottom: 0 !important;
                 right: 0 !important;
                 width: 50vw !important;
@@ -2181,17 +1807,14 @@
                 min-width: 50vw !important;
                 min-height: 50vw !important;
                 transform: none !important;
-                cursor: auto !important;
+                cursor: move !important; /* Allow dragging on mobile */
                 resize: none !important;
                 opacity: 1 !important;
+                top: auto !important;
+                left: auto !important;
                 z-index: 5 !important;
                 display: block !important;
                 transition: all 0.3s ease-in-out !important;
-                touch-action: auto !important;
-                user-select: none !important;
-                -webkit-user-select: none !important;
-                -moz-user-select: none !important;
-                -ms-user-select: none !important;
             }
 
             /* Lightbox state for cover */
@@ -2895,8 +2518,63 @@
             },
 
             makeDraggable(element) {
-                // Use the enhanced mobile drag functionality
-                makeDeityMessageDraggable(element);
+                let isDragging = false;
+                let startX = 0;
+                let startY = 0;
+                let startLeft = 0;
+                let startTop = 0;
+
+                // Use the entire window as the drag handle (not just title bar since we removed it)
+                element.addEventListener('mousedown', dragStart, { passive: false });
+                document.addEventListener('mousemove', drag, { passive: false });
+                document.addEventListener('mouseup', dragEnd, { passive: false });
+
+                function dragStart(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+
+                    // Get current position
+                    const rect = element.getBoundingClientRect();
+                    startLeft = rect.left;
+                    startTop = rect.top;
+
+                    element.style.cursor = 'grabbing';
+                    element.style.zIndex = '1002'; // Bring to front while dragging
+                }
+
+                function drag(e) {
+                    if (!isDragging) return;
+
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const deltaX = e.clientX - startX;
+                    const deltaY = e.clientY - startY;
+
+                    // Allow unrestricted movement
+                    const newLeft = startLeft + deltaX;
+                    const newTop = startTop + deltaY;
+
+                    element.style.left = newLeft + 'px';
+                    element.style.top = newTop + 'px';
+                }
+
+                function dragEnd(e) {
+                    if (!isDragging) return;
+
+                    isDragging = false;
+                    element.style.cursor = 'move';
+                    element.style.zIndex = '1001'; // Reset z-index
+                }
+
+                // Prevent text selection during drag
+                element.addEventListener('selectstart', (e) => {
+                    if (isDragging) e.preventDefault();
+                });
             },
 
             dismissMessage(messageWindow) {
@@ -3301,9 +2979,6 @@
             // Set up viewer buttons
             setupViewerControls();
 
-            // Ensure mobile windows are in fixed positions
-            ensureMobileFixedPositions();
-
             // Set up mobile lightbox functionality
             setupMobileLightbox();
 
@@ -3312,13 +2987,6 @@
 
             // Set up cover window controls
             setupCoverControls();
-            
-            // Ensure Webamp touch dragging works on mobile (delay to allow DOM to be ready)
-            if (isMobile()) {
-                setTimeout(() => {
-                    ensureWebampTouchDragging();
-                }, 1000);
-            }
         }
 
         // Function to check if we're on mobile
@@ -3326,10 +2994,167 @@
             return window.innerWidth <= 768;
         }
 
-        // Function to set up viewer window (non-draggable)
+        // Function to make the viewer window draggable
         function makeViewerDraggable() {
-            // Viewer window is no longer draggable - removed drag functionality
-            console.log('Viewer window drag functionality disabled');
+            const viewerWindow = document.getElementById('viewer-window');
+
+            if (!viewerWindow) return; // Allow dragging on all devices including mobile
+
+            let isDragging = false;
+            let startX = 0;
+            let startY = 0;
+            let startLeft = 0;
+            let startTop = 0;
+
+            // Use the header as the drag handle
+            const dragHandle = viewerWindow.querySelector('.viewer-header');
+
+            if (dragHandle) {
+                dragHandle.addEventListener('mousedown', dragStart, { passive: false });
+                document.addEventListener('mousemove', drag, { passive: false });
+                document.addEventListener('mouseup', dragEnd, { passive: false });
+                
+                // Add touch support for mobile dragging
+                dragHandle.addEventListener('touchstart', touchStart, { passive: false });
+                document.addEventListener('touchmove', touchDrag, { passive: false });
+                document.addEventListener('touchend', touchEnd, { passive: false });
+            }
+
+            function dragStart(e) {
+                // Ignore if clicking on buttons
+                if (e.target.closest('.viewer-close-button')) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+
+                // Get current position
+                const rect = viewerWindow.getBoundingClientRect();
+                startLeft = rect.left;
+                startTop = rect.top;
+
+                // Make sure transform is none for proper dragging
+                if (viewerWindow.style.transform === 'translate(-50%, -50%)') {
+                    viewerWindow.style.transform = 'none';
+
+                    // Center it if first drag after initialization
+                    const rect = viewerWindow.getBoundingClientRect();
+                    viewerWindow.style.top = `${(window.innerHeight - rect.height) / 2}px`;
+                    viewerWindow.style.left = `${(window.innerWidth - rect.width) / 2}px`;
+                }
+
+                dragHandle.style.cursor = 'grabbing';
+                viewerWindow.style.zIndex = '6'; // Bring to front while dragging
+            }
+
+            function drag(e) {
+                if (!isDragging) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+
+                let newLeft = startLeft + deltaX;
+                let newTop = startTop + deltaY;
+
+                // Constrain to screen bounds with some flexibility
+                const rect = viewerWindow.getBoundingClientRect();
+                const elementWidth = rect.width;
+                const elementHeight = rect.height;
+
+                // Allow more flexibility - only constrain when completely off-screen
+                newLeft = Math.max(-elementWidth + 100, Math.min(window.innerWidth - 50, newLeft));
+                newTop = Math.max(-50, Math.min(window.innerHeight - 50, newTop));
+
+                viewerWindow.style.left = newLeft + 'px';
+                viewerWindow.style.top = newTop + 'px';
+            }
+
+            function dragEnd(e) {
+                if (!isDragging) return;
+
+                isDragging = false;
+                dragHandle.style.cursor = 'move';
+                viewerWindow.style.zIndex = '5'; // Reset z-index
+            }
+
+            // Touch event functions for mobile support
+            function touchStart(e) {
+                // Ignore if touching on buttons
+                if (e.target.closest('.viewer-close-button')) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const touch = e.touches[0];
+                isDragging = true;
+                startX = touch.clientX;
+                startY = touch.clientY;
+
+                // Get current position
+                const rect = viewerWindow.getBoundingClientRect();
+                startLeft = rect.left;
+                startTop = rect.top;
+
+                // Make sure transform is none for proper dragging
+                if (viewerWindow.style.transform === 'translate(-50%, -50%)') {
+                    viewerWindow.style.transform = 'none';
+
+                    // Center it if first drag after initialization
+                    const rect = viewerWindow.getBoundingClientRect();
+                    viewerWindow.style.top = `${(window.innerHeight - rect.height) / 2}px`;
+                    viewerWindow.style.left = `${(window.innerWidth - rect.width) / 2}px`;
+                }
+
+                viewerWindow.style.zIndex = '6'; // Bring to front while dragging
+            }
+
+            function touchDrag(e) {
+                if (!isDragging) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+
+                let newLeft = startLeft + deltaX;
+                let newTop = startTop + deltaY;
+
+                // Constrain to screen bounds with some flexibility
+                const rect = viewerWindow.getBoundingClientRect();
+                const elementWidth = rect.width;
+                const elementHeight = rect.height;
+
+                // Allow more flexibility - only constrain when completely off-screen
+                newLeft = Math.max(-elementWidth + 100, Math.min(window.innerWidth - 50, newLeft));
+                newTop = Math.max(-50, Math.min(window.innerHeight - 50, newTop));
+
+                viewerWindow.style.left = newLeft + 'px';
+                viewerWindow.style.top = newTop + 'px';
+            }
+
+            function touchEnd(e) {
+                if (!isDragging) return;
+
+                isDragging = false;
+                viewerWindow.style.zIndex = '5'; // Reset z-index
+            }
+
+            // Prevent text selection during drag
+            viewerWindow.addEventListener('selectstart', (e) => {
+                if (isDragging) e.preventDefault();
+            });
         }
 
         // Optimized lazy loading function - only preload first video initially
@@ -3713,215 +3538,160 @@
                 });
             }
 
-            // All interaction is now handled in setupMobileLightbox for mobile
-            // Desktop double-click support - TV glitch effect to background
-            if (!isMobile()) {
-                // Track desktop fullscreen state for independent cycling
-                let desktopViewerInFullscreen = false;
-                let desktopViewerTransitioning = false;
+            // Double-click functionality for fullscreen toggle
+            let isFullscreenMode = false;
+            let clickTimeout = null;
+            let clickCount = 0;
 
-                viewerWindow.addEventListener('dblclick', (e) => {
-                    if (e.target.closest('.viewer-close-button') || e.target.closest('.viewer-resize-handle')) {
-                        return;
-                    }
-
-                    // Prevent rapid double-clicks during transitions
-                    if (desktopViewerTransitioning) {
-                        console.log('Desktop viewer transition in progress, ignoring double-click');
-                        return;
-                    }
-
-                    console.log('Desktop double-click detected, current fullscreen state:', desktopViewerInFullscreen);
-                    desktopViewerTransitioning = true;
-
-                    if (!desktopViewerInFullscreen) {
-                        // Enter fullscreen with TV glitch effect
-                        console.log('Desktop: Entering viewer fullscreen mode via double-click');
-                        enterDesktopViewerFullscreen();
-                        desktopViewerInFullscreen = true;
-                        // Clear transition flag after animation completes
-                        setTimeout(() => { desktopViewerTransitioning = false; }, 1200);
-                    } else {
-                        // Exit fullscreen with TV glitch effect
-                        console.log('Desktop: Exiting viewer fullscreen mode via double-click');
-                        exitDesktopViewerFullscreen();
-                        desktopViewerInFullscreen = false;
-                        // Clear transition flag after exit completes
-                        setTimeout(() => { desktopViewerTransitioning = false; }, 2000);
-                    }
-                });
-
-                // Desktop-specific fullscreen functions (independent from mobile)
-                function enterDesktopViewerFullscreen() {
-                    console.log('Entering desktop viewer fullscreen mode');
-                    const fullscreenBackgroundVideo = document.getElementById('fullscreen-background-video');
-                    
-                    // Get current video from viewer window
-                    const viewerVideo = viewerWindow.querySelector('.viewer-video');
-                    
-                    // Always proceed with fullscreen transition, even if no video is loaded
-                    console.log('Desktop viewer video found:', !!viewerVideo, 'Has src:', !!viewerVideo?.src);
-                    
-                    if (viewerVideo && viewerVideo.src) {
-                        console.log('Desktop setting up fullscreen video with src:', viewerVideo.src);
-                        // Clone the video source to fullscreen background
-                        fullscreenBackgroundVideo.src = viewerVideo.src;
-                        fullscreenBackgroundVideo.currentTime = viewerVideo.currentTime;
-                        
-                        // Start the "grow and glitch out" effect:
-                        // 1. Prepare fullscreen background but keep it invisible
-                        fullscreenBackgroundVideo.classList.add('active');
-                        fullscreenBackgroundVideo.style.opacity = '0';
-                        fullscreenBackgroundVideo.style.transition = 'none'; // Remove CSS transition during animation
-                        fullscreenBackgroundVideo.play().catch(err => {
-                            console.error('Desktop fullscreen video play failed:', err);
-                        });
-                    } else {
-                        console.log('Desktop no video source available, proceeding with fullscreen transition anyway');
-                        // Still activate the fullscreen background (it will be black)
-                        fullscreenBackgroundVideo.classList.add('active');
-                        fullscreenBackgroundVideo.style.opacity = '0';
-                        fullscreenBackgroundVideo.style.transition = 'none'; // Remove CSS transition during animation
-                    }
-                    
-                    // 2. Apply tvTurnOff to container and tvTurnOn to video for combined effect
-                    console.log('About to add tv-disappearing to viewer window');
-                    console.log('Viewer window element:', viewerWindow);
-                    console.log('Viewer window classes before:', viewerWindow.className);
-                    
-                    // Apply tvTurnOff to the container (working scaling/lighting)
-                    viewerWindow.classList.add('tv-disappearing');
-                    
-                    // Also apply tvTurnOn to the video element for additional lighting
-                    const desktopViewerVideo = viewerWindow.querySelector('.viewer-video');
-                    if (desktopViewerVideo) {
-                        desktopViewerVideo.classList.add('tv-appearing');
-                        console.log('Applied tv-appearing to viewer video element for additional lighting');
-                    }
-                    
-                    console.log('Applied tv-disappearing to container and tv-appearing to video');
-                    console.log('Viewer window classes after:', viewerWindow.className);
-                    
-                    // 3. Use TV turn-on effect for background video instead of opacity fade
-                    setTimeout(() => {
-                        fullscreenBackgroundVideo.classList.add('tv-appearing');
-                        console.log('Applied tv-appearing to fullscreen background video');
-                    }, 400); // Start slightly before the container animation completes
-                    
-                    // 4. After glitch effects complete, clean up
-                    setTimeout(() => {
-                        // Remove both animations - tvTurnOff from container and tvTurnOn from video
-                        viewerWindow.classList.remove('tv-disappearing');
-                        const cleanupDesktopViewerVideo = viewerWindow.querySelector('.viewer-video');
-                        if (cleanupDesktopViewerVideo) {
-                            cleanupDesktopViewerVideo.classList.remove('tv-appearing');
-                        }
-                        
-                        // Ensure background video stays visible after animation
-                        setTimeout(() => {
-                            fullscreenBackgroundVideo.classList.remove('tv-appearing');
-                            // Ensure opacity stays at 1 and active class remains
-                            fullscreenBackgroundVideo.style.opacity = '1';
-                            fullscreenBackgroundVideo.style.transition = 'none'; // Remove transition to prevent opacity conflicts
-                            console.log('Removed tv-appearing from background, video should stay visible with forced opacity');
-                        }, 1200); // Wait for full tv-appearing animation to complete
-                        
-                        viewerWindow.classList.add('fullscreen-mode');
-                    }, 800); // Match tvTurnOff duration
-                    
-                    // Hide Legendarium logo
-                    const legendariumLogo = document.getElementById('legendarium-logo-link');
-                    if (legendariumLogo) {
-                        legendariumLogo.classList.add('hidden-behind-fullscreen');
-                    }
-
-                    // Add desktop double-click handler to fullscreen background for exit
-                    fullscreenBackgroundVideo.addEventListener('dblclick', handleDesktopBackgroundDoubleClick);
+            function handleViewerDoubleClick(e) {
+                // Don't trigger if clicking on buttons or resize handle
+                if (e.target.closest('.viewer-close-button') || e.target.closest('.viewer-resize-handle')) {
+                    return;
                 }
 
-                function exitDesktopViewerFullscreen() {
-                    console.log('Exiting desktop viewer fullscreen mode');
-                    const fullscreenBackgroundVideo = document.getElementById('fullscreen-background-video');
+                clickCount++;
+                
+                if (clickCount === 1) {
+                    // Start timeout for double-click detection
+                    clickTimeout = setTimeout(() => {
+                        clickCount = 0;
+                    }, 300); // 300ms window for double-click
+                } else if (clickCount === 2) {
+                    // Double-click detected
+                    clearTimeout(clickTimeout);
+                    clickCount = 0;
                     
-                    // Remove desktop double-click handler from fullscreen background
-                    fullscreenBackgroundVideo.removeEventListener('dblclick', handleDesktopBackgroundDoubleClick);
-                    
-                    // Add TV turn-off effect to fullscreen background video
-                    fullscreenBackgroundVideo.classList.add('tv-disappearing');
-                    
-                    // After TV turn-off completes, hide fullscreen background video
-                    setTimeout(() => {
-                        fullscreenBackgroundVideo.classList.remove('active', 'tv-disappearing');
-                        fullscreenBackgroundVideo.pause();
-                        fullscreenBackgroundVideo.src = '';
-                    }, 800); // Match tvTurnOff duration
-                    
-                    // CRITICAL: Always restore viewer window to visible position
-                    viewerWindow.classList.remove('fullscreen-mode');
-                    viewerWindow.classList.add('tv-appearing', 'visible');
-                    viewerWindow.style.display = 'flex'; // Force visible
-                    
-                    // After TV turn-on completes, remove the animation class
-                    setTimeout(() => {
-                        viewerWindow.classList.remove('tv-appearing');
-                    }, 1200); // Match tvTurnOn duration
-                    
-                    // Show Legendarium logo again
-                    const legendariumLogo = document.getElementById('legendarium-logo-link');
-                    if (legendariumLogo) {
-                        legendariumLogo.classList.remove('hidden-behind-fullscreen');
-                    }
-                }
-
-                // Handler for double-clicking fullscreen background to exit
-                function handleDesktopBackgroundDoubleClick(e) {
-                    // Prevent double-clicks during transitions
-                    if (desktopViewerTransitioning) {
-                        console.log('Desktop viewer transition in progress, ignoring background double-click');
-                        return;
-                    }
-
-                    console.log('Desktop background double-click detected, exiting fullscreen');
-                    desktopViewerTransitioning = true;
-                    exitDesktopViewerFullscreen();
-                    desktopViewerInFullscreen = false;
-                    // Clear transition flag after exit completes
-                    setTimeout(() => { desktopViewerTransitioning = false; }, 2000);
+                    toggleFullscreenMode();
                 }
             }
 
-            // Add click handler to fullscreen background for mobile cycling
-            if (isMobile()) {
-                fullscreenBackgroundVideo.addEventListener('click', (e) => {
-                    // Find the active window state and continue the cycle
-                    const viewerWindow = document.getElementById('viewer-window');
-                    const coverWindow = document.getElementById('cover-window');
-                    
-                    if (viewerWindow && viewerWindow.classList.contains('fullscreen-mode')) {
-                        // Viewer is in fullscreen, clicking background should exit to small
-                        const clickEvent = new Event('click');
-                        viewerWindow.dispatchEvent(clickEvent);
-                    } else if (coverWindow && coverWindow.classList.contains('fullscreen-mode')) {
-                        // Cover is in fullscreen, clicking background should exit to small
-                        const clickEvent = new Event('click');
-                        coverWindow.dispatchEvent(clickEvent);
-                    }
-                });
+            function toggleFullscreenMode() {
+                if (!isFullscreenMode) {
+                    // Enter fullscreen mode
+                    enterFullscreenMode();
+                } else {
+                    // Exit fullscreen mode
+                    exitFullscreenMode();
+                }
+                isFullscreenMode = !isFullscreenMode;
+            }
 
-                fullscreenBackgroundVideo.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    // Same logic as click
-                    const viewerWindow = document.getElementById('viewer-window');
-                    const coverWindow = document.getElementById('cover-window');
+            function enterFullscreenMode() {
+                console.log('Entering fullscreen mode');
+                
+                // Get current video from viewer window
+                const viewerVideo = viewerWindow.querySelector('.viewer-video');
+                if (viewerVideo && viewerVideo.src) {
+                    // Clone the video source to fullscreen background
+                    fullscreenBackgroundVideo.src = viewerVideo.src;
+                    fullscreenBackgroundVideo.currentTime = viewerVideo.currentTime;
                     
-                    if (viewerWindow && viewerWindow.classList.contains('fullscreen-mode')) {
-                        const clickEvent = new Event('click');
-                        viewerWindow.dispatchEvent(clickEvent);
-                    } else if (coverWindow && coverWindow.classList.contains('fullscreen-mode')) {
-                        const clickEvent = new Event('click');
-                        coverWindow.dispatchEvent(clickEvent);
+                    // Activate fullscreen background video with TV turn-on effect
+                    fullscreenBackgroundVideo.classList.add('active', 'tv-appearing');
+                    fullscreenBackgroundVideo.play().catch(err => {
+                        console.error('Fullscreen video play failed:', err);
+                    });
+                    
+                    // Remove TV effect after animation completes
+                    setTimeout(() => {
+                        fullscreenBackgroundVideo.classList.remove('tv-appearing');
+                    }, 1200); // Match tvTurnOn duration
+                }
+                
+                // Hide viewer window with TV turn-off effect
+                viewerWindow.classList.add('tv-disappearing');
+                
+                // After TV turn-off completes, hide it completely
+                setTimeout(() => {
+                    viewerWindow.classList.add('fullscreen-mode');
+                    viewerWindow.classList.remove('tv-disappearing');
+                }, 800); // Match tvTurnOff duration
+                
+                // Hide album art window on mobile
+                if (isMobile()) {
+                    const coverWindow = document.getElementById('cover-window');
+                    if (coverWindow) {
+                        coverWindow.style.display = 'none';
                     }
-                }, { passive: false });
+                }
+                
+                // Hide Legendarium logo behind fullscreen video
+                const legendariumLogo = document.getElementById('legendarium-logo-link');
+                if (legendariumLogo) {
+                    legendariumLogo.classList.add('hidden-behind-fullscreen');
+                }
+            }
+
+            function exitFullscreenMode() {
+                console.log('Exiting fullscreen mode');
+                
+                // Add TV turn-off effect to fullscreen background video
+                fullscreenBackgroundVideo.classList.add('tv-disappearing');
+                
+                // After TV turn-off completes, hide fullscreen background video
+                setTimeout(() => {
+                    fullscreenBackgroundVideo.classList.remove('active', 'tv-disappearing');
+                    fullscreenBackgroundVideo.pause();
+                    fullscreenBackgroundVideo.src = '';
+                }, 800); // Match tvTurnOff duration
+                
+                // Show viewer window with TV turn-on effect
+                viewerWindow.classList.remove('fullscreen-mode');
+                viewerWindow.classList.add('tv-appearing');
+                
+                // After TV turn-on completes, remove the animation class
+                setTimeout(() => {
+                    viewerWindow.classList.remove('tv-appearing');
+                }, 1200); // Match tvTurnOn duration
+                
+                // Show album art window again on mobile
+                if (isMobile()) {
+                    const coverWindow = document.getElementById('cover-window');
+                    if (coverWindow) {
+                        coverWindow.style.display = 'flex';
+                    }
+                }
+                
+                // Show Legendarium logo again
+                const legendariumLogo = document.getElementById('legendarium-logo-link');
+                if (legendariumLogo) {
+                    legendariumLogo.classList.remove('hidden-behind-fullscreen');
+                }
+            }
+
+            // Add double-click event listener to viewer window
+            viewerWindow.addEventListener('click', handleViewerDoubleClick);
+            
+            // Add double-click event listener to fullscreen background video for exit
+            fullscreenBackgroundVideo.addEventListener('click', handleViewerDoubleClick);
+
+            // Mobile touch support for double-tap
+            if (isMobile()) {
+                let touchTimeout = null;
+                let touchCount = 0;
+                
+                function handleTouchEnd(e) {
+                    // Don't trigger if touching buttons
+                    if (e.target.closest('.viewer-close-button') || e.target.closest('.viewer-resize-handle')) {
+                        return;
+                    }
+                    
+                    touchCount++;
+                    
+                    if (touchCount === 1) {
+                        touchTimeout = setTimeout(() => {
+                            touchCount = 0;
+                        }, 300);
+                    } else if (touchCount === 2) {
+                        clearTimeout(touchTimeout);
+                        touchCount = 0;
+                        e.preventDefault();
+                        toggleFullscreenMode();
+                    }
+                }
+                
+                viewerWindow.addEventListener('touchend', handleTouchEnd, { passive: false });
+                fullscreenBackgroundVideo.addEventListener('touchend', handleTouchEnd, { passive: false });
             }
 
             // Position the viewer window - mobile vs desktop
@@ -3990,444 +3760,224 @@
             }
         }
 
-        // Function to set up cover window (non-draggable)
+        // Function to make the cover window draggable
         function makeCoverDraggable() {
-            // Cover window is no longer draggable - removed drag functionality
-            console.log('Cover window drag functionality disabled');
+            const coverWindow = document.getElementById('cover-window');
+
+            if (!coverWindow) return; // Allow dragging on all devices including mobile
+
+            let isDragging = false;
+            let startX = 0;
+            let startY = 0;
+            let startLeft = 0;
+            let startTop = 0;
+
+            // Use the header as the drag handle
+            const dragHandle = coverWindow.querySelector('.cover-header');
+
+            if (dragHandle) {
+                dragHandle.addEventListener('mousedown', dragStart, { passive: false });
+                document.addEventListener('mousemove', drag, { passive: false });
+                document.addEventListener('mouseup', dragEnd, { passive: false });
+                
+                // Add touch support for mobile dragging
+                dragHandle.addEventListener('touchstart', touchStart, { passive: false });
+                document.addEventListener('touchmove', touchDrag, { passive: false });
+                document.addEventListener('touchend', touchEnd, { passive: false });
+            }
+
+            function dragStart(e) {
+                // Ignore if clicking on buttons
+                if (e.target.closest('.cover-close-button')) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+
+                // Get current position
+                const rect = coverWindow.getBoundingClientRect();
+                startLeft = rect.left;
+                startTop = rect.top;
+
+                dragHandle.style.cursor = 'grabbing';
+                coverWindow.style.zIndex = '6'; // Bring to front while dragging
+            }
+
+            function drag(e) {
+                if (!isDragging) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+
+                let newLeft = startLeft + deltaX;
+                let newTop = startTop + deltaY;
+
+                // Constrain to screen bounds with some flexibility
+                const rect = coverWindow.getBoundingClientRect();
+                const elementWidth = rect.width;
+                const elementHeight = rect.height;
+
+                // Allow more flexibility - only constrain when completely off-screen
+                newLeft = Math.max(-elementWidth + 100, Math.min(window.innerWidth - 50, newLeft));
+                newTop = Math.max(-50, Math.min(window.innerHeight - 50, newTop));
+
+                coverWindow.style.left = newLeft + 'px';
+                coverWindow.style.top = newTop + 'px';
+            }
+
+            function dragEnd(e) {
+                if (!isDragging) return;
+
+                isDragging = false;
+                dragHandle.style.cursor = 'move';
+                coverWindow.style.zIndex = '5'; // Reset z-index
+            }
+
+            // Touch event functions for mobile support
+            function touchStart(e) {
+                // Ignore if touching on buttons
+                if (e.target.closest('.cover-close-button')) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const touch = e.touches[0];
+                isDragging = true;
+                startX = touch.clientX;
+                startY = touch.clientY;
+
+                // Get current position
+                const rect = coverWindow.getBoundingClientRect();
+                startLeft = rect.left;
+                startTop = rect.top;
+
+                coverWindow.style.zIndex = '6'; // Bring to front while dragging
+            }
+
+            function touchDrag(e) {
+                if (!isDragging) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+
+                let newLeft = startLeft + deltaX;
+                let newTop = startTop + deltaY;
+
+                // Constrain to screen bounds with some flexibility
+                const rect = coverWindow.getBoundingClientRect();
+                const elementWidth = rect.width;
+                const elementHeight = rect.height;
+
+                // Allow more flexibility - only constrain when completely off-screen
+                newLeft = Math.max(-elementWidth + 100, Math.min(window.innerWidth - 50, newLeft));
+                newTop = Math.max(-50, Math.min(window.innerHeight - 50, newTop));
+
+                coverWindow.style.left = newLeft + 'px';
+                coverWindow.style.top = newTop + 'px';
+            }
+
+            function touchEnd(e) {
+                if (!isDragging) return;
+
+                isDragging = false;
+                coverWindow.style.zIndex = '5'; // Reset z-index
+            }
+
+            // Prevent text selection during drag
+            coverWindow.addEventListener('selectstart', (e) => {
+                if (isDragging) e.preventDefault();
+            });
         }
 
-        // Function to ensure mobile windows are in fixed bottom positions
-        function ensureMobileFixedPositions() {
+        // Function to randomize mobile window positions
+        function randomizeMobileWindowPositions() {
             if (!isMobile()) return;
 
             const viewerWindow = document.getElementById('viewer-window');
             const coverWindow = document.getElementById('cover-window');
 
-            // Ensure viewer window stays at bottom-left (handled by CSS)
             if (viewerWindow) {
-                // Remove any inline positioning that might override CSS
-                viewerWindow.style.left = '';
-                viewerWindow.style.top = '';
-                viewerWindow.style.right = '';
-                viewerWindow.style.bottom = '';
+                // Random position for viewer window
+                const maxX = window.innerWidth - 220; // Account for window width + padding
+                const maxY = window.innerHeight - 220; // Account for window height + padding
+                const randomX = Math.random() * Math.max(0, maxX - 20) + 20; // 20px minimum from edge
+                const randomY = Math.random() * Math.max(0, maxY - 20) + 20;
+
+                viewerWindow.style.left = randomX + 'px';
+                viewerWindow.style.top = randomY + 'px';
             }
 
-            // Ensure cover window stays at bottom-right (handled by CSS)
             if (coverWindow) {
-                // Remove any inline positioning that might override CSS
-                coverWindow.style.left = '';
-                coverWindow.style.top = '';
-                coverWindow.style.right = '';
-                coverWindow.style.bottom = '';
+                // Random position for cover window (avoid overlap with viewer)
+                const maxX = window.innerWidth - 200;
+                const maxY = window.innerHeight - 220;
+                const randomX = Math.random() * Math.max(0, maxX - 20) + 20;
+                const randomY = Math.random() * Math.max(0, maxY - 20) + 20;
+
+                coverWindow.style.left = randomX + 'px';
+                coverWindow.style.top = randomY + 'px';
             }
         }
 
-        // Set up mobile simplified click cycle for both windows
+        // Set up mobile lightbox functionality
         function setupMobileLightbox() {
             if (!isMobile()) return;
 
             const viewerWindow = document.getElementById('viewer-window');
             const coverWindow = document.getElementById('cover-window');
 
-            // Viewer window: single click cycles through states
+            // Viewer lightbox
             if (viewerWindow) {
-                // Track current state: 'small' -> 'lightbox' -> 'fullscreen' -> 'small'
-                let viewerState = 'small';
-                let viewerTransitioning = false; // Prevent rapid clicks during transitions
-
                 viewerWindow.addEventListener('click', (e) => {
                     // Don't trigger if clicking on close button or resize handle
                     if (e.target.closest('.viewer-close-button') || e.target.closest('.viewer-resize-handle')) {
                         return;
                     }
 
-                    // Prevent rapid clicking during transitions
-                    if (viewerTransitioning) {
-                        console.log('Viewer transition in progress, ignoring click');
-                        return;
+                    if (viewerWindow.classList.contains('lightbox')) {
+                        // Exit lightbox
+                        viewerWindow.classList.remove('lightbox');
+                    } else {
+                        // Enter lightbox
+                        viewerWindow.classList.add('lightbox');
                     }
-
-                    cycleViewerState();
                 });
-
-                // Touch support
-                viewerWindow.addEventListener('touchend', (e) => {
-                    if (e.target.closest('.viewer-close-button') || e.target.closest('.viewer-resize-handle')) {
-                        return;
-                    }
-                    
-                    // Prevent rapid clicking during transitions
-                    if (viewerTransitioning) {
-                        console.log('Viewer transition in progress, ignoring touch');
-                        e.preventDefault();
-                        return;
-                    }
-                    
-                    e.preventDefault();
-                    cycleViewerState();
-                }, { passive: false });
-
-                function cycleViewerState() {
-                    console.log('Cycling viewer state, current:', viewerState);
-                    
-                    // Set transitioning flag to prevent rapid clicks
-                    viewerTransitioning = true;
-                    
-                    // CRITICAL: Always ensure viewer is visible and properly positioned
-                    viewerWindow.classList.add('visible');
-                    viewerWindow.style.display = 'flex'; // Force visible, never hide
-                    console.log('Made viewer window visible');
-                    
-                    // Sync state with actual DOM state as safety check
-                    if (viewerWindow.classList.contains('fullscreen-mode')) {
-                        viewerState = 'fullscreen';
-                    } else if (viewerWindow.classList.contains('lightbox')) {
-                        viewerState = 'lightbox';
-                    } else {
-                        viewerState = 'small';
-                    }
-                    
-                    switch (viewerState) {
-                        case 'small':
-                            // Go to lightbox
-                            console.log('Going to lightbox');
-                            viewerWindow.classList.add('lightbox');
-                            viewerState = 'lightbox';
-                            // Clear transition flag after animation
-                            setTimeout(() => { viewerTransitioning = false; }, 300);
-                            break;
-                        case 'lightbox':
-                            // Go to fullscreen background
-                            console.log('Going to fullscreen');
-                            viewerWindow.classList.remove('lightbox');
-                            enterViewerFullscreen();
-                            viewerState = 'fullscreen';
-                            // Clear transition flag after animation completes
-                            setTimeout(() => { viewerTransitioning = false; }, 1200);
-                            break;
-                        case 'fullscreen':
-                            // Go back to small - ALWAYS force visible return
-                            console.log('Going back to small');
-                            exitViewerFullscreen();
-                            viewerState = 'small';
-                            // Clear transition flag after exit completes
-                            setTimeout(() => { viewerTransitioning = false; }, 2000);
-                            break;
-                    }
-                }
-
-                function enterViewerFullscreen() {
-                    console.log('Entering viewer fullscreen mode');
-                    const fullscreenBackgroundVideo = document.getElementById('fullscreen-background-video');
-                    
-                    // Get current video from viewer window
-                    const viewerVideo = viewerWindow.querySelector('.viewer-video');
-                    
-                    // Always proceed with fullscreen transition, even if no video is loaded
-                    console.log('Viewer video found:', !!viewerVideo, 'Has src:', !!viewerVideo?.src);
-                    
-                    if (viewerVideo && viewerVideo.src) {
-                        console.log('Setting up fullscreen video with src:', viewerVideo.src);
-                        // Clone the video source to fullscreen background
-                        fullscreenBackgroundVideo.src = viewerVideo.src;
-                        fullscreenBackgroundVideo.currentTime = viewerVideo.currentTime;
-                        
-                        // Start the "grow and glitch out" effect:
-                        // 1. Prepare fullscreen background but keep it invisible
-                        fullscreenBackgroundVideo.classList.add('active');
-                        fullscreenBackgroundVideo.style.opacity = '0';
-                        fullscreenBackgroundVideo.style.transition = 'none'; // Prevent CSS transition conflicts during animation
-                        fullscreenBackgroundVideo.play().catch(err => {
-                            console.error('Fullscreen video play failed:', err);
-                        });
-                    } else {
-                        console.log('No video source available, proceeding with fullscreen transition anyway');
-                        // Still activate the fullscreen background (it will be black)
-                        fullscreenBackgroundVideo.classList.add('active');
-                        fullscreenBackgroundVideo.style.opacity = '0';
-                        fullscreenBackgroundVideo.style.transition = 'none'; // Prevent CSS transition conflicts during animation
-                    }
-                    
-                    // 2. Apply TV effects + growing effect (need to remove lightbox constraints for growing)
-                    // Remove lightbox class so growing can scale beyond screen edges
-                    viewerWindow.classList.remove('lightbox');
-                    
-                    // Add the growing effect (like cover window) - this needs to scale freely
-                    viewerWindow.classList.add('tv-growing-to-background');
-                    
-                    // ALSO keep the TV effects that work (don't change this!)
-                    viewerWindow.classList.add('tv-disappearing');
-                    
-                    // Also add tv-appearing to video for additional lighting (like desktop)
-                    const mobileViewerVideo = viewerWindow.querySelector('.viewer-video');
-                    if (mobileViewerVideo) {
-                        mobileViewerVideo.classList.add('tv-appearing');
-                        console.log('Applied both growing and TV effects to mobile viewer');
-                    }
-                    
-                    // 3. Use TV turn-on effect for background video (like desktop version)
-                    setTimeout(() => {
-                        fullscreenBackgroundVideo.classList.add('tv-appearing');
-                        console.log('Applied tv-appearing to mobile fullscreen background video');
-                    }, 400); // Start slightly before the container animation completes
-                    
-                    // 4. After effects complete, clean up both growing and TV effects
-                    setTimeout(() => {
-                        // Remove all animations - growing, tv-disappearing from container and tv-appearing from video
-                        viewerWindow.classList.remove('tv-growing-to-background', 'tv-disappearing');
-                        const cleanupViewerVideo = viewerWindow.querySelector('.viewer-video');
-                        if (cleanupViewerVideo) {
-                            cleanupViewerVideo.classList.remove('tv-appearing');
-                        }
-                        
-                        // Add fullscreen-mode (no need to remove lightbox since we removed it earlier)
-                        viewerWindow.classList.add('fullscreen-mode');
-                        
-                        // Ensure background video stays visible after animation (desktop pattern)
-                        setTimeout(() => {
-                            fullscreenBackgroundVideo.classList.remove('tv-appearing');
-                            // Ensure opacity stays at 1 and active class remains
-                            fullscreenBackgroundVideo.style.opacity = '1';
-                            fullscreenBackgroundVideo.style.transition = 'none';
-                            console.log('Removed tv-appearing from mobile background, video should stay visible');
-                        }, 1200); // Wait for full tv-appearing animation to complete
-                    }, 1200); // Use longer duration to match both animations
-                    
-                    // DON'T hide cover window during viewer fullscreen - just reduce opacity
-                    const coverWindow = document.getElementById('cover-window');
-                    if (coverWindow) {
-                        coverWindow.style.opacity = '0.3'; // Dim but don't hide
-                        coverWindow.style.pointerEvents = 'none'; // Disable interaction
-                    }
-                    
-                    // Hide Legendarium logo
-                    const legendariumLogo = document.getElementById('legendarium-logo-link');
-                    if (legendariumLogo) {
-                        legendariumLogo.classList.add('hidden-behind-fullscreen');
-                    }
-                }
-
-                function exitViewerFullscreen() {
-                    console.log('Exiting viewer fullscreen mode');
-                    const fullscreenBackgroundVideo = document.getElementById('fullscreen-background-video');
-                    
-                    // Add TV turn-off effect to fullscreen background video
-                    fullscreenBackgroundVideo.classList.add('tv-disappearing');
-                    
-                    // After TV turn-off completes, hide fullscreen background video
-                    setTimeout(() => {
-                        fullscreenBackgroundVideo.classList.remove('active', 'tv-disappearing');
-                        fullscreenBackgroundVideo.pause();
-                        fullscreenBackgroundVideo.src = '';
-                    }, 800); // Match tvTurnOff duration
-                    
-                    // CRITICAL: Always restore viewer window to visible bottom position
-                    viewerWindow.classList.remove('fullscreen-mode');
-                    viewerWindow.classList.add('tv-appearing', 'visible');
-                    viewerWindow.style.display = 'flex'; // Force visible
-                    
-                    // After TV turn-on completes, remove the animation class
-                    setTimeout(() => {
-                        viewerWindow.classList.remove('tv-appearing');
-                    }, 1200); // Match tvTurnOn duration
-                    
-                    // Restore cover window to full visibility
-                    const coverWindow = document.getElementById('cover-window');
-                    if (coverWindow) {
-                        coverWindow.style.display = 'flex';
-                        coverWindow.style.opacity = '1'; // Full visibility
-                        coverWindow.style.pointerEvents = 'auto'; // Re-enable interaction
-                        coverWindow.classList.add('visible'); // Ensure visible class
-                    }
-                    
-                    // Show Legendarium logo again
-                    const legendariumLogo = document.getElementById('legendarium-logo-link');
-                    if (legendariumLogo) {
-                        legendariumLogo.classList.remove('hidden-behind-fullscreen');
-                    }
-                }
             }
 
-            // Cover window: single click cycles through states
+            // Cover lightbox
             if (coverWindow) {
-                // Track current state: 'small' -> 'lightbox' -> 'fullscreen' -> 'small'
-                let coverState = 'small';
-                let coverTransitioning = false; // Prevent rapid clicks during transitions
-
                 coverWindow.addEventListener('click', (e) => {
-                    // Don't trigger if clicking on close button
-                    if (e.target.closest('.cover-close-button')) {
+                    // Don't trigger if clicking on close button or resize handle
+                    if (e.target.closest('.cover-close-button') || e.target.closest('.cover-resize-handle')) {
                         return;
                     }
 
-                    // Prevent rapid clicking during transitions
-                    if (coverTransitioning) {
-                        console.log('Cover transition in progress, ignoring click');
-                        return;
-                    }
-
-                    cycleCoverState();
-                });
-
-                // Touch support
-                coverWindow.addEventListener('touchend', (e) => {
-                    if (e.target.closest('.cover-close-button')) {
-                        return;
-                    }
-                    
-                    // Prevent rapid clicking during transitions
-                    if (coverTransitioning) {
-                        console.log('Cover transition in progress, ignoring touch');
-                        e.preventDefault();
-                        return;
-                    }
-                    
-                    e.preventDefault();
-                    cycleCoverState();
-                }, { passive: false });
-
-                function cycleCoverState() {
-                    console.log('Cycling cover state, current:', coverState);
-                    
-                    // Set transitioning flag to prevent rapid clicks
-                    coverTransitioning = true;
-                    
-                    // CRITICAL: Always ensure cover is visible and properly positioned
-                    coverWindow.classList.add('visible');
-                    coverWindow.style.display = 'flex'; // Force visible, never hide
-                    
-                    // Sync state with actual DOM state as safety check
-                    if (coverWindow.classList.contains('fullscreen-mode')) {
-                        coverState = 'fullscreen';
-                    } else if (coverWindow.classList.contains('lightbox')) {
-                        coverState = 'lightbox';
+                    if (coverWindow.classList.contains('lightbox')) {
+                        // Exit lightbox
+                        coverWindow.classList.remove('lightbox');
                     } else {
-                        coverState = 'small';
+                        // Enter lightbox
+                        coverWindow.classList.add('lightbox');
                     }
-                    
-                    switch (coverState) {
-                        case 'small':
-                            // Go to lightbox
-                            console.log('Going to lightbox');
-                            coverWindow.classList.add('lightbox');
-                            coverState = 'lightbox';
-                            // Clear transition flag after animation
-                            setTimeout(() => { coverTransitioning = false; }, 300);
-                            break;
-                        case 'lightbox':
-                            // Go to fullscreen background
-                            console.log('Going to fullscreen');
-                            coverWindow.classList.remove('lightbox');
-                            enterCoverFullscreen();
-                            coverState = 'fullscreen';
-                            // Clear transition flag after animation completes
-                            setTimeout(() => { coverTransitioning = false; }, 1200);
-                            break;
-                        case 'fullscreen':
-                            // Go back to small - ALWAYS force visible return
-                            console.log('Going back to small');
-                            exitCoverFullscreen();
-                            coverState = 'small';
-                            // Clear transition flag after exit completes
-                            setTimeout(() => { coverTransitioning = false; }, 2000);
-                            break;
-                    }
-                }
-
-                function enterCoverFullscreen() {
-                    console.log('Entering cover fullscreen mode');
-                    const fullscreenBackgroundVideo = document.getElementById('fullscreen-background-video');
-                    
-                    // Get current cover image
-                    const coverImage = coverWindow.querySelector('#cover-image');
-                    if (coverImage && coverImage.src) {
-                        // Set the cover image as background
-                        fullscreenBackgroundVideo.style.backgroundImage = `url(${coverImage.src})`;
-                        fullscreenBackgroundVideo.style.backgroundSize = 'cover';
-                        fullscreenBackgroundVideo.style.backgroundPosition = 'center';
-                        fullscreenBackgroundVideo.style.backgroundRepeat = 'no-repeat';
-                        
-                        // Start the "grow and glitch out" effect:
-                        // 1. Prepare fullscreen background but keep it invisible
-                        fullscreenBackgroundVideo.classList.add('active');
-                        fullscreenBackgroundVideo.style.opacity = '0';
-                        
-                        // 2. Add grow-glitch animation
-                        coverWindow.classList.add('tv-growing-to-background');
-                        
-                        // 3. Start fading in background after grow effect starts
-                        setTimeout(() => {
-                            fullscreenBackgroundVideo.style.transition = 'opacity 0.8s ease-in';
-                            fullscreenBackgroundVideo.style.opacity = '1';
-                        }, 500); // Start fade midway through grow animation
-                        
-                        // 4. After grow-glitch completes, clean up
-                        setTimeout(() => {
-                            // Remove grow effect, add fullscreen mode
-                            coverWindow.classList.remove('tv-growing-to-background');
-                            coverWindow.classList.add('fullscreen-mode');
-                            fullscreenBackgroundVideo.style.transition = '';
-                            fullscreenBackgroundVideo.style.opacity = '';
-                        }, 1200); // Match grow animation duration
-                    }
-                    
-                    // DON'T hide viewer window during cover fullscreen - just reduce opacity
-                    const viewerWindow = document.getElementById('viewer-window');
-                    if (viewerWindow) {
-                        viewerWindow.style.opacity = '0.3'; // Dim but don't hide
-                        viewerWindow.style.pointerEvents = 'none'; // Disable interaction
-                    }
-                    
-                    // Hide Legendarium logo
-                    const legendariumLogo = document.getElementById('legendarium-logo-link');
-                    if (legendariumLogo) {
-                        legendariumLogo.classList.add('hidden-behind-fullscreen');
-                    }
-                }
-
-                function exitCoverFullscreen() {
-                    console.log('Exiting cover fullscreen mode');
-                    const fullscreenBackgroundVideo = document.getElementById('fullscreen-background-video');
-                    
-                    // Add TV turn-off effect to fullscreen background
-                    fullscreenBackgroundVideo.classList.add('tv-disappearing');
-                    
-                    // After TV turn-off completes, hide fullscreen background
-                    setTimeout(() => {
-                        fullscreenBackgroundVideo.classList.remove('active', 'tv-disappearing');
-                        fullscreenBackgroundVideo.style.backgroundImage = '';
-                        fullscreenBackgroundVideo.src = '';
-                    }, 800); // Match tvTurnOff duration
-                    
-                    // CRITICAL: Always restore cover window to visible bottom position
-                    coverWindow.classList.remove('fullscreen-mode');
-                    coverWindow.classList.add('tv-appearing', 'visible');
-                    coverWindow.style.display = 'flex'; // Force visible
-                    
-                    // After TV turn-on completes, remove the animation class
-                    setTimeout(() => {
-                        coverWindow.classList.remove('tv-appearing');
-                    }, 1200); // Match tvTurnOn duration
-                    
-                    // Restore viewer window to full visibility
-                    const viewerWindow = document.getElementById('viewer-window');
-                    if (viewerWindow) {
-                        viewerWindow.style.display = 'flex';
-                        viewerWindow.style.opacity = '1'; // Full visibility
-                        viewerWindow.style.pointerEvents = 'auto'; // Re-enable interaction
-                        viewerWindow.classList.add('visible'); // Ensure visible class
-                    }
-                    
-                    // Show Legendarium logo again
-                    const legendariumLogo = document.getElementById('legendarium-logo-link');
-                    if (legendariumLogo) {
-                        legendariumLogo.classList.remove('hidden-behind-fullscreen');
-                    }
-                }
+                });
             }
         }
 
-        // Set up cover window controls (simplified - mobile interaction handled in setupMobileLightbox)
+        // Set up cover window controls
         function setupCoverControls() {
             const coverWindow = document.getElementById('cover-window');
             const closeButton = coverWindow.querySelector('.cover-close-button');
@@ -4437,18 +3987,6 @@
                 closeButton.addEventListener('click', (e) => {
                     e.stopPropagation();
                     coverWindow.classList.remove('visible');
-                });
-            }
-            
-            // All mobile interaction is now handled in setupMobileLightbox
-            // Desktop-specific controls can be added here if needed
-            if (!isMobile()) {
-                // Desktop-specific controls can go here
-                coverWindow.addEventListener('dblclick', (e) => {
-                    if (e.target.closest('.cover-close-button')) {
-                        return;
-                    }
-                    // Desktop fullscreen toggle could go here
                 });
             }
             
@@ -5533,144 +5071,6 @@
             }
 
             console.log('Webamp touch dragging setup complete');
-        }
-
-        // Enhanced mobile drag functionality for deity message windows
-        function makeDeityMessageDraggable(messageWindow) {
-            if (!messageWindow) return;
-
-            let isDragging = false;
-            let startX = 0;
-            let startY = 0;
-            let startLeft = 0;
-            let startTop = 0;
-            let currentTouchId = null;
-
-            // Use the entire window as drag handle but exclude close button
-            const dragHandle = messageWindow;
-
-            // Mouse events for desktop
-            function mouseStart(e) {
-                if (e.target.closest('.deity-close-button')) return;
-                e.preventDefault();
-                e.stopPropagation();
-
-                isDragging = true;
-                startX = e.clientX;
-                startY = e.clientY;
-
-                const rect = messageWindow.getBoundingClientRect();
-                startLeft = rect.left;
-                startTop = rect.top;
-
-                messageWindow.style.zIndex = '1002';
-                document.addEventListener('mousemove', mouseMove, { passive: false });
-                document.addEventListener('mouseup', mouseEnd, { passive: false });
-            }
-
-            function mouseMove(e) {
-                if (!isDragging) return;
-                e.preventDefault();
-                e.stopPropagation();
-
-                const deltaX = e.clientX - startX;
-                const deltaY = e.clientY - startY;
-                updatePosition(deltaX, deltaY);
-            }
-
-            function mouseEnd(e) {
-                if (!isDragging) return;
-                isDragging = false;
-                messageWindow.style.zIndex = '1001';
-                document.removeEventListener('mousemove', mouseMove);
-                document.removeEventListener('mouseup', mouseEnd);
-            }
-
-            // Touch events for mobile
-            function touchStart(e) {
-                if (e.target.closest('.deity-close-button')) return;
-                e.preventDefault();
-                e.stopPropagation();
-
-                const touch = e.touches[0];
-                currentTouchId = touch.identifier;
-                isDragging = true;
-                startX = touch.clientX;
-                startY = touch.clientY;
-
-                const rect = messageWindow.getBoundingClientRect();
-                startLeft = rect.left;
-                startTop = rect.top;
-
-                messageWindow.style.zIndex = '1002';
-            }
-
-            function touchMove(e) {
-                if (!isDragging) return;
-                e.preventDefault();
-                e.stopPropagation();
-
-                // Find the touch with the correct identifier
-                let touch = null;
-                for (let i = 0; i < e.touches.length; i++) {
-                    if (e.touches[i].identifier === currentTouchId) {
-                        touch = e.touches[i];
-                        break;
-                    }
-                }
-
-                if (!touch) return;
-
-                const deltaX = touch.clientX - startX;
-                const deltaY = touch.clientY - startY;
-                updatePosition(deltaX, deltaY);
-            }
-
-            function touchEnd(e) {
-                if (!isDragging) return;
-                
-                // Check if our touch was lifted
-                let touchStillActive = false;
-                for (let i = 0; i < e.touches.length; i++) {
-                    if (e.touches[i].identifier === currentTouchId) {
-                        touchStillActive = true;
-                        break;
-                    }
-                }
-
-                if (!touchStillActive) {
-                    isDragging = false;
-                    currentTouchId = null;
-                    messageWindow.style.zIndex = '1001';
-                }
-            }
-
-            function updatePosition(deltaX, deltaY) {
-                let newLeft = startLeft + deltaX;
-                let newTop = startTop + deltaY;
-
-                // Constrain to screen bounds with flexibility
-                const rect = messageWindow.getBoundingClientRect();
-                const elementWidth = rect.width;
-                const elementHeight = rect.height;
-
-                newLeft = Math.max(-elementWidth + 100, Math.min(window.innerWidth - 50, newLeft));
-                newTop = Math.max(-50, Math.min(window.innerHeight - 50, newTop));
-
-                messageWindow.style.left = newLeft + 'px';
-                messageWindow.style.top = newTop + 'px';
-            }
-
-            // Add event listeners
-            dragHandle.addEventListener('mousedown', mouseStart, { passive: false });
-            dragHandle.addEventListener('touchstart', touchStart, { passive: false });
-            document.addEventListener('touchmove', touchMove, { passive: false });
-            document.addEventListener('touchend', touchEnd, { passive: false });
-
-            // Prevent text selection during drag
-            messageWindow.addEventListener('selectstart', (e) => {
-                if (isDragging) e.preventDefault();
-            });
         }
 
 
