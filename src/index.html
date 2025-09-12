@@ -63,7 +63,7 @@
             background: #000;
         }
 
-        /* Mobile starfield optimization */
+        /* Mobile starfield optimization with iPhone Chrome specific fixes */
         @media screen and (max-width: 768px) {
             :root {
                 --starfield-speed: 1.2;
@@ -71,6 +71,33 @@
                 --starfield-density: 600;
                 /* Fewer stars on mobile */
                 --starfield-brightness: 0.85;
+            }
+            
+            /* iPhone Chrome specific fixes */
+            @supports (-webkit-touch-callout: none) {
+                /* This targets WebKit browsers on touch devices (iPhone) */
+                html, body {
+                    -webkit-text-size-adjust: 100%;
+                    -webkit-font-smoothing: antialiased;
+                    height: 100vh;
+                    height: -webkit-fill-available; /* iPhone Chrome viewport fix */
+                }
+                
+                #webamp-container {
+                    /* Use transform instead of zoom for better iPhone Chrome compatibility */
+                    transform: scale(var(--webamp-zoom));
+                    transform-origin: top left;
+                    -webkit-transform: scale(var(--webamp-zoom));
+                    -webkit-transform-origin: top left;
+                    will-change: transform;
+                }
+                
+                /* Fix viewport issues with iPhone Chrome URL bar */
+                @media screen and (max-height: 700px) {
+                    :root {
+                        --webamp-zoom: 0.9; /* Smaller zoom on small iPhone Chrome viewport */
+                    }
+                }
             }
         }
 
@@ -183,7 +210,6 @@
             will-change: transform;
             z-index: 2;
             cursor: move !important;
-            touch-action: none !important;
             /* Prevent scrolling while dragging on mobile */
             animation: float-main 36s ease-in-out infinite;
             /* Default animation - 300% slower */
@@ -225,11 +251,22 @@
         #webamp .dragger,
         #webamp .handle {
             cursor: move !important;
-            touch-action: none !important;
             -webkit-user-select: none !important;
             -moz-user-select: none !important;
             -ms-user-select: none !important;
             user-select: none !important;
+        }
+        
+        /* Additional mobile touch support for Webamp windows */
+        @media screen and (max-width: 768px) {
+            #webamp .title-bar,
+            #webamp .playlist-top,
+            #webamp .equalizer-top,
+            #webamp .window-header {
+                cursor: move !important;
+                -webkit-user-select: none !important;
+                user-select: none !important;
+            }
         }
 
         /* Additional glow effect for windows */
@@ -319,7 +356,7 @@
             padding: 15px;
             background-color: #111;
             border: 1px solid #333;
-            color: #8B4513;
+            color: #9CAF50;
             font-family: monospace;
             font-size: 14px;
             letter-spacing: 0px;
@@ -327,6 +364,7 @@
             outline: none;
             transition: border 0.3s ease-in-out;
             box-sizing: border-box;
+            caret-color: #9CAF50;
         }
 
         #password-input:focus {
@@ -335,15 +373,15 @@
 
         @keyframes flash-red {
             0% {
-                color: #8B4513;
+                color: #9CAF50;
             }
 
             50% {
-                color: #654321;
+                color: #7A8F3F;
             }
 
             100% {
-                color: #8B4513;
+                color: #9CAF50;
             }
         }
 
@@ -362,7 +400,7 @@
 
         .granted {
             transform: scaleX(1) !important;
-            background-color: rgb(255, 255, 255) !important;
+            background-color: #9CAF50 !important;
         }
 
         /* Add styles for viewer videos */
@@ -1949,7 +1987,8 @@
         });
 
         // Mobile detection for later use
-        const isMobileDevice = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        // Legacy mobile detection (replaced by getDeviceInfo())
+        const isMobileDevice = getDeviceInfo().isMobile;
 
         // Starfield System
         class StarField {
@@ -2528,8 +2567,18 @@
                 element.addEventListener('mousedown', dragStart, { passive: false });
                 document.addEventListener('mousemove', drag, { passive: false });
                 document.addEventListener('mouseup', dragEnd, { passive: false });
+                
+                // Add touch support for mobile dragging
+                element.addEventListener('touchstart', touchStart, { passive: false });
+                document.addEventListener('touchmove', touchDrag, { passive: false });
+                document.addEventListener('touchend', touchEnd, { passive: false });
 
                 function dragStart(e) {
+                    // Ignore if clicking on close button
+                    if (e.target.closest('.deity-close-button')) {
+                        return;
+                    }
+
                     e.preventDefault();
                     e.stopPropagation();
 
@@ -2568,6 +2617,54 @@
 
                     isDragging = false;
                     element.style.cursor = 'move';
+                    element.style.zIndex = '1001'; // Reset z-index
+                }
+
+                // Touch event functions for mobile support
+                function touchStart(e) {
+                    // Ignore if touching on close button
+                    if (e.target.closest('.deity-close-button')) {
+                        return;
+                    }
+
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const touch = e.touches[0];
+                    isDragging = true;
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+
+                    // Get current position
+                    const rect = element.getBoundingClientRect();
+                    startLeft = rect.left;
+                    startTop = rect.top;
+
+                    element.style.zIndex = '1002'; // Bring to front while dragging
+                }
+
+                function touchDrag(e) {
+                    if (!isDragging) return;
+
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const touch = e.touches[0];
+                    const deltaX = touch.clientX - startX;
+                    const deltaY = touch.clientY - startY;
+
+                    // Allow unrestricted movement
+                    const newLeft = startLeft + deltaX;
+                    const newTop = startTop + deltaY;
+
+                    element.style.left = newLeft + 'px';
+                    element.style.top = newTop + 'px';
+                }
+
+                function touchEnd(e) {
+                    if (!isDragging) return;
+
+                    isDragging = false;
                     element.style.zIndex = '1001'; // Reset z-index
                 }
 
@@ -2989,9 +3086,40 @@
             setupCoverControls();
         }
 
-        // Function to check if we're on mobile
+        // Standard browser and device detection
+        function getDeviceInfo() {
+            const ua = navigator.userAgent;
+            const platform = navigator.platform;
+            
+            // iOS detection using standard method (works for iOS 13+ iPad too)
+            const isIOS = /iPad|iPhone|iPod/.test(platform) || 
+                         (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            
+            // iPhone specific detection
+            const isIPhone = /iPhone/.test(platform) || 
+                           (/iPhone/.test(ua) && isIOS);
+            
+            // Browser detection for iOS devices
+            const isIOSSafari = isIOS && /Safari/.test(ua) && !/CriOS|Chrome/.test(ua);
+            const isIOSChrome = isIOS && (/CriOS/.test(ua) || /Chrome/.test(ua));
+            
+            // General mobile detection
+            const isMobile = window.innerWidth <= 768 || isIOS || /Android/i.test(ua);
+            
+            return {
+                isIOS,
+                isIPhone,
+                isIOSSafari,
+                isIOSChrome,
+                isMobile,
+                isAndroid: /Android/i.test(ua),
+                isDesktop: !isMobile
+            };
+        }
+        
+        // Legacy function for compatibility
         function isMobile() {
-            return window.innerWidth <= 768;
+            return getDeviceInfo().isMobile;
         }
 
         // Function to make the viewer window draggable
@@ -4654,11 +4782,23 @@
 
                 // Position windows based on device type
                 let leftPosX, mainPosY, eqPosY, playlistPosY;
+                const deviceInfo = getDeviceInfo();
 
-                if (isMobile()) {
-                    // Mobile: Center horizontally, position playlist right after main window
-                    leftPosX = Math.floor((window.innerWidth / zoomFactor - mainWindowWidth) / 2);
-                    mainPosY = Math.floor((window.innerHeight * 0.08) / zoomFactor);
+                if (deviceInfo.isMobile) {
+                    // Mobile positioning with iPhone Chrome specific adjustments
+                    if (deviceInfo.isIOSChrome) {
+                        // iPhone Chrome needs extra consideration for viewport behavior
+                        const safeAreaTop = window.screen.height * 0.08;
+                        const viewportWidth = Math.min(window.innerWidth, window.screen.width);
+                        
+                        leftPosX = Math.floor((viewportWidth / zoomFactor - mainWindowWidth) / 2);
+                        mainPosY = Math.floor(safeAreaTop / zoomFactor);
+                    } else {
+                        // Standard mobile positioning
+                        leftPosX = Math.floor((window.innerWidth / zoomFactor - mainWindowWidth) / 2);
+                        mainPosY = Math.floor((window.innerHeight * 0.08) / zoomFactor);
+                    }
+                    
                     eqPosY = mainPosY; // Position EQ at same location as main (since it's hidden)
                     playlistPosY = mainPosY + mainWindowHeight; // Playlist starts right after main window
                 } else {
@@ -5036,11 +5176,11 @@
             console.log('Mobile touch fix setup complete');
         }
 
-        // Ensure Webamp's native touch dragging works on mobile
+        // Minimal touch support for Webamp - just ensures proper touch handling without custom drag logic
         function ensureWebampTouchDragging() {
             if (!isMobile() || !webampInstance) return;
 
-            console.log('Ensuring Webamp touch dragging is enabled');
+            console.log('Setting up minimal Webamp touch support');
 
             // Find the webamp container and ensure it doesn't block touch events
             const webampContainer = document.querySelector('#webamp-container');
@@ -5048,29 +5188,24 @@
             
             if (webampContainer) {
                 webampContainer.style.pointerEvents = 'auto';
-                webampContainer.style.touchAction = 'none';
             }
             
             if (webampElement) {
-                webampElement.style.touchAction = 'none';
-                
-                // Find all window elements and ensure they can be touched
+                // Ensure windows can receive touch events
                 const windows = webampElement.querySelectorAll('.window');
                 windows.forEach(window => {
-                    window.style.touchAction = 'none';
                     window.style.pointerEvents = 'auto';
                     
                     // Find title bars and ensure they respond to touch
                     const titleBars = window.querySelectorAll('.title-bar');
                     titleBars.forEach(titleBar => {
-                        titleBar.style.touchAction = 'none';
                         titleBar.style.pointerEvents = 'auto';
                         titleBar.style.cursor = 'move';
                     });
                 });
             }
 
-            console.log('Webamp touch dragging setup complete');
+            console.log('Minimal Webamp touch support setup complete');
         }
 
 
@@ -5264,14 +5399,15 @@
             }
         }
 
-        // Media Session API for background playback and media controls
+        // Enhanced Media Session API for background playback with iPhone Chrome fixes
         function setupMediaSession() {
             if (!('mediaSession' in navigator)) {
                 console.log('Media Session API not supported');
                 return;
             }
 
-            console.log('Setting up Media Session API for background playback');
+            const deviceInfo = getDeviceInfo();
+            console.log('Setting up Media Session API for background playback', deviceInfo);
 
             // Set up media session metadata
             function updateMediaSessionMetadata(trackInfo) {
@@ -5294,11 +5430,21 @@
                 console.log('Media session metadata updated:', metadata.title);
             }
 
-            // Set up media session action handlers
+            // Enhanced action handlers with iPhone Chrome specific handling
             navigator.mediaSession.setActionHandler('play', () => {
                 console.log('Media session: play');
                 if (webampInstance) {
-                    webampInstance.play();
+                    // iPhone Chrome sometimes needs audio context resume
+                    if (deviceInfo.isIOSChrome && webampInstance.audioContext?.state === 'suspended') {
+                        webampInstance.audioContext.resume().then(() => {
+                            webampInstance.play();
+                        }).catch(err => {
+                            console.log('Audio context resume failed:', err);
+                            webampInstance.play(); // Try anyway
+                        });
+                    } else {
+                        webampInstance.play();
+                    }
                 }
             });
 
@@ -5323,6 +5469,28 @@
                 }
             });
 
+            // iPhone Chrome specific: Set additional action handlers for better control
+            if (deviceInfo.isIOSChrome) {
+                try {
+                    navigator.mediaSession.setActionHandler('stop', () => {
+                        console.log('Media session: stop (iPhone Chrome)');
+                        if (webampInstance) {
+                            webampInstance.pause();
+                        }
+                    });
+                    
+                    // Enhanced seek support for iPhone Chrome
+                    navigator.mediaSession.setActionHandler('seekto', (details) => {
+                        console.log('Media session: seek to', details.seekTime);
+                        if (webampInstance && details.seekTime != null) {
+                            webampInstance.seekToTime(details.seekTime);
+                        }
+                    });
+                } catch (error) {
+                    console.log('Optional media session handlers not supported:', error);
+                }
+            }
+
             // Store the update function for use in track changes
             window.updateMediaSessionMetadata = updateMediaSessionMetadata;
 
@@ -5334,7 +5502,7 @@
             }
         }
 
-        // Set up audio analyzer
+        // Enhanced audio analyzer setup with iPhone Chrome support
         async function setupAudioAnalyzer() {
             try {
                 // Check if we already have an analyzer set up
@@ -5342,9 +5510,20 @@
                     return;
                 }
 
+                const deviceInfo = getDeviceInfo();
+                
                 // Create audio context and analyzer only if they don't exist
                 if (!webampInstance.audioContext) {
-                    webampInstance.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    // iPhone Chrome specific audio context handling
+                    if (deviceInfo.isIOSChrome) {
+                        console.log('Setting up audio context for iPhone Chrome');
+                        webampInstance.audioContext = new (window.AudioContext || window.webkitAudioContext)({
+                            latencyHint: 'playback',
+                            sampleRate: 44100 // Explicit sample rate for iPhone Chrome
+                        });
+                    } else {
+                        webampInstance.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    }
                 }
 
                 if (!webampInstance.analyzer) {
@@ -5390,25 +5569,32 @@
                     });
                 };
 
-                // Try to connect with increasing delays
+                // Try to connect with increasing delays, longer for iPhone Chrome
                 let retries = 0;
-                const maxRetries = 5;
+                const maxRetries = deviceInfo.isIOSChrome ? 8 : 5; // More retries for iPhone Chrome
                 const tryConnect = async () => {
                     try {
                         await connectAudio();
                     } catch (e) {
                         if (retries < maxRetries) {
                             retries++;
-                            // Wait longer between each retry (exponential backoff)
-                            const delay = Math.min(1000 * Math.pow(2, retries), 10000);
+                            // Wait longer between each retry, especially for iPhone Chrome
+                            const baseDelay = deviceInfo.isIOSChrome ? 1500 : 1000;
+                            const delay = Math.min(baseDelay * Math.pow(2, retries), 15000);
                             setTimeout(tryConnect, delay);
                         }
                     }
                 };
 
-                // Resume audio context if it's suspended
+                // Resume audio context if it's suspended (critical for iPhone Chrome)
                 if (webampInstance.audioContext.state === 'suspended') {
+                    console.log('Resuming suspended audio context');
                     await webampInstance.audioContext.resume();
+                    
+                    // iPhone Chrome often needs additional time after resume
+                    if (deviceInfo.isIOSChrome) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
                 }
 
                 // Start trying to connect
@@ -5457,9 +5643,40 @@
             // Only handle other resize-related adjustments if needed
         }
 
-        // Mobile-first loading optimization
+        // Mobile-first loading optimization with iPhone Chrome fixes
         function initializeMobile() {
-            console.log('Mobile optimized initialization');
+            const deviceInfo = getDeviceInfo();
+            console.log('Mobile optimized initialization', deviceInfo);
+
+            // iPhone Chrome specific viewport fix
+            if (deviceInfo.isIOSChrome) {
+                console.log('Applying iPhone Chrome specific fixes');
+                
+                // Fix viewport handling for iPhone Chrome
+                const viewport = document.querySelector('meta[name="viewport"]');
+                if (viewport) {
+                    viewport.setAttribute('content', 
+                        'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover');
+                }
+                
+                // Add iPhone Chrome specific CSS fixes
+                const style = document.createElement('style');
+                style.textContent = `
+                    /* iPhone Chrome specific fixes */
+                    @supports (-webkit-touch-callout: none) {
+                        body {
+                            -webkit-text-size-adjust: 100%;
+                            -webkit-font-smoothing: antialiased;
+                        }
+                        
+                        #webamp-container {
+                            -webkit-transform: translateZ(0);
+                            transform: translateZ(0);
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
 
             // Initialize starfield background
             starField = new StarField();
@@ -5474,13 +5691,14 @@
                 passwordOverlay.style.pointerEvents = 'auto';
             }
 
-            // Focus on password input
+            // Focus on password input with longer delay for iPhone Chrome
+            const focusDelay = deviceInfo.isIOSChrome ? 300 : 100;
             setTimeout(() => {
                 const passwordInput = document.getElementById('password-input');
                 if (passwordInput) {
                     passwordInput.focus();
                 }
-            }, 100);
+            }, focusDelay);
         }
 
         // Desktop initialization with full features
@@ -5512,11 +5730,12 @@
         // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('DOM loaded, starting initialization...');
-            console.log('Mobile device detected:', isMobileDevice);
+            const deviceInfo = getDeviceInfo();
+            console.log('Device detected:', deviceInfo);
 
             // Show password screen immediately on all devices
             try {
-                if (isMobileDevice) {
+                if (deviceInfo.isMobile) {
                     initializeMobile();
                 } else {
                     initializeDesktop();
@@ -5553,18 +5772,62 @@
             // Add resize listener for mobile layout adjustments
             window.addEventListener('resize', handleResize);
 
-            // Handle visibility changes to maintain background playback
+            // Enhanced visibility changes to maintain background playback (iPhone Chrome fixes)
             document.addEventListener('visibilitychange', () => {
+                const deviceInfo = getDeviceInfo();
+                
                 if (document.hidden) {
                     console.log('Page hidden - maintaining audio context for background playback');
-                    // Keep audio context active
-                    if (webampInstance?.audioContext && webampInstance.audioContext.state === 'suspended') {
-                        webampInstance.audioContext.resume().catch(err => {
-                            console.log('Could not resume audio context:', err);
-                        });
+                    
+                    // iPhone Chrome specific handling
+                    if (deviceInfo.isIOSChrome) {
+                        // Keep audio context active more aggressively on iPhone Chrome
+                        if (webampInstance?.audioContext) {
+                            // Prevent audio context suspension
+                            const resumeAudio = () => {
+                                if (webampInstance.audioContext.state === 'suspended') {
+                                    webampInstance.audioContext.resume().catch(err => {
+                                        console.log('Background audio context resume failed:', err);
+                                    });
+                                }
+                            };
+                            
+                            // Try to resume immediately and set up periodic resume attempts
+                            resumeAudio();
+                            
+                            // Set up periodic resume for iPhone Chrome
+                            if (!window.iPhoneChromeResumeInterval) {
+                                window.iPhoneChromeResumeInterval = setInterval(resumeAudio, 1000);
+                            }
+                        }
+                        
+                        // Update media session playback state
+                        if (navigator.mediaSession) {
+                            navigator.mediaSession.playbackState = 'playing';
+                        }
+                    } else {
+                        // Standard handling for other browsers
+                        if (webampInstance?.audioContext && webampInstance.audioContext.state === 'suspended') {
+                            webampInstance.audioContext.resume().catch(err => {
+                                console.log('Could not resume audio context:', err);
+                            });
+                        }
                     }
                 } else {
                     console.log('Page visible - resuming normal operation');
+                    
+                    // Clear iPhone Chrome specific intervals
+                    if (deviceInfo.isIOSChrome && window.iPhoneChromeResumeInterval) {
+                        clearInterval(window.iPhoneChromeResumeInterval);
+                        window.iPhoneChromeResumeInterval = null;
+                    }
+                    
+                    // Ensure audio context is active when returning to page
+                    if (webampInstance?.audioContext && webampInstance.audioContext.state === 'suspended') {
+                        webampInstance.audioContext.resume().catch(err => {
+                            console.log('Could not resume audio context on page visible:', err);
+                        });
+                    }
                 }
             });
 
