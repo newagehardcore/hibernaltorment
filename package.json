@@ -1,0 +1,20 @@
+{
+  "name": "hibernal-torment",
+  "version": "1.0.0",
+  "description": "A haunted Winamp-style music player experience",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "clean": "rm -rf dist",
+    "dev": "http-server src -c-1 -p 8080"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "fs-extra": "^11.3.0",
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {
+    "form-data": "^4.0.3",
+    "node-fetch": "^3.3.2"
+  }
+}
