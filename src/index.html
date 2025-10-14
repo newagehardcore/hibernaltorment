@@ -4748,15 +4748,15 @@
                     // Handle ramp-up speed after pause
                     if (this.isRampingUp && this.rampUpStartTime) {
                         const elapsed = Date.now() - this.rampUpStartTime;
-                        const rampDuration = 30000; // 30 seconds to reach full speed
+                        const rampDuration = 10000; // 10 seconds ramp-up
                         
                         if (elapsed < rampDuration) {
                             const progress = elapsed / rampDuration;
-                            // Use easeOutQuint for extremely smooth, gradual acceleration
-                            const easeProgress = 1 - Math.pow(1 - progress, 5);
+                            // Use smooth easing
+                            const easeProgress = 1 - Math.pow(1 - progress, 3);
                             
-                            // Ensure minimum speed so it's always moving (even slower start)
-                            const minSpeed = 0.02;
+                            // Start at 10%, ramp to 100%
+                            const minSpeed = 0.1;
                             this.velocity.x = this.baseVelocity.x * Math.max(minSpeed, easeProgress);
                             this.velocity.y = this.baseVelocity.y * Math.max(minSpeed, easeProgress);
                         } else {
@@ -4768,11 +4768,7 @@
                         }
                     }
                     
-                    // Update position first
-                    this.position.x += this.velocity.x;
-                    this.position.y += this.velocity.y;
-                    
-                    // Get current window bounds AFTER position update for accurate collision detection
+                    // Get current window bounds BEFORE position update for accurate collision detection
                     const rect = this.window.getBoundingClientRect();
                     const windowWidth = rect.width;
                     const windowHeight = rect.height;
@@ -4781,28 +4777,38 @@
                     const screenWidth = window.innerWidth;
                     const screenHeight = window.innerHeight;
                     
-                    // Bounce off edges with proper collision detection and margin
-                    const margin = 2; // Slightly larger margin to prevent sticking
+                    // Calculate next position
+                    let nextX = this.position.x + this.velocity.x;
+                    let nextY = this.position.y + this.velocity.y;
                     
-                    if (this.position.x <= 0) {
-                        this.position.x = margin;
+                    // Bounce off edges with proper collision detection and margin
+                    const margin = 5; // Larger margin to prevent sticking
+                    
+                    // Horizontal collision detection
+                    if (nextX <= 0) {
+                        nextX = margin;
                         this.velocity.x = Math.abs(this.velocity.x);
                         console.log('Bounced off left edge');
-                    } else if (this.position.x >= screenWidth - windowWidth - margin) {
-                        this.position.x = screenWidth - windowWidth - margin;
+                    } else if (nextX >= screenWidth - windowWidth - margin) {
+                        nextX = screenWidth - windowWidth - margin;
                         this.velocity.x = -Math.abs(this.velocity.x);
                         console.log('Bounced off right edge');
                     }
                     
-                    if (this.position.y <= 0) {
-                        this.position.y = margin;
+                    // Vertical collision detection  
+                    if (nextY <= 0) {
+                        nextY = margin;
                         this.velocity.y = Math.abs(this.velocity.y);
                         console.log('Bounced off top edge');
-                    } else if (this.position.y >= screenHeight - windowHeight - margin) {
-                        this.position.y = screenHeight - windowHeight - margin;
+                    } else if (nextY >= screenHeight - windowHeight - margin) {
+                        nextY = screenHeight - windowHeight - margin;
                         this.velocity.y = -Math.abs(this.velocity.y);
                         console.log('Bounced off bottom edge');
                     }
+                    
+                    // Update position with collision-corrected values
+                    this.position.x = nextX;
+                    this.position.y = nextY;
                     
                     // Apply position
                     this.window.style.left = this.position.x + 'px';
@@ -4877,14 +4883,23 @@
                         this.window.style.zIndex = '1001';
                         dragArea.style.cursor = 'move';
                         
-                        // Resume DVD movement immediately with speed ramp-up
+                        // Synchronize position tracking with actual window position
+                        const rect = this.window.getBoundingClientRect();
+                        this.position.x = rect.left;
+                        this.position.y = rect.top;
+                        
+                        console.log('Position synchronized after drag:', this.position);
+                        
+                        // Resume DVD movement with speed ramp-up
                         this.isPaused = false;
                         this.isRampingUp = true;
                         this.rampUpStartTime = Date.now();
                         
-                        // Start with very slow velocity for smooth ramp-up
-                        this.velocity.x = this.baseVelocity.x * 0.02;
-                        this.velocity.y = this.baseVelocity.y * 0.02;
+                        // Start with slow velocity for ramp-up
+                        this.velocity.x = this.baseVelocity.x * 0.1;
+                        this.velocity.y = this.baseVelocity.y * 0.1;
+                        
+                        console.log('DVD movement resumed with ramp-up');
                         
                         console.log('DVD movement resumed immediately with ramp-up');
                         
@@ -4937,7 +4952,17 @@
                     
                     const handleMouseUp = () => {
                         isResizing = false;
-                        this.isPaused = false; // Resume physics
+                        
+                        // Sync position after resize and resume with ramp-up
+                        const rect = this.window.getBoundingClientRect();
+                        this.position.x = rect.left;
+                        this.position.y = rect.top;
+                        
+                        this.isPaused = false;
+                        this.isRampingUp = true;
+                        this.rampUpStartTime = Date.now();
+                        this.velocity.x = this.baseVelocity.x * 0.1;
+                        this.velocity.y = this.baseVelocity.y * 0.1;
                         
                         document.removeEventListener('mousemove', handleMouseMove);
                         document.removeEventListener('mouseup', handleMouseUp);
