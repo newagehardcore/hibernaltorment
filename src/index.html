@@ -1172,10 +1172,10 @@
                 display: none !important;
             }
             
-            /* Ensure square overlays scale with lightbox and stay on top */
+            /* Hide square overlays when in lightbox/zoom mode */
             #viewer-window.lightbox .square-border-overlay,
             #cover-window.lightbox .square-border-overlay {
-                transform: scale(1);
+                opacity: 0;
                 transition: transform 0.3s ease, opacity 0.3s ease;
                 z-index: 1001;
             }
@@ -1545,21 +1545,67 @@
             overflow: hidden;
         }
 
-        /* Show cover window on mobile, hide on desktop */
-        @media screen and (min-width: 769px) {
-            #cover-window {
-                display: none !important;
-            }
-        }
-
-        @media screen and (max-width: 768px) {
-            #cover-window {
-                display: flex !important;
-            }
+        /* Show cover window on both mobile and desktop */
+        #cover-window {
+            display: flex;
         }
 
         #cover-window.visible {
             opacity: 1;
+            animation: floatCover 8.7s ease-in-out infinite;
+        }
+
+        /* Desktop cover icon - minimized state */
+        #cover-window.minimized {
+            position: fixed !important;
+            top: 20px !important;
+            left: 20px !important;
+            width: 80px !important;
+            height: 80px !important;
+            opacity: 0.8 !important;
+            cursor: pointer !important;
+            animation: none !important;
+            z-index: 3 !important;
+            transition: all 0.3s ease-in-out !important;
+        }
+
+        #cover-window.minimized:hover {
+            opacity: 1 !important;
+            transform: scale(1.05) !important;
+        }
+
+        /* Hide header and bottom when minimized */
+        #cover-window.minimized .cover-header,
+        #cover-window.minimized .cover-bottom,
+        #cover-window.minimized .cover-resize-handle {
+            display: none !important;
+        }
+
+        /* Only show content when minimized */
+        #cover-window.minimized .cover-content {
+            flex: 1 !important;
+            border: 2px solid rgba(255, 255, 255, 0.6) !important;
+            border-radius: 4px !important;
+        }
+
+        /* Hide dotted borders when minimized */
+        #cover-window.minimized::before {
+            display: none !important;
+        }
+
+        #cover-window.minimized .cover-content::before {
+            display: none !important;
+        }
+
+        /* Desktop positioning when not minimized */
+        @media screen and (min-width: 769px) {
+            #cover-window:not(.minimized) {
+                position: fixed;
+                top: 15%;
+                right: 5%;
+                width: 300px;
+                height: 333px;
+            }
         }
 
         .cover-header {
@@ -1676,15 +1722,38 @@
             z-index: 1;
         }
 
-        .cover-resize-handle {
+        #dvd-cover-window .cover-resize-handle {
             position: absolute;
-            right: 0;
-            bottom: 0;
-            width: 15px;
-            height: 15px;
+            right: -2px; /* Extend slightly outside border */
+            bottom: -2px;
+            width: 25px; /* Even larger area for easier grabbing */
+            height: 25px;
             cursor: nwse-resize;
-            z-index: 7;
-            background: transparent;
+            z-index: 1003; /* Higher than drag z-index */
+            background: rgba(255, 255, 255, 0.1); /* Slight background for visibility */
+            pointer-events: auto; /* Ensure it captures events */
+            border-top-left-radius: 3px;
+        }
+
+        #dvd-cover-window .cover-resize-handle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Draggable area overlay - covers top 80% of window */
+        #dvd-cover-window .drag-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80%; /* Only top 80% is draggable */
+            z-index: 1002;
+            cursor: move;
+            pointer-events: auto;
+            /* Invisible overlay */
+        }
+
+        #dvd-cover-window .drag-area:active {
+            cursor: grabbing;
         }
 
         .cover-resize-handle::after {
@@ -1694,6 +1763,213 @@
             bottom: 1px;
             color: rgba(255, 255, 255, 0.7);
             font-size: 10px;
+        }
+
+        /* Album Cover Icon Styles */
+        #album-cover-icon {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            z-index: 100;
+            opacity: 0.8;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 4px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #album-cover-icon:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        #album-cover-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Hide icon on mobile devices */
+        @media screen and (max-width: 768px) {
+            #album-cover-icon {
+                display: none;
+            }
+        }
+
+        /* DVD Screensaver Cover Window Styles */
+        #dvd-cover-window {
+            position: fixed;
+            background: #000000;
+            border: none;
+            border-radius: 0;
+            z-index: 1001; /* Above everything else */
+            cursor: move;
+            filter: none;
+            will-change: transform;
+            user-select: none;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            width: 300px;
+            height: 318px; /* Shorter to match viewer proportions */
+            opacity: 1; /* Always opaque - TV effects handle visibility */
+            resize: both;
+            overflow: hidden;
+            /* No default animations - they interfere with TV effects */
+        }
+
+        /* DVD window header */
+        #dvd-cover-window .cover-header {
+            height: 18px; /* Shorter header */
+            border-top: 2px dotted rgba(255, 255, 255, 0.8);
+            border-left: 2px dotted rgba(255, 255, 255, 0.8);
+            border-right: 2px dotted rgba(255, 255, 255, 0.8);
+            border-bottom: 2px dotted rgba(255, 255, 255, 0.8);
+        }
+
+        /* DVD window content with proper image scaling */
+        #dvd-cover-window .cover-content {
+            flex: 1;
+            background: #000000;
+            border-left: 2px dotted rgba(255, 255, 255, 0.8);
+            border-right: 2px dotted rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        #dvd-cover-window .cover-image-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #dvd-cover-window #dvd-cover-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Fill frame completely, crop as needed */
+            object-position: center;
+            image-rendering: auto;
+        }
+
+        /* DVD window bottom border */
+        #dvd-cover-window .cover-bottom {
+            width: 100%;
+            height: 2px;
+            border-bottom: 2px dotted rgba(255, 255, 255, 0.8);
+            background: transparent;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        #dvd-cover-window .cover-bottom::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            border-bottom: 2px dotted rgba(255, 255, 255, 0.8);
+        }
+
+        /* Create double dotted line effect for DVD window side borders - matching viewer style */
+        #dvd-cover-window::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 2px;
+            right: 2px;
+            bottom: 0;
+            border-left: 2px dotted rgba(255, 255, 255, 0.8);
+            border-right: 2px dotted rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #dvd-cover-window .cover-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 2px;
+            right: 2px;
+            bottom: 0;
+            border-left: 2px dotted rgba(255, 255, 255, 0.8);
+            border-right: 2px dotted rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #dvd-cover-window.visible {
+            /* Visible state - TV effects handle actual visibility */
+        }
+
+        /* TV animations for DVD window - higher specificity to override other animations */
+        #dvd-cover-window.tv-appearing {
+            animation: tvTurnOn 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important;
+        }
+
+        #dvd-cover-window.tv-disappearing {
+            animation: tvTurnOff 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards !important;
+        }
+
+        /* Add white flash effect for DVD window content during TV off */
+        #dvd-cover-window.tv-disappearing .cover-content {
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7), rgba(0, 0, 0, 0.1));
+            animation: whiteFlashFill 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+        }
+
+        /* DVD Screensaver animation */
+        @keyframes dvdScreensaver {
+            0% {
+                transform: translate(0, 0);
+            }
+            25% {
+                transform: translate(calc(100vw - 300px), calc(25vh - 159px));
+            }
+            50% {
+                transform: translate(calc(50vw - 150px), calc(100vh - 318px));
+            }
+            75% {
+                transform: translate(calc(10vw), calc(50vh - 159px));
+            }
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+
+        /* Override floatCover to be more subtle when combined with DVD movement */
+        #dvd-cover-window.visible {
+            animation: floatCoverSubtle 8.7s ease-in-out infinite, dvdScreensaver 15s linear infinite;
+        }
+
+        /* Subtle float animation for DVD window */
+        @keyframes floatCoverSubtle {
+            0%, 100% {
+                filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));
+            }
+            20% {
+                filter: drop-shadow(2px 1px 8px rgba(255, 255, 255, 0.15));
+            }
+            45% {
+                filter: drop-shadow(-1px -2px 8px rgba(255, 255, 255, 0.12));
+            }
+            65% {
+                filter: drop-shadow(-1px 2px 8px rgba(255, 255, 255, 0.14));
+            }
+            85% {
+                filter: drop-shadow(2px -1px 8px rgba(255, 255, 255, 0.13));
+            }
         }
 
         /* Mobile Layout Styles */
@@ -1892,6 +2168,29 @@
         <div class="square-border-overlay"></div>
     </div>
 
+    <!-- Tiny album cover icon in bottom-left corner -->
+    <div id="album-cover-icon">
+        <img src="https://res.cloudinary.com/dtwix3ubl/image/upload/v1751300090/gkHourglass8_np2lyy.jpg" alt="Album Cover">
+    </div>
+
+    <!-- DVD Screensaver Cover Window -->
+    <div id="dvd-cover-window" class="window-draggable">
+        <div class="drag-area"></div> <!-- Draggable area covering top 80% -->
+        <div class="cover-header">
+            <div class="cover-close-button"></div>
+        </div>
+        <div class="cover-content">
+            <div class="cover-image-container">
+                <img id="dvd-cover-image"
+                    src="https://res.cloudinary.com/dtwix3ubl/image/upload/v1751300090/gkHourglass8_np2lyy.jpg"
+                    alt="Album Cover">
+            </div>
+        </div>
+        <div class="cover-bottom"></div>
+        <div class="cover-resize-handle"></div>
+        <div class="square-border-overlay"></div>
+    </div>
+
     <!-- Password protection overlay -->
     <div id="password-overlay">
         <div id="password-container">
@@ -2071,89 +2370,83 @@
             songMessages: {
                 "Gross Excelations": [
                     "Welcome",
-                    "Stay a while",
-                    "You will all be dusted"
+                    "It's been a while",
+                    "Would you like to activate the preset library index viewer?",
+                    "y͟e͟s͟     /     n̲o̲",
+                    "GRDN-ABG-GDS; layered choir+bird tone; filter opens at sunrise ±2 min"
                 ],
                 "Two Travelers": [
-                    "The path climbs down to meet you",
-                    "Behold the Skeletonized Chiff",
-                    "Play Flute, And Die",
-                    "Time to go!"
+                    "CNDL-LOG-3B; PWM pad; slow rise 11.7 s; resonance self-bleeds at 0.002 Hz; tide",
+                    "Ship_beyond; sync off; route: Procyon; checksum unstable",
+                    "TNYS-SRPH-0C; angelic chorus; HPF 2.9 kHz; one voice always missing",
+                    "DAP-CHOIR-AUX; 6-voice stack; unison detune +7.1 ct; light",
+                    "Corridors_stone; mono echo-4; walls retain heat"
                 ],
                 "Chambers of the Starwatcher": [
-                    "You look unwell",
-                    "Gaze into my Glimmerless Ore",
-                    "Drink the Light and live forever",
-                    "Press Astral Glass to your eye",
-                    "Watch your Constalation Drift",
-                    "Increase your thirst"
+                    "ARC-PULS-1A; sine ping; key-tracking 0%; filter envelope mislabeled \"soul\"",
+                    "CRPT-STL-02R; corrupt steel; chorus phase offset 1.7° east",
+                    "MEM-ORCH-09F; random arpeggiator (seed 33); filter decay = memory loss rate",
+                    "Garden.wither; LPF 400 Hz drift; flora digitalis",
+                    "HD-GRAM-8C; phase-inverted voice sample; 3.3 s decay; whisper of compiler"
                 ],
                 "Hibernal Torment": [
-                    "Follow me",
-                    "I'm right behind you",
-                    "I can go no further here",
-                    "You have the power",
-                    "It's freezing down here",
-                    "hearing sirens",
-                    "We have to keep going",
-                    "It's you in the tower"
+                    "ARC-FRM-11N; arc frame; harmonic reflection off unknown planet",
+                    "FGT-GTE-PUL; gate effect misfires every 13th note; described as \"mercy error.\"",
+                    "ECCL-DRN-1V; drone; 2 Hz wobble; output peaks at RA 03h55m, Dec +41°22′",
+                    "FIRN-MEM-33S; frozen memory; reverb accumulates frost",
+                    "CRPT-VOL-PAD; poly-chorus pad; sample origin unknown"
                 ],
                 "Rats": [
-                    "Welcome Piper",
-                    "Welcome Rat",
-                    "Step lightly, traveler",
-                    "Dance through the screen",
-                    "Rats follow you",
-                    "Cheese if you please"
+                    "CG-ANG-CHR; dual chorus; delay 22 ms; right channel drifts centuries",
+                    "JST-HRT-88B; pulse lead; square width = sin(time); tone described as \"almost forgiven\"",
+                    "Drowning:Gyoll; chorus-89%-sub; river reverb folds inward",
+                    "Antechamber; reverb 98% hollow; algorithm unknown",
+                    "GRV-PSN-6J; grave poison; gain threshold 6.67 V"
                 ],
                 "Entrusted to Fools": [
-                    "It's just us now",
-                    "Everyone else is gone",
-                    "They left a long time ago",
-                    "Its just us now",
-                    "Riding the waves",
-                    "On the Wrong Planet"
-                ],
-                "Spider Wash": [
-                    "Keep counting",
-                    "Follow the flame",
-                    "Wheel grinding sounds",
-                    "Did you hear that?",
-                    "Keep counting?",
-                    "Clean your web"
+                    "HBRN-FTH-1V; hibernal faith; low-pass warms at dawn",
+                    "NOV-PROC-L2; square-pulse chant; amplitude mod by syllable",
+                    "LIG-TOMB-33Q; light tomb; chorus depth = gravity",
+                    "CLDHNY-STR; sweet detuned string; DC offset 0.011 V; sounds wet"
                 ],
                 "Crusted Aucklet": [
-                    "Aaaaaah-eeee-yeeee!"
+                    "SALT-LIBR-B; salt library; each key triggers another voice",
+                    "HELI-MND-X3; helical mind pad; portamento 144 ms; echo memory",
+                    "DST-PRP-BASS; monophonic; subharmonic gen −1.3 oct; consumes 0.2 A idle",
+                    "CLMN-ARC-8H; column arch; harmonic collapse after 11 s"
+                ],
+                "Astral Crumb": [
+                    "Borrowed.mem; fade_bit-9; memory loss rendered audible",
+                    "Fever_proc; FM-ratio 3:7; output sways with pulse"
                 ],
                 "Ill Wind": [
-                    "An ill wind blows on my spirit",
-                    "I feel we will perish like dogs",
-                    "Wander into Fultons Deep",
-                    "I forgot to sleep"
+                    "SUL-FLTE-X1; white noise + resonant sweep; \"smells faintly of ozone.\"",
+                    "DRN-CTH-BEL; metallic delay; 3 taps @ 88 ms",
+                    "CNC-NEM-2J; concilium nemoris; drone mapped to forest static",
+                    "Atrium/Time; delay 729 ms; loop self-aware",
+                    "OBS-TREM-0x2; tri-LFO; phase sync to day; output intentional"
                 ],
-                "Rippler": [
-                    "Come get your jewel encrusted helmet bashed in",
-                    "It'll be fun",
-                    "Face the rippler",
-                    "Trees on Us"
+                "Breadmaker": [
+                    "OSC7-SLP-STN; 7th oscillator only; tone changes with moon phase",
+                    "CRC-RLQ-Q3; sample playback error accepted",
+                    "GOLD-FG-0M; gold fog; harmonic shimmer; source undefined",
+                    "BRTH-LIB-XN; breath sample (source lost); velocity <30 produces sigh"
                 ],
-                "Sepulchral FLute": [
-                    "Trust the crust",
-                    "Flour sack lost",
-                    "Trapped in a tree, no time to be me"
+                "Sepulchral Flute": [
+                    "LIG-TOMB-33Q; light tomb; chorus depth = gravity; spectral bleed present",
+                    "Antechamber_reverb-98%_hollow; alternate firmware trace",
+                    "Garden.wither_LPF-400Hz_drft; variant recording; flora digital memory",
+                    "Ship_beyond_sync-off_Procyon; secondary data stream; checksum unstable",
+                    "CRPT-STL-02R; phase offset confirmed 1.7° east"
                 ],
                 "Taste of my Chime": [
-                    "Mmmmm",
-                    "Delicious metals",
-                    "The Bells of Bodom toll",
-                    "The sky lights linger",
-                    "Taste the glow"
+                    "CNDL-LOG-3B; repeat pattern; PWM bleed observed",
+                    "DAP-CHOIR-AUX; echo seed resampled; choral detune +7.1 ct",
+                    "HELI-MND-X3; feedback loop stable at 144 ms"
                 ],
                 "Bone Window": [
-                    "The dust remembers you",
-                    "Unfortunately, you're in the wrong place",
-                    "The spiral brought you nowhere",
-                    "But you can stay"
+                    "ECCL-DRN-1V; residual 2 Hz wobble; output stable",
+                    "GRV-PSN-6J; decay 7.7 s; harmonic poison confirmed"
                 ]
             },
             currentSongName: null,
@@ -2161,6 +2454,7 @@
             currentMessageIndex: 0,
             activeWindows: new Set(),
             nextMessageTimeout: null,
+            scheduledTimeouts: [],
             windowCounter: 0,
             trackStartTime: null,
             currentTrackDuration: null,
@@ -2177,6 +2471,7 @@
                 this.currentTrackDuration = trackDuration || 180; // Default to 3 minutes if unknown
                 this.messageCount = 0;
                 this.currentMessageIndex = 0;
+                this.scheduledTimeouts = []; // Track all scheduled timeouts
                 
                 // Set current song and get its messages
                 this.currentSongName = songName;
@@ -2184,96 +2479,119 @@
                 
                 console.log(`Track changed to: ${songName}, Messages available: ${this.currentSongMessages.length}`);
 
-                // Clear existing timeout
-                if (this.nextMessageTimeout) {
-                    clearTimeout(this.nextMessageTimeout);
-                }
+                // Clear existing timeouts
+                this.clearAllTimeouts();
 
-                // Only schedule messages if we have messages for this song
+                // Schedule all messages for this track if we have messages
                 if (this.currentSongMessages.length > 0) {
-                    // Schedule first message early in the track (within first 30-60 seconds)
-                    const earlyMessageDelay = Math.random() * 30000 + 10000; // 10-40 seconds into track
-                    setTimeout(() => {
-                        this.showSongSpecificMessage();
-                    }, earlyMessageDelay);
-
-                    // Schedule remaining messages based on song duration
-                    this.scheduleNextMessage();
+                    this.scheduleAllMessages();
                 } else {
                     console.log(`No messages defined for song: ${songName}`);
                 }
             },
 
-            scheduleNextMessage() {
-                // Only schedule if we have messages for the current song
-                if (!this.currentSongMessages || this.currentSongMessages.length === 0) {
-                    return;
+            clearAllTimeouts() {
+                // Clear the old single timeout
+                if (this.nextMessageTimeout) {
+                    clearTimeout(this.nextMessageTimeout);
+                    this.nextMessageTimeout = null;
                 }
+                
+                // Clear all scheduled timeouts
+                if (this.scheduledTimeouts) {
+                    this.scheduledTimeouts.forEach(timeout => clearTimeout(timeout));
+                    this.scheduledTimeouts = [];
+                }
+            },
 
-                // Calculate timing based on song duration and number of messages
+            scheduleAllMessages() {
                 const totalMessages = this.currentSongMessages.length;
                 const songDurationMs = this.currentTrackDuration * 1000;
                 
-                // Reserve first 40 seconds and last 20 seconds of the song
-                const availableTimeMs = songDurationMs - 60000; // 60 seconds reserved
+                console.log(`Scheduling ${totalMessages} messages over ${Math.round(songDurationMs/1000)}s for "${this.currentSongName}"`);
                 
-                if (availableTimeMs <= 0 || totalMessages <= 1) {
-                    // Song too short or only one message, use random timing
-                    const interval = Math.random() * 40000 + 20000; // 20-60 seconds
-                    this.nextMessageTimeout = setTimeout(() => {
+                if (totalMessages === 1) {
+                    // Single message - show in middle of track
+                    const delay = songDurationMs * 0.4; // 40% into the track
+                    const timeout = setTimeout(() => {
                         this.showSongSpecificMessage();
-                        this.scheduleNextMessage();
-                    }, interval);
+                    }, delay);
+                    this.scheduledTimeouts.push(timeout);
+                    console.log(`Single message scheduled for ${Math.round(delay/1000)}s`);
                     return;
                 }
-
-                // Calculate time between messages (evenly spaced)
-                const baseInterval = availableTimeMs / (totalMessages - 1);
                 
-                // Add some randomness (±25% of the base interval) to make it feel natural
-                const randomVariation = (Math.random() - 0.5) * 0.5 * baseInterval;
-                const interval = Math.max(15000, baseInterval + randomVariation); // Minimum 15 seconds between messages
+                // Multiple messages - spread evenly throughout the track
+                // Reserve 10% at start and 15% at end of track
+                const startReserveMs = songDurationMs * 0.10; // 10% buffer at start
+                const endReserveMs = songDurationMs * 0.15;   // 15% buffer at end
+                const availableTimeMs = songDurationMs - startReserveMs - endReserveMs;
                 
-                console.log(`Scheduling next message in ${Math.round(interval/1000)}s (${this.messageCount + 1}/${totalMessages})`);
-
-                this.nextMessageTimeout = setTimeout(() => {
-                    // Only show message if we haven't shown all messages for this song yet
-                    if (this.messageCount < totalMessages) {
-                        this.showSongSpecificMessage();
-                        this.scheduleNextMessage();
-                    } else {
-                        console.log('All messages for this song have been shown');
-                    }
-                }, interval);
+                // Calculate interval between messages
+                const interval = availableTimeMs / (totalMessages - 1);
+                
+                // Schedule each message at evenly spaced intervals
+                for (let i = 0; i < totalMessages; i++) {
+                    // Calculate base delay time
+                    const baseDelay = startReserveMs + (interval * i);
+                    
+                    // Add small random variation (±10% of interval) to feel natural
+                    const maxVariation = interval * 0.1;
+                    const randomVariation = (Math.random() - 0.5) * maxVariation;
+                    const delay = Math.max(startReserveMs, baseDelay + randomVariation);
+                    
+                    // Schedule the message
+                    const timeout = setTimeout(() => {
+                        this.showScheduledMessage(i);
+                    }, delay);
+                    
+                    this.scheduledTimeouts.push(timeout);
+                    console.log(`Message ${i + 1}/${totalMessages} scheduled for ${Math.round(delay/1000)}s: "${this.currentSongMessages[i]}"`);
+                }
             },
 
-            showSongSpecificMessage() {
+            showScheduledMessage(messageIndex) {
                 // Check if we have messages for the current song
                 if (!this.currentSongMessages || this.currentSongMessages.length === 0) {
                     console.log('No messages available for current song');
                     return;
                 }
-
-                // Much stricter control over simultaneous messages - only 5% chance if one is already active
-                if (this.activeWindows.size >= 1) {
-                    // Only 5% chance to show a second message when one is already active
-                    if (Math.random() > 0.05) {
-                        return;
-                    }
-                }
-
-                // Never allow more than 2 messages
-                if (this.activeWindows.size >= 2) {
+                
+                // Validate message index
+                if (messageIndex < 0 || messageIndex >= this.currentSongMessages.length) {
+                    console.log(`Invalid message index: ${messageIndex}`);
                     return;
                 }
 
-                // Get the next message in sequence for this song
+                const message = this.currentSongMessages[messageIndex];
+                console.log(`Showing scheduled message ${messageIndex + 1}/${this.currentSongMessages.length}: "${message}"`);
+
+                this.displayMessage(message, messageIndex + 1, this.currentSongMessages.length);
+            },
+
+            showSongSpecificMessage() {
+                // This method is kept for backward compatibility (used by single message scheduling)
+                if (!this.currentSongMessages || this.currentSongMessages.length === 0) {
+                    console.log('No messages available for current song');
+                    return;
+                }
+
                 const message = this.currentSongMessages[this.currentMessageIndex];
+                console.log(`Showing message: "${message}" (${this.currentMessageIndex + 1}/${this.currentSongMessages.length})`);
+
+                this.displayMessage(message, this.currentMessageIndex + 1, this.currentSongMessages.length);
                 
-                // Advance to next message, cycling back to start if we reach the end
+                // Advance to next message for any future calls
                 this.currentMessageIndex = (this.currentMessageIndex + 1) % this.currentSongMessages.length;
-                
-                console.log(`Showing message: "${message}" (${this.currentMessageIndex}/${this.currentSongMessages.length})`);
+                this.messageCount++;
+            },
+
+            displayMessage(message, messageNumber, totalMessages) {
+                // Allow more concurrent messages since we're now controlling timing precisely
+                if (this.activeWindows.size >= 3) {
+                    console.log('Too many active windows, skipping message');
+                    return;
+                }
 
                 const messageWindow = this.createMessageWindow(message);
                 document.body.appendChild(messageWindow);
@@ -2293,11 +2611,6 @@
                 setTimeout(() => {
                     this.startTypingAnimation(messageWindow, message);
                 }, 1200);
-
-                // Increment message count
-                this.messageCount++;
-
-                // Don't schedule dismissal here - it will be scheduled after typing actually completes
             },
 
             createMessageWindow(message) {
@@ -2407,8 +2720,8 @@
 
                         setTimeout(typeNextCharacter, delay);
                     } else {
-                        // Typing completed - schedule dismissal 2-5 seconds from now
-                        const readingTime = 2000 + Math.random() * 3000; // 2-5 seconds after typing completes
+                        // Typing completed - schedule dismissal between 0.25-2 seconds from now
+                        const readingTime = 250 + Math.random() * 1750; // 0.25-2 seconds after typing completes
                         setTimeout(() => {
                             this.dismissMessage(messageWindow);
                         }, readingTime);
@@ -2844,27 +3157,11 @@
                 }
             },
             {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753892049/07_Heavy_Load_v3.mp3",
-                defaultName: "Crusted Aucklet",
-                duration: 192,
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753894796/12_Taste_of_my_Chime_v3.mp3",
+                defaultName: "Taste of my Chime",
+                duration: 138,
                 metaData: {
-                    title: "Crusted Aucklet"
-                }
-            },
-            {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753893189/08_Crusted_Aucklet_v3.mp3",
-                defaultName: "Astral Crumb",
-                duration: 71.016,
-                metaData: {
-                    title: "Astral Crumb"
-                }
-            },
-            {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753893209/09_Ill_Wind_v3.mp3",
-                defaultName: "Ill Wind",
-                duration: 216,
-                metaData: {
-                    title: "Ill Wind"
+                    title: "Taste of my Chime"
                 }
             },
             {
@@ -2876,19 +3173,27 @@
                 }
             },
             {
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753893189/08_Crusted_Aucklet_v3.mp3",
+                defaultName: "Astral Crumb",
+                duration: 71.016,
+                metaData: {
+                    title: "Astral Crumb"
+                }
+            },
+            {
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753892049/07_Heavy_Load_v3.mp3",
+                defaultName: "Crusted Aucklet",
+                duration: 192,
+                metaData: {
+                    title: "Crusted Aucklet"
+                }
+            },
+            {
                 url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753893249/11_Doom_Fruit_v3.mp3",
                 defaultName: "Sepulchral Flute",
                 duration: 210,
                 metaData: {
                     title: "Sepulchral Flute"
-                }
-            },
-            {
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1753894796/12_Taste_of_my_Chime_v3.mp3",
-                defaultName: "Taste of my Chime",
-                duration: 138,
-                metaData: {
-                    title: "Taste of my Chime"
                 }
             },
             {
@@ -2939,40 +3244,40 @@
                 fadeIn: 4,     // 2 seconds fade in
                 fadeOut: 0     // no fade out
             },
-            6: {  // Track 7 - Astral Crumb
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153521/07Loop.mp4",
+            6: {  // Track 7 - Taste of my Chime
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1755467433/Fireflies_pzdsfx.mp4",
                 preloadedVideo: null,
-                fadeIn: 1.5,     // 1.5 seconds fade in
+                fadeIn: 2,     // 2 seconds fade in
                 fadeOut: 0     // no fade out
             },
-            7: {  // Track 8 - Crusted Auklet
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1751073675/08Loop_nmgkgh.mp4",
-                preloadedVideo: null,
-                fadeIn: 4,     // 4 seconds fade in
-                fadeOut: 4     // 4 seconds fade out
-            },
-            8: {  // Track 9 - Ill Wind
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153526/09Loop.mp4",
-                preloadedVideo: null,
-                fadeIn: .5,     // 1.5 seconds fade in
-                fadeOut: 0     // no fade out
-            },
-            9: {  // Track 10 - Breadmaker
+            7: {  // Track 8 - Breadmaker
                 url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749267106/10Loop_jcbrof.mp4",
                 preloadedVideo: null,
                 fadeIn: 4,     // 1 second fade in
                 fadeOut: 0     // no fade out
             },
-            10: {  // Track 11 - Sepulchral Flute
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1751074687/12Loop_twje5h.mp4",
+            8: {  // Track 9 - Astral Crumb
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153521/07Loop.mp4",
                 preloadedVideo: null,
                 fadeIn: 1.5,     // 1.5 seconds fade in
                 fadeOut: 0     // no fade out
             },
-            11: {  // Track 12 - Taste of my Chime
-                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1755467433/Fireflies_pzdsfx.mp4",
+            9: {  // Track 10 - Ill Wind
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1749153526/09Loop.mp4",
                 preloadedVideo: null,
-                fadeIn: 2,     // 2 seconds fade in
+                fadeIn: .5,     // 1.5 seconds fade in
+                fadeOut: 0     // no fade out
+            },    
+            10: {  // Track 11 - Crusted Auklet
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1751073675/08Loop_nmgkgh.mp4",
+                preloadedVideo: null,
+                fadeIn: 4,     // 4 seconds fade in
+                fadeOut: 4     // 4 seconds fade out
+            },
+            11: {  // Track 12 - Sepulchral Flute
+                url: "https://res.cloudinary.com/dtwix3ubl/video/upload/v1751074687/12Loop_twje5h.mp4",
+                preloadedVideo: null,
+                fadeIn: 1.5,     // 1.5 seconds fade in
                 fadeOut: 0     // no fade out
             },
             12: {  // Track 13 - Bone Window
@@ -3545,6 +3850,11 @@
                     
                     console.log(`Track change detected: ${songName} (index: ${trackIndex}, duration: ${trackDuration}s)`);
                     deityMessageSystem.onTrackChange(trackDuration, songName);
+                    
+                    // Notify automatic switching system
+                    if (automaticSwitchingSystem) {
+                        automaticSwitchingSystem.onTrackChange(trackIndex, trackDuration);
+                    }
 
                     // Check if audio track needs to be loaded on demand
                     if (window.preloadedTracks && window.preloadedTracks[trackIndex] && !window.preloadedTracks[trackIndex].blob) {
@@ -3575,11 +3885,105 @@
             });
         }
 
+        // Automatic fullscreen switching system (desktop only)
+        let automaticSwitchingSystem = {
+            isEnabled: false,
+            scheduledTimeouts: [],
+            currentTrackIndex: -1,
+            isUserInteracting: false,
+            lastUserInteractionTime: 0,
+            
+            init() {
+                // Only enable on desktop
+                if (!isMobile()) {
+                    this.isEnabled = true;
+                    console.log('Automatic viewer switching system initialized (desktop only)');
+                }
+            },
+            
+            onTrackChange(trackIndex, trackDuration) {
+                if (!this.isEnabled) return;
+                
+                this.currentTrackIndex = trackIndex;
+                this.clearScheduledSwitches();
+                
+                console.log(`Setting up simple automatic switching for track ${trackIndex} (${Math.round(trackDuration)}s)`);
+                
+                if (trackIndex === 0) {
+                    // First track: dramatic switch at 5 seconds, then every 10-20 seconds starting at 20 seconds
+                    console.log('First track: switch at 5s, then every 10-20s starting at 20s');
+                    this.scheduleSingleSwitch(5000); // 5 seconds
+                    this.scheduleRegularSwitches(20, trackDuration); // Start at 20 seconds
+                } else {
+                    // Other tracks: just switch every 10-20 seconds starting at 10 seconds
+                    this.scheduleRegularSwitches(10, trackDuration); // Start at 10 seconds
+                }
+            },
+            
+            scheduleRegularSwitches(startTime, trackDuration) {
+                // Simple: switch every 10-20 seconds until track ends
+                let currentTime = startTime;
+                
+                while (currentTime < trackDuration - 5) { // Stop 5 seconds before track ends
+                    const interval = 10 + Math.random() * 10; // Random 10-20 seconds
+                    currentTime += interval;
+                    
+                    if (currentTime < trackDuration - 5) {
+                        console.log(`Scheduling switch at ${Math.round(currentTime)}s`);
+                        this.scheduleSingleSwitch(currentTime * 1000);
+                    }
+                }
+            },
+            
+            scheduleSingleSwitch(delayMs) {
+                const timeout = setTimeout(() => {
+                    // Check if user has interacted recently (within last 2 seconds - reduced for more frequent switching)
+                    const timeSinceInteraction = Date.now() - this.lastUserInteractionTime;
+                    if (timeSinceInteraction < 2000) {
+                        console.log('Skipping automatic switch - user recently interacted');
+                        return;
+                    }
+                    
+                    // Trigger the automatic switch
+                    console.log('Triggering automatic viewer switch');
+                    this.triggerAutomaticSwitch();
+                }, delayMs);
+                
+                this.scheduledTimeouts.push(timeout);
+            },
+            
+            triggerAutomaticSwitch() {
+                // Use the existing toggleFullscreenMode function
+                if (window.toggleFullscreenMode && typeof window.toggleFullscreenMode === 'function') {
+                    window.toggleFullscreenMode();
+                } else {
+                    console.warn('toggleFullscreenMode not available for automatic switching');
+                }
+            },
+            
+            onUserInteraction() {
+                this.lastUserInteractionTime = Date.now();
+            },
+            
+            clearScheduledSwitches() {
+                this.scheduledTimeouts.forEach(timeout => clearTimeout(timeout));
+                this.scheduledTimeouts = [];
+            },
+            
+            cleanup() {
+                this.clearScheduledSwitches();
+                this.isEnabled = false;
+            }
+        };
+
         // Set up viewer controls
         function setupViewerControls() {
             const viewerWindow = document.getElementById('viewer-window');
             const closeButton = viewerWindow.querySelector('.viewer-close-button');
             const fullscreenBackgroundVideo = document.getElementById('fullscreen-background-video');
+
+            // Initialize automatic switching system
+            automaticSwitchingSystem.init();
 
             // Close button - hides the viewer normally
             if (closeButton) {
@@ -3600,6 +4004,9 @@
                     return;
                 }
 
+                // Track user interaction for automatic switching system
+                automaticSwitchingSystem.onUserInteraction();
+
                 clickCount++;
                 
                 if (clickCount === 1) {
@@ -3616,7 +4023,8 @@
                 }
             }
 
-            function toggleFullscreenMode() {
+            // Make toggleFullscreenMode globally accessible for automatic switching
+            window.toggleFullscreenMode = function() {
                 if (!isFullscreenMode) {
                     // Enter fullscreen mode
                     enterFullscreenMode();
@@ -3625,7 +4033,10 @@
                     exitFullscreenMode();
                 }
                 isFullscreenMode = !isFullscreenMode;
-            }
+            };
+            
+            // Local reference for convenience
+            const toggleFullscreenMode = window.toggleFullscreenMode;
 
             function enterFullscreenMode() {
                 console.log('Entering fullscreen mode');
@@ -3726,6 +4137,9 @@
                     if (e.target.closest('.viewer-close-button') || e.target.closest('.viewer-resize-handle')) {
                         return;
                     }
+                    
+                    // Track user interaction for automatic switching system
+                    automaticSwitchingSystem.onUserInteraction();
                     
                     touchCount++;
                     
@@ -3838,8 +4252,9 @@
             }
 
             function dragStart(e) {
-                // Ignore if clicking on buttons
-                if (e.target.closest('.cover-close-button')) {
+                // Ignore if clicking on buttons or if minimized (desktop only)
+                if (e.target.closest('.cover-close-button') || 
+                    (!isMobile() && coverWindow.classList.contains('minimized'))) {
                     return;
                 }
 
@@ -3894,8 +4309,9 @@
 
             // Touch event functions for mobile support
             function touchStart(e) {
-                // Ignore if touching on buttons
-                if (e.target.closest('.cover-close-button')) {
+                // Ignore if touching on buttons or if minimized (desktop only)
+                if (e.target.closest('.cover-close-button') || 
+                    (!isMobile() && coverWindow.classList.contains('minimized'))) {
                     return;
                 }
 
@@ -4033,45 +4449,80 @@
             const coverWindow = document.getElementById('cover-window');
             const closeButton = coverWindow.querySelector('.cover-close-button');
             
-            // Close button - hides the cover window
+            // Initialize cover window state
+            if (isMobile()) {
+                // Mobile: Show as visible window
+                coverWindow.classList.add('visible');
+            } else {
+                // Desktop: Start as minimized icon
+                coverWindow.classList.add('minimized');
+                coverWindow.classList.add('visible');
+            }
+            
+            // Close button functionality
             if (closeButton) {
                 closeButton.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    coverWindow.classList.remove('visible');
+                    
+                    if (isMobile()) {
+                        // Mobile: Hide the window completely
+                        coverWindow.classList.remove('visible');
+                    } else {
+                        // Desktop: Minimize back to icon
+                        minimizeCoverWindow();
+                    }
                 });
+            }
+            
+            // Click handler for expanding from minimized state on desktop
+            if (!isMobile()) {
+                coverWindow.addEventListener('click', (e) => {
+                    // Only respond to clicks when minimized
+                    if (coverWindow.classList.contains('minimized')) {
+                        // Don't expand if clicking close button
+                        if (e.target.closest('.cover-close-button')) {
+                            return;
+                        }
+                        expandCoverWindow();
+                    }
+                });
+            }
+            
+            // Desktop minimize/maximize functions
+            function minimizeCoverWindow() {
+                coverWindow.classList.add('minimized');
+                coverWindow.classList.remove('floating');
+            }
+            
+            function expandCoverWindow() {
+                coverWindow.classList.remove('minimized');
+                coverWindow.classList.add('floating');
+                
+                // Reset any inline positioning styles that might interfere
+                coverWindow.style.removeProperty('left');
+                coverWindow.style.removeProperty('right');
+                coverWindow.style.removeProperty('bottom');
             }
             
             // Position the cover window - mobile vs desktop
             requestAnimationFrame(() => {
                 if (isMobile()) {
                     // Mobile: Fixed position at bottom-right, handled by CSS
-                    // No need to set positions here, CSS handles it
+                    // Random position for mobile
+                    const maxX = window.innerWidth - 200;
+                    const maxY = window.innerHeight - 220;
+                    const randomX = Math.random() * Math.max(0, maxX - 20) + 20;
+                    const randomY = Math.random() * Math.max(0, maxY - 20) + 20;
+
+                    coverWindow.style.left = randomX + 'px';
+                    coverWindow.style.top = randomY + 'px';
                 } else {
-                    // Desktop: Position it near the equalizer window
-                    const initialWidth = 300;
-                    const initialHeight = 333; // Slightly rectangular for square image area
-                    
-                    // Convert vh to pixels for fixed positioning
-                    const bottomPixels = Math.round(window.innerHeight * 0.15); // 15vh in pixels
-                    
-                    // Calculate position relative to window width
-                    const rightOffset = Math.round(window.innerWidth * 0.15); // 15% from right
-                    
-                    // Set absolute pixel positions
-                    coverWindow.style.position = 'fixed';
-                    coverWindow.style.bottom = `${bottomPixels}px`;
-                    coverWindow.style.width = `${initialWidth}px`;
-                    coverWindow.style.height = `${initialHeight}px`;
-                    coverWindow.style.top = 'auto';
-                    coverWindow.style.left = 'auto';
-                    
-                    // Store initial position in data attributes for reference
-                    coverWindow.dataset.initialBottom = bottomPixels;
-                    coverWindow.dataset.initialRight = rightOffset;
+                    // Desktop: Starts minimized, positioning handled by CSS classes
+                    // No need to set inline styles here
                 }
             });
             
-            // Make the cover window resizable (skip on mobile)
+            // Make the cover window resizable (skip on mobile and when minimized)
             const resizeHandle = coverWindow.querySelector('.cover-resize-handle');
             if (resizeHandle && !isMobile()) {
                 let isResizing = false;
@@ -4079,6 +4530,11 @@
                 let startWidth, startHeight;
                 
                 resizeHandle.addEventListener('mousedown', (e) => {
+                    // Don't allow resizing when minimized
+                    if (coverWindow.classList.contains('minimized')) {
+                        return;
+                    }
+                    
                     e.preventDefault();
                     e.stopPropagation();
                     
@@ -4127,7 +4583,386 @@
             }
         }
 
-
+        // DVD Screensaver System for Album Cover
+        let dvdScreensaverSystem = {
+            window: null,
+            isActive: false,
+            isDragging: false,
+            position: { x: 100, y: 100 },
+            velocity: { x: 2, y: 1.5 },
+            baseVelocity: { x: 2, y: 1.5 },
+            animationId: null,
+            isPaused: false,
+            pauseTimeout: null,
+            rampUpStartTime: null,
+            isRampingUp: false,
+            
+            init() {
+                this.window = document.getElementById('dvd-cover-window');
+                this.setupAlbumIcon();
+                this.setupDVDWindow();
+            },
+            
+            setupAlbumIcon() {
+                const albumIcon = document.getElementById('album-cover-icon');
+                if (albumIcon) {
+                    albumIcon.addEventListener('click', () => {
+                        if (this.isActive) {
+                            this.hideDVDWindow();
+                        } else {
+                            this.showDVDWindow();
+                        }
+                    });
+                }
+            },
+            
+            setupDVDWindow() {
+                if (!this.window) return;
+                
+                // Set up close button
+                const closeButton = this.window.querySelector('.cover-close-button');
+                if (closeButton) {
+                    closeButton.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.hideDVDWindow();
+                    });
+                }
+                
+                // Make it resizable first (higher priority)
+                this.makeResizable();
+                
+                // Make it draggable second (lower priority)
+                this.makeDraggable();
+            },
+            
+            showDVDWindow() {
+                if (!this.window) return;
+                
+                // Set initial random position
+                this.position.x = Math.random() * (window.innerWidth - 300);
+                this.position.y = Math.random() * (window.innerHeight - 318);
+                
+                // Apply position immediately
+                this.window.style.left = this.position.x + 'px';
+                this.window.style.top = this.position.y + 'px';
+                
+                // Show window and start TV turn-on effect
+                this.window.style.display = 'flex';
+                
+                // Completely clear all animations and classes
+                this.window.style.animation = 'none';
+                this.window.classList.remove('tv-disappearing', 'visible', 'tv-appearing');
+                
+                // Force a reflow to ensure the animation clear takes effect
+                void this.window.offsetHeight;
+                
+                // Now apply TV turn-on effect
+                this.window.classList.add('tv-appearing');
+                
+                console.log('Starting TV turn-on effect');
+                
+                // Set random velocity with initial slow start for gradual ramp-up
+                // Much slower full speeds to avoid dizzying motion
+                const baseSpeedX = (Math.random() - 0.5) * 2 + (Math.random() > 0.5 ? 1 : -1);
+                const baseSpeedY = (Math.random() - 0.5) * 2 + (Math.random() > 0.5 ? 0.75 : -0.75);
+                
+                // Store base velocity for ramp-up calculations
+                this.baseVelocity.x = baseSpeedX;
+                this.baseVelocity.y = baseSpeedY;
+                
+                // Start with extremely slow initial velocity for 30-second ramp-up
+                this.velocity.x = baseSpeedX * 0.02; // Start at 2% of final speed
+                this.velocity.y = baseSpeedY * 0.02;
+                
+                // After TV turn-on effect completes, start normal operation
+                setTimeout(() => {
+                    console.log('TV turn-on effect complete, starting normal operation');
+                    this.window.classList.remove('tv-appearing');
+                    this.window.classList.add('visible');
+                    
+                    // Set floating animation with important to override any conflicting styles
+                    this.window.style.setProperty('animation', 'floatCoverSubtle 8.7s ease-in-out infinite', 'important');
+                    
+                    this.isActive = true;
+                    this.isRampingUp = true;
+                    this.rampUpStartTime = Date.now();
+                    this.startPhysics();
+                }, 1200); // Match tvTurnOn duration
+            },
+            
+            hideDVDWindow() {
+                if (!this.window) return;
+                
+                this.isActive = false;
+                this.stopPhysics();
+                
+                // Clear any pause timeouts
+                if (this.pauseTimeout) {
+                    clearTimeout(this.pauseTimeout);
+                    this.pauseTimeout = null;
+                }
+                
+                // Reset state
+                this.isPaused = false;
+                this.isRampingUp = false;
+                this.isDragging = false;
+                
+                // Stop all animations and start TV turn-off effect
+                this.window.style.animation = 'none';
+                this.window.classList.remove('visible', 'tv-appearing', 'tv-disappearing');
+                
+                // Force a reflow to ensure the animation clear takes effect
+                void this.window.offsetHeight;
+                
+                // Now apply TV turn-off effect
+                this.window.classList.add('tv-disappearing');
+                
+                console.log('Starting TV turn-off effect');
+                
+                // After TV turn-off effect completes, hide window
+                setTimeout(() => {
+                    this.window.classList.remove('tv-disappearing');
+                    this.window.style.display = 'none';
+                }, 800); // Match tvTurnOff duration
+            },
+            
+            startPhysics() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                
+                const animate = () => {
+                    if (!this.isActive || this.isDragging || this.isPaused) {
+                        this.animationId = requestAnimationFrame(animate);
+                        return;
+                    }
+                    
+                    // Handle ramp-up speed after pause
+                    if (this.isRampingUp && this.rampUpStartTime) {
+                        const elapsed = Date.now() - this.rampUpStartTime;
+                        const rampDuration = 30000; // 30 seconds to reach full speed
+                        
+                        if (elapsed < rampDuration) {
+                            const progress = elapsed / rampDuration;
+                            // Use easeOutQuint for extremely smooth, gradual acceleration
+                            const easeProgress = 1 - Math.pow(1 - progress, 5);
+                            
+                            // Ensure minimum speed so it's always moving (even slower start)
+                            const minSpeed = 0.02;
+                            this.velocity.x = this.baseVelocity.x * Math.max(minSpeed, easeProgress);
+                            this.velocity.y = this.baseVelocity.y * Math.max(minSpeed, easeProgress);
+                        } else {
+                            // Ramp-up complete
+                            this.isRampingUp = false;
+                            this.rampUpStartTime = null;
+                            this.velocity.x = this.baseVelocity.x;
+                            this.velocity.y = this.baseVelocity.y;
+                        }
+                    }
+                    
+                    // Update position first
+                    this.position.x += this.velocity.x;
+                    this.position.y += this.velocity.y;
+                    
+                    // Get current window bounds AFTER position update for accurate collision detection
+                    const rect = this.window.getBoundingClientRect();
+                    const windowWidth = rect.width;
+                    const windowHeight = rect.height;
+                    
+                    // Get screen boundaries
+                    const screenWidth = window.innerWidth;
+                    const screenHeight = window.innerHeight;
+                    
+                    // Bounce off edges with proper collision detection and margin
+                    const margin = 2; // Slightly larger margin to prevent sticking
+                    
+                    if (this.position.x <= 0) {
+                        this.position.x = margin;
+                        this.velocity.x = Math.abs(this.velocity.x);
+                        console.log('Bounced off left edge');
+                    } else if (this.position.x >= screenWidth - windowWidth - margin) {
+                        this.position.x = screenWidth - windowWidth - margin;
+                        this.velocity.x = -Math.abs(this.velocity.x);
+                        console.log('Bounced off right edge');
+                    }
+                    
+                    if (this.position.y <= 0) {
+                        this.position.y = margin;
+                        this.velocity.y = Math.abs(this.velocity.y);
+                        console.log('Bounced off top edge');
+                    } else if (this.position.y >= screenHeight - windowHeight - margin) {
+                        this.position.y = screenHeight - windowHeight - margin;
+                        this.velocity.y = -Math.abs(this.velocity.y);
+                        console.log('Bounced off bottom edge');
+                    }
+                    
+                    // Apply position
+                    this.window.style.left = this.position.x + 'px';
+                    this.window.style.top = this.position.y + 'px';
+                    
+                    this.animationId = requestAnimationFrame(animate);
+                };
+                
+                animate();
+            },
+            
+            stopPhysics() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+            },
+            
+            makeDraggable() {
+                if (!this.window) return;
+                
+                const dragArea = this.window.querySelector('.drag-area');
+                if (!dragArea) return;
+                
+                let startX = 0;
+                let startY = 0;
+                let startLeft = 0;
+                let startTop = 0;
+                
+                // Only listen to mousedown on the drag area (top 80%)
+                dragArea.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('Starting drag operation from drag area');
+                    this.isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    const rect = this.window.getBoundingClientRect();
+                    startLeft = rect.left;
+                    startTop = rect.top;
+                    
+                    this.window.style.zIndex = '1002';
+                    dragArea.style.cursor = 'grabbing';
+                    
+                    // Update position tracking
+                    this.position.x = startLeft;
+                    this.position.y = startTop;
+                    
+                    // Pause DVD movement while dragging
+                    this.pauseDVDMovement();
+                    
+                    const handleMouseMove = (e) => {
+                        if (!this.isDragging) return;
+                        
+                        const deltaX = e.clientX - startX;
+                        const deltaY = e.clientY - startY;
+                        
+                        const newLeft = startLeft + deltaX;
+                        const newTop = startTop + deltaY;
+                        
+                        this.position.x = newLeft;
+                        this.position.y = newTop;
+                        
+                        this.window.style.left = newLeft + 'px';
+                        this.window.style.top = newTop + 'px';
+                    };
+                    
+                    const handleMouseUp = () => {
+                        this.isDragging = false;
+                        this.window.style.zIndex = '1001';
+                        dragArea.style.cursor = 'move';
+                        
+                        // Resume DVD movement immediately with speed ramp-up
+                        this.isPaused = false;
+                        this.isRampingUp = true;
+                        this.rampUpStartTime = Date.now();
+                        
+                        // Start with very slow velocity for smooth ramp-up
+                        this.velocity.x = this.baseVelocity.x * 0.02;
+                        this.velocity.y = this.baseVelocity.y * 0.02;
+                        
+                        console.log('DVD movement resumed immediately with ramp-up');
+                        
+                        document.removeEventListener('mousemove', handleMouseMove);
+                        document.removeEventListener('mouseup', handleMouseUp);
+                    };
+                    
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp);
+                });
+            },
+            
+            makeResizable() {
+                const resizeHandle = this.window.querySelector('.cover-resize-handle');
+                if (!resizeHandle) return;
+                
+                let isResizing = false;
+                let startX, startY, startWidth, startHeight;
+                
+                // Simple event handler - no conflicts since bottom area is drag-free
+                resizeHandle.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('Resize handle clicked - starting resize');
+                    
+                    isResizing = true;
+                    this.isPaused = true; // Pause physics while resizing
+                    
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    const rect = this.window.getBoundingClientRect();
+                    startWidth = rect.width;
+                    startHeight = rect.height;
+                    
+                    const handleMouseMove = (e) => {
+                        if (!isResizing) return;
+                        
+                        const newWidth = startWidth + (e.clientX - startX);
+                        const newHeight = startHeight + (e.clientY - startY);
+                        
+                        const size = Math.max(newWidth, newHeight - 33);
+                        const finalWidth = Math.max(150, size);
+                        const finalHeight = finalWidth + 33;
+                        
+                        this.window.style.width = finalWidth + 'px';
+                        this.window.style.height = finalHeight + 'px';
+                    };
+                    
+                    const handleMouseUp = () => {
+                        isResizing = false;
+                        this.isPaused = false; // Resume physics
+                        
+                        document.removeEventListener('mousemove', handleMouseMove);
+                        document.removeEventListener('mouseup', handleMouseUp);
+                    };
+                    
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp);
+                });
+            },
+            
+            pauseDVDMovement() {
+                this.isPaused = true;
+                
+                // Clear any existing pause timeout
+                if (this.pauseTimeout) {
+                    clearTimeout(this.pauseTimeout);
+                    this.pauseTimeout = null;
+                }
+            },
+            
+            // resumeDVDMovement function removed - we now resume immediately in handleMouseUp
+            
+            cleanup() {
+                this.isActive = false;
+                this.stopPhysics();
+                
+                // Clear pause timeout
+                if (this.pauseTimeout) {
+                    clearTimeout(this.pauseTimeout);
+                    this.pauseTimeout = null;
+                }
+            }
+        };
 
         // Function to handle background transitions (now only handles viewer window videos)
         function switchBackground(trackIndex) {
@@ -4814,6 +5649,16 @@
                     console.error('Background system initialization failed:', error);
                 }
 
+                // Initialize DVD screensaver system (desktop only)
+                try {
+                    if (!isMobile()) {
+                        dvdScreensaverSystem.init();
+                        console.log('DVD screensaver system initialized');
+                    }
+                } catch (error) {
+                    console.error('DVD screensaver system initialization failed:', error);
+                }
+
                 // Set up track change handler
                 webampInstance.onTrackDidChange(trackInfo => {
                     try {
@@ -5117,6 +5962,11 @@
             // Cleanup deity messages
             if (deityMessageSystem) {
                 deityMessageSystem.cleanup();
+            }
+            
+            // Cleanup automatic switching system
+            if (automaticSwitchingSystem) {
+                automaticSwitchingSystem.cleanup();
             }
 
             // Reset viewer window
