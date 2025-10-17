@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GATEKEEPER - WRONG PLANET</title>
     
     <!-- Open Graph Meta Tags for Social Media Sharing -->
@@ -55,23 +55,41 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             z-index: -1;
             /* Behind everything */
             pointer-events: none;
             background: #000;
         }
 
+        /* Mobile starfield optimization */
+        @media screen and (max-width: 768px) {
+            :root {
+                --starfield-speed: 1.2;
+                /* Slightly slower on mobile for performance */
+                --starfield-density: 600;
+                /* Fewer stars on mobile */
+                --starfield-brightness: 0.85;
+            }
+        }
 
+        /* High resolution display optimization */
+        @media screen and (min-width: 1921px) {
+            :root {
+                --starfield-density: 1000;
+                /* More stars on high-res displays */
+                --starfield-brightness: 0.95;
+            }
+        }
 
         html,
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            height: 100%;
-            width: 100%;
+            height: 100vh;
+            width: 100vw;
             font-family: Arial, sans-serif;
             cursor: auto !important;
             /* Prevent scrolling */
@@ -92,15 +110,58 @@
             /* Simplified transition */
         }
 
-
-
-        #webamp {
-            zoom: var(--webamp-zoom) !important;
-            -moz-transform: scale(var(--webamp-zoom));
-            -moz-transform-origin: top left;
+        /* Mobile specific container adjustments */
+        @media screen and (max-width: 768px) {
+            #webamp-container {
+                /* Let Webamp handle its own positioning on mobile */
+                pointer-events: auto;
+            }
         }
 
+
+        /* Let Webamp handle its own scaling on mobile */
+        @media screen and (min-width: 769px) {
+            #webamp {
+                zoom: var(--webamp-zoom) !important;
+                -moz-transform: scale(var(--webamp-zoom));
+                -moz-transform-origin: top left;
+            }
+        }
         
+        @media screen and (max-width: 768px) {
+            #webamp {
+                /* No custom zoom on mobile - let Webamp handle it */
+                zoom: 1 !important;
+                transform: none !important;
+            }
+        }
+
+        /* Desktop zoom settings */
+        @media screen and (min-width: 769px) and (max-width: 1024px) {
+            :root {
+                --webamp-zoom: 1.0;
+            }
+        }
+
+        @media screen and (min-width: 1025px) and (max-width: 1440px) {
+            :root {
+                --webamp-zoom: 1.2;
+            }
+        }
+
+        @media screen and (min-width: 1441px) {
+            :root {
+                --webamp-zoom: 1.4;
+            }
+        }
+        
+        /* Mobile uses no custom zoom */
+        @media screen and (max-width: 768px) {
+            :root {
+                --webamp-zoom: 1;
+                /* No zoom on mobile */
+            }
+        }
 
         /* Remove any position constraints from windows */
         /* Base styles for all windows */
@@ -112,24 +173,57 @@
             cursor: move !important;
         }
         
-        #webamp .window {
-            animation: float-main 36s ease-in-out infinite;
+        /* Only animate on desktop for performance */
+        @media screen and (min-width: 769px) {
+            #webamp .window {
+                animation: float-main 36s ease-in-out infinite;
+            }
         }
 
-        /* Specific animations for each window type */
-        #webamp #main-window {
-            animation: float-main 36s ease-in-out infinite;
+        /* Specific animations for each window type - desktop only */
+        @media screen and (min-width: 769px) {
+            #webamp #main-window {
+                animation: float-main 36s ease-in-out infinite;
+            }
+
+            #webamp #equalizer-window {
+                animation: float-eq 36s ease-in-out infinite;
+            }
+
+            #webamp #playlist-window {
+                animation: float-playlist 36s ease-in-out infinite;
+            }
         }
 
-        #webamp #equalizer-window {
-            animation: float-eq 36s ease-in-out infinite;
+        /* No floating animations on mobile for better performance */
+        @media screen and (max-width: 768px) {
+            #webamp .window {
+                animation: none !important;
+            }
         }
 
-        #webamp #playlist-window {
-            animation: float-playlist 36s ease-in-out infinite;
+        /* Ensure draggable elements work on touch devices */
+        #webamp .title-bar,
+        #webamp .dragger,
+        #webamp .handle {
+            cursor: move !important;
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
         }
-
-
+        
+        /* Additional mobile touch support for Webamp windows */
+        @media screen and (max-width: 768px) {
+            #webamp .title-bar,
+            #webamp .playlist-top,
+            #webamp .equalizer-top,
+            #webamp .window-header {
+                cursor: move !important;
+                -webkit-user-select: none !important;
+                user-select: none !important;
+            }
+        }
 
         /* Additional glow effect for windows */
         #webamp .window::after {
@@ -176,6 +270,24 @@
             transition: opacity 2s ease-out;
         }
 
+        /* Mobile password overlay - ensure it shows properly */
+        @media (max-width: 768px) {
+            #password-overlay {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 20px;
+                box-sizing: border-box;
+            }
+
+            #password-container {
+                width: 90%;
+                max-width: 300px;
+                margin: 0 auto;
+                box-sizing: border-box;
+                /* Ensure centering */
+            }
+        }
 
         #password-container {
             position: relative;
@@ -270,8 +382,8 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             object-fit: cover;
             object-position: center;
             z-index: 6;
@@ -368,6 +480,11 @@
             color: #ffffff;
             z-index: 1001;
             cursor: move;
+            touch-action: none; /* Enable touch dragging */
+            user-select: none; /* Prevent text selection during drag */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
 
 
             filter:
@@ -383,6 +500,23 @@
             backdrop-filter: blur(1px);
         }
 
+        /* Mobile deity message scaling */
+        @media screen and (max-width: 768px) {
+            .deity-message-window {
+                width: 280px;
+                /* Slightly smaller on mobile */
+                font-size: 14px;
+                /* Smaller font */
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .deity-message-window {
+                width: 250px;
+                /* Even smaller on small phones */
+                font-size: 13px;
+            }
+        }
 
         /* Add floating animation to viewer and cover windows */
         /* Viewer animation now handled by .appearing class */
@@ -392,6 +526,7 @@
             animation: floatCover 8.7s ease-in-out infinite;
         }
 
+        /* Keep viewer and cover animations on mobile - removed restriction */
 
         .deity-message-window.appearing {
             animation: tvTurnOn 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards, float 8s ease-in-out infinite 1.2s;
@@ -861,27 +996,6 @@
             }
         }
 
-        /* Mobile version that combines centering with haunted movement */
-        @keyframes floatViewerMobile {
-
-            0%,
-            100% {
-                transform: translate(-50%, -50%) translate(0, 0) rotate(0deg);
-            }
-
-            25% {
-                transform: translate(-50%, -50%) translate(-3px, -2px) rotate(-0.3deg);
-            }
-
-            50% {
-                transform: translate(-50%, -50%) translate(2px, -5px) rotate(0.5deg);
-            }
-
-            75% {
-                transform: translate(-50%, -50%) translate(4px, 3px) rotate(-0.2deg);
-            }
-        }
-
         @keyframes floatCover {
 
             0%,
@@ -980,8 +1094,153 @@
             }
         }
 
+        /* Square border overlays for mobile */
+        .square-border-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-position: center;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
 
+        /* Show square overlays only on mobile */
+        @media screen and (max-width: 768px) {
+            .square-border-overlay {
+                opacity: 1;
+                z-index: 10;
+            }
+            
+            /* Square-1 for viewer window (left side) */
+            #viewer-window .square-border-overlay {
+                background-image: url('./assets/images/Square-1.png');
+            }
+            
+            /* Square-2 for cover window (right side) */
+            #cover-window .square-border-overlay {
+                background-image: url('./assets/images/Square-2.png');
+            }
+            
+            /* Hide ALL dotted borders on mobile when square overlays are active */
+            #viewer-window,
+            #viewer-window::before,
+            #cover-window,
+            #cover-window::before {
+                border: none !important;
+            }
+            
+            /* Hide all dotted border elements for viewer */
+            .viewer-content,
+            .viewer-content::before,
+            .viewer-bottom,
+            .viewer-bottom::after {
+                border: none !important;
+                display: block !important;
+            }
+            
+            .viewer-content::before {
+                display: none !important;
+            }
+            
+            .viewer-bottom::after {
+                display: none !important;
+            }
+            
+            /* Hide all dotted border elements for cover */
+            .cover-content,
+            .cover-content::before,
+            .cover-bottom,
+            .cover-bottom::after {
+                border: none !important;
+                display: block !important;
+            }
+            
+            .cover-content::before {
+                display: none !important;
+            }
+            
+            .cover-bottom::after {
+                display: none !important;
+            }
+            
+            /* Hide square overlays when in lightbox/zoom mode */
+            #viewer-window.lightbox .square-border-overlay,
+            #cover-window.lightbox .square-border-overlay {
+                opacity: 0;
+                transition: transform 0.3s ease, opacity 0.3s ease;
+                z-index: 1001;
+            }
+        }
 
+        /* Mobile-specific floating animations - more subtle */
+        @keyframes float-main-mobile {
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            25% {
+                transform: translate(1px, -2px) rotate(0.2deg);
+            }
+
+            50% {
+                transform: translate(-1px, -1px) rotate(-0.1deg);
+            }
+
+            75% {
+                transform: translate(-1px, 1px) rotate(0.1deg);
+            }
+        }
+
+        @keyframes float-eq-mobile {
+
+            0%,
+            100% {
+                transform: translate(-1px, 1px) rotate(-0.1deg);
+            }
+
+            25% {
+                transform: translate(-2px, -1px) rotate(0.2deg);
+            }
+
+            50% {
+                transform: translate(1px, -2px) rotate(-0.1deg);
+            }
+
+            75% {
+                transform: translate(1px, 1px) rotate(0.1deg);
+            }
+        }
+
+        @keyframes float-playlist-mobile {
+
+            0%,
+            100% {
+                transform: translate(1px, -1px) rotate(0.1deg);
+            }
+
+            25% {
+                transform: translate(-1px, 0px) rotate(-0.1deg);
+            }
+
+            50% {
+                transform: translate(0px, 2px) rotate(0.2deg);
+            }
+
+            75% {
+                transform: translate(-1px, -1px) rotate(-0.1deg);
+            }
+        }
 
         #legendarium-logo-link {
             position: fixed;
@@ -990,7 +1249,7 @@
             transform: translate(-50%, -50%);
             z-index: 1;
             display: block;
-            width: 180px;
+            width: 15vw;
             max-width: 180px;
             min-width: 80px;
             height: auto;
@@ -1081,6 +1340,29 @@
             animation: whiteFlashFill 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
         }
 
+        @media (max-width: 768px) {
+            #viewer-window {
+                /* Mobile viewer window positioning - default bottom left, but allow dragging */
+                position: fixed !important;
+                /* Default to bottom-left but allow dragging */
+                bottom: 0 !important;
+                left: 0 !important;
+                width: 50vw !important;
+                height: 50vw !important;
+                max-height: none !important;
+                max-width: none !important;
+                min-width: 50vw !important;
+                min-height: 50vw !important;
+                transform: none !important;
+                cursor: move !important; /* Allow dragging */
+                resize: none !important;
+                opacity: 1 !important;
+                top: auto !important;
+                right: auto !important;
+                z-index: 5 !important;
+                display: block !important;
+            }
+        }
 
         /* Add resize handle */
         .viewer-resize-handle {
@@ -1263,6 +1545,7 @@
             overflow: hidden;
         }
 
+        /* Show cover window on both mobile and desktop */
         #cover-window {
             display: flex;
         }
@@ -1314,13 +1597,15 @@
             display: none !important;
         }
 
-        /* Cover window positioning when not minimized */
-        #cover-window:not(.minimized) {
-            position: fixed;
-            top: 15%;
-            right: 5%;
-            width: 300px;
-            height: 333px;
+        /* Desktop positioning when not minimized */
+        @media screen and (min-width: 769px) {
+            #cover-window:not(.minimized) {
+                position: fixed;
+                top: 15%;
+                right: 5%;
+                width: 300px;
+                height: 333px;
+            }
         }
 
         .cover-header {
@@ -1437,6 +1722,39 @@
             z-index: 1;
         }
 
+        #dvd-cover-window .cover-resize-handle {
+            position: absolute;
+            right: -2px; /* Extend slightly outside border */
+            bottom: -2px;
+            width: 25px; /* Even larger area for easier grabbing */
+            height: 25px;
+            cursor: nwse-resize;
+            z-index: 1003; /* Higher than drag z-index */
+            background: rgba(255, 255, 255, 0.1); /* Slight background for visibility */
+            pointer-events: auto; /* Ensure it captures events */
+            border-top-left-radius: 3px;
+        }
+
+        #dvd-cover-window .cover-resize-handle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Draggable area overlay - covers top 80% of window */
+        #dvd-cover-window .drag-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80%; /* Only top 80% is draggable */
+            z-index: 1002;
+            cursor: move;
+            pointer-events: auto;
+            /* Invisible overlay */
+        }
+
+        #dvd-cover-window .drag-area:active {
+            cursor: grabbing;
+        }
 
         .cover-resize-handle::after {
             content: "◢";
@@ -1476,24 +1794,32 @@
             display: block;
         }
 
+        /* Hide icon on mobile devices */
+        @media screen and (max-width: 768px) {
+            #album-cover-icon {
+                display: none;
+            }
+        }
 
-        /* Simplified DVD Screensaver Cover Window Styles */
+        /* DVD Screensaver Cover Window Styles */
         #dvd-cover-window {
             position: fixed;
             background: #000000;
             border: none;
             border-radius: 0;
-            z-index: 1001;
+            z-index: 1001; /* Above everything else */
+            cursor: move;
             filter: none;
             will-change: transform;
             user-select: none;
             display: none; /* Hidden by default */
             flex-direction: column;
             width: 300px;
-            height: 318px;
-            opacity: 1; /* TV effects handle visibility */
+            height: 318px; /* Shorter to match viewer proportions */
+            opacity: 1; /* Always opaque - TV effects handle visibility */
+            resize: both;
             overflow: hidden;
-            pointer-events: auto;
+            /* No default animations - they interfere with TV effects */
         }
 
         /* DVD window header */
@@ -1603,9 +1929,28 @@
             animation: whiteFlashFill 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
         }
 
-        /* Simplified DVD cover window animation */
+        /* DVD Screensaver animation */
+        @keyframes dvdScreensaver {
+            0% {
+                transform: translate(0, 0);
+            }
+            25% {
+                transform: translate(calc(100vw - 300px), calc(25vh - 159px));
+            }
+            50% {
+                transform: translate(calc(50vw - 150px), calc(100vh - 318px));
+            }
+            75% {
+                transform: translate(calc(10vw), calc(50vh - 159px));
+            }
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+
+        /* Override floatCover to be more subtle when combined with DVD movement */
         #dvd-cover-window.visible {
-            animation: floatCoverSubtle 8.7s ease-in-out infinite;
+            animation: floatCoverSubtle 8.7s ease-in-out infinite, dvdScreensaver 15s linear infinite;
         }
 
         /* Subtle float animation for DVD window */
@@ -1627,69 +1972,162 @@
             }
         }
 
-        /* Mobile-specific deity message styling */
-        @media (max-width: 768px) {
-            .deity-message-window {
-                /* Scale down by 20% from original 315px width */
-                width: 252px;
-                min-height: 96px; /* Also scale down height proportionally */
-                /* Use transform to maintain compatibility with TV effects */
-                transform-origin: center center;
-                /* Position will be overridden by JavaScript for mobile centering */
+        /* Mobile Layout Styles */
+        @media screen and (max-width: 768px) {
+
+            /* Force fixed body height on mobile */
+            html,
+            body {
+                height: 100vh !important;
+                overflow: hidden !important;
+                position: fixed !important;
+                width: 100% !important;
             }
-            
-            .deity-message-content {
-                padding: 16px 20px; /* Scale down padding from 20px 25px */
-                min-height: 40px;
-                max-height: 96px; /* Scale down from 120px */
+
+            /* Position webamp container */
+            #webamp-container {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                z-index: 10 !important;
             }
-            
-            /* Mobile viewer window scaling - same approach as deity messages */
+
+            /* Hide equalizer window on mobile */
+            #webamp #equalizer-window {
+                display: none !important;
+            }
+
+
+            /* Mobile viewer window positioning - bottom left */
             #viewer-window {
-                /* Scale down to match webamp width, 10% bigger than before */
-                width: 302px !important; /* 275px + 10% = 302.5px */
-                height: 302px !important;
-                /* Keep original transform and animation intact */
-                transform-origin: center center;
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                width: 50vw !important;
+                height: 50vw !important;
+                max-height: none !important;
+                max-width: none !important;
+                min-width: 50vw !important;
+                min-height: 50vw !important;
+                transform: none !important;
+                cursor: move !important; /* Allow dragging on mobile */
+                resize: none !important;
+                opacity: 1 !important;
+                top: auto !important;
+                right: auto !important;
+                z-index: 5 !important;
+                display: block !important;
+                transition: all 0.3s ease-in-out !important;
             }
-            
-            /* Adjust viewer header for mobile */
+
+            /* Lightbox state for viewer */
+            #viewer-window.lightbox {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vw !important;
+                max-height: 100vh !important;
+                z-index: 1000 !important;
+                transform-origin: bottom left !important;
+            }
+
+            /* Make viewer content fill entire window */
+            #viewer-window .viewer-content {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                flex: none !important;
+            }
+
+            /* Lightbox content for viewer */
+            #viewer-window.lightbox .viewer-content {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                flex: none !important;
+            }
+
+            /* Hide viewer header on mobile */
             .viewer-header {
-                height: 20px; /* Slightly smaller header */
+                display: none !important;
             }
-            
-        }
 
-        /* Mobile touch optimizations */
-        #webamp {
-            touch-action: manipulation;
-        }
+            /* Hide resize handle on mobile */
+            .viewer-resize-handle {
+                display: none !important;
+            }
 
-        /* Ensure Webamp controls are touch-friendly */
-        #webamp button,
-        #webamp .webamp-region button,
-        #webamp .window,
-        #webamp .title-bar {
-            touch-action: manipulation;
-        }
+            /* Remove conflicting dotted borders - they are handled by square overlay rules */
 
-        /* Prevent text selection on touch devices for better UX */
-        #webamp {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
+            /* Mobile cover window positioning - default bottom right, but allow dragging */
+            #cover-window {
+                position: fixed !important;
+                /* Default to bottom-right but allow dragging */
+                bottom: 0 !important;
+                right: 0 !important;
+                width: 50vw !important;
+                height: 50vw !important;
+                max-height: none !important;
+                max-width: none !important;
+                min-width: 50vw !important;
+                min-height: 50vw !important;
+                transform: none !important;
+                cursor: move !important; /* Allow dragging on mobile */
+                resize: none !important;
+                opacity: 1 !important;
+                top: auto !important;
+                left: auto !important;
+                z-index: 5 !important;
+                display: block !important;
+                transition: all 0.3s ease-in-out !important;
+            }
 
-        /* Allow text selection in input fields */
-        #webamp input,
-        #webamp textarea {
-            -webkit-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-            user-select: text;
-        }
+            /* Lightbox state for cover */
+            #cover-window.lightbox {
+                position: fixed !important;
+                bottom: 0 !important;
+                right: 0 !important;
+                width: 100vw !important;
+                height: 100vw !important;
+                max-height: 100vh !important;
+                z-index: 1000 !important;
+                transform-origin: bottom right !important;
+            }
 
+            #cover-window .cover-content {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                flex: none !important;
+            }
+
+            /* Lightbox content for cover */
+            #cover-window.lightbox .cover-content {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                flex: none !important;
+            }
+
+            .cover-header {
+                display: none !important;
+            }
+
+            .cover-resize-handle {
+                display: none !important;
+            }
+
+            /* Remove conflicting dotted borders for cover - they are handled by square overlay rules */
+        }
     </style>
 </head>
 
@@ -1710,6 +2148,7 @@
         </div>
         <div class="viewer-bottom"></div>
         <div class="viewer-resize-handle"></div>
+        <div class="square-border-overlay"></div>
     </div>
 
     <!-- Cover window for album art -->
@@ -1726,6 +2165,7 @@
         </div>
         <div class="cover-bottom"></div>
         <div class="cover-resize-handle"></div>
+        <div class="square-border-overlay"></div>
     </div>
 
     <!-- Tiny album cover icon in bottom-left corner -->
@@ -1734,7 +2174,8 @@
     </div>
 
     <!-- DVD Screensaver Cover Window -->
-    <div id="dvd-cover-window">
+    <div id="dvd-cover-window" class="window-draggable">
+        <div class="drag-area"></div> <!-- Draggable area covering top 80% -->
         <div class="cover-header">
             <div class="cover-close-button"></div>
         </div>
@@ -1746,6 +2187,8 @@
             </div>
         </div>
         <div class="cover-bottom"></div>
+        <div class="cover-resize-handle"></div>
+        <div class="square-border-overlay"></div>
     </div>
 
     <!-- Password protection overlay -->
@@ -1765,7 +2208,11 @@
     <script src="https://unpkg.com/webamp@1.4.2/built/webamp.bundle.min.js"></script>
 
     <script>
-        // Webamp scaling handled automatically
+        // Remove dynamic viewport scaling - let Webamp handle its own scaling
+
+        // Mobile detection for later use
+        // Legacy mobile detection (replaced by getDeviceInfo())
+        const isMobileDevice = getDeviceInfo().isMobile;
 
         // Starfield System
         class StarField {
@@ -1917,26 +2364,90 @@
         let passwordUnlocked = false;
         let lastKnownPositions = null;
 
-        // Deity Messages System
+        // Deity sMessages System
         let deityMessageSystem = {
             // Song-specific messages based on track names
             songMessages: {
                 "Gross Excelations": [
                     "Welcome",
-                    "It's been a while"
+                    "It's been a while",
+                    "Would you like to activate the preset library index viewer?",
+                    "y͟e͟s͟     /     n̲o̲",
+                    "GRDN-ABG-GDS; layered choir+bird tone; filter opens at sunrise ±2 min"
                 ],
                 "Two Travelers": [
-                    "The journey continues"
+                    "CNDL-LOG-3B; PWM pad; slow rise 11.7 s; resonance self-bleeds at 0.002 Hz; tide",
+                    "Ship_beyond; sync off; route: Procyon; checksum unstable",
+                    "TNYS-SRPH-0C; angelic chorus; HPF 2.9 kHz; one voice always missing",
+                    "DAP-CHOIR-AUX; 6-voice stack; unison detune +7.1 ct; light",
+                    "Corridors_stone; mono echo-4; walls retain heat"
+                ],
+                "Chambers of the Starwatcher": [
+                    "ARC-PULS-1A; sine ping; key-tracking 0%; filter envelope mislabeled \"soul\"",
+                    "CRPT-STL-02R; corrupt steel; chorus phase offset 1.7° east",
+                    "MEM-ORCH-09F; random arpeggiator (seed 33); filter decay = memory loss rate",
+                    "Garden.wither; LPF 400 Hz drift; flora digitalis",
+                    "HD-GRAM-8C; phase-inverted voice sample; 3.3 s decay; whisper of compiler"
+                ],
+                "Hibernal Torment": [
+                    "ARC-FRM-11N; arc frame; harmonic reflection off unknown planet",
+                    "FGT-GTE-PUL; gate effect misfires every 13th note; described as \"mercy error.\"",
+                    "ECCL-DRN-1V; drone; 2 Hz wobble; output peaks at RA 03h55m, Dec +41°22′",
+                    "FIRN-MEM-33S; frozen memory; reverb accumulates frost",
+                    "CRPT-VOL-PAD; poly-chorus pad; sample origin unknown"
+                ],
+                "Rats": [
+                    "CG-ANG-CHR; dual chorus; delay 22 ms; right channel drifts centuries",
+                    "JST-HRT-88B; pulse lead; square width = sin(time); tone described as \"almost forgiven\"",
+                    "Drowning:Gyoll; chorus-89%-sub; river reverb folds inward",
+                    "Antechamber; reverb 98% hollow; algorithm unknown",
+                    "GRV-PSN-6J; grave poison; gain threshold 6.67 V"
+                ],
+                "Entrusted to Fools": [
+                    "HBRN-FTH-1V; hibernal faith; low-pass warms at dawn",
+                    "NOV-PROC-L2; square-pulse chant; amplitude mod by syllable",
+                    "LIG-TOMB-33Q; light tomb; chorus depth = gravity",
+                    "CLDHNY-STR; sweet detuned string; DC offset 0.011 V; sounds wet"
+                ],
+                "Crusted Aucklet": [
+                    "SALT-LIBR-B; salt library; each key triggers another voice",
+                    "HELI-MND-X3; helical mind pad; portamento 144 ms; echo memory",
+                    "DST-PRP-BASS; monophonic; subharmonic gen −1.3 oct; consumes 0.2 A idle",
+                    "CLMN-ARC-8H; column arch; harmonic collapse after 11 s"
+                ],
+                "Astral Crumb": [
+                    "Borrowed.mem; fade_bit-9; memory loss rendered audible",
+                    "Fever_proc; FM-ratio 3:7; output sways with pulse"
+                ],
+                "Ill Wind": [
+                    "SUL-FLTE-X1; white noise + resonant sweep; \"smells faintly of ozone.\"",
+                    "DRN-CTH-BEL; metallic delay; 3 taps @ 88 ms",
+                    "CNC-NEM-2J; concilium nemoris; drone mapped to forest static",
+                    "Atrium/Time; delay 729 ms; loop self-aware",
+                    "OBS-TREM-0x2; tri-LFO; phase sync to day; output intentional"
+                ],
+"Breadmaker": [
+                    "OSC7-SLP-STN; 7th oscillator only; tone changes with moon phase",
+                    "CRC-RLQ-Q3; sample playback error accepted",
+                    "GOLD-FG-0M; gold fog; harmonic shimmer; source undefined",
+                    "BRTH-LIB-XN; breath sample (source lost); velocity <30 produces sigh"
+                ],
+                "Sepulchral Flute": [
+                    "LIG-TOMB-33Q; light tomb; chorus depth = gravity; spectral bleed present",
+                    "Antechamber_reverb-98%_hollow; alternate firmware trace",
+                    "Garden.wither_LPF-400Hz_drft; variant recording; flora digital memory",
+                    "Ship_beyond_sync-off_Procyon; secondary data stream; checksum unstable",
+                    "CRPT-STL-02R; phase offset confirmed 1.7° east"
+                ],
+                "Taste of my Chime": [
+                    "CNDL-LOG-3B; repeat pattern; PWM bleed observed",
+                    "DAP-CHOIR-AUX; echo seed resampled; choral detune +7.1 ct",
+                    "HELI-MND-X3; feedback loop stable at 144 ms"
+                ],
+                "Bone Window": [
+                    "ECCL-DRN-1V; residual 2 Hz wobble; output stable",
+                    "GRV-PSN-6J; decay 7.7 s; harmonic poison confirmed"
                 ]
-                // Add more tracks and their messages here as needed:
-                // "Hibernal Torment": [
-                //     "Another message"
-                // ],
-                // "Rats": [
-                //     "Message 1",
-                //     "Message 2",
-                //     "Message 3"
-                // ]
             },
             currentSongName: null,
             currentSongMessages: [],
@@ -1948,18 +2459,10 @@
             trackStartTime: null,
             currentTrackDuration: null,
             messageCount: 0,
-            usedMessages: new Set(), // Track used messages to prevent repeats
 
             init() {
-                // Reset used messages on init
-                this.usedMessages.clear();
-                console.log('Deity message system initialized');
-            },
-
-            // Method to reset used messages (useful for new album playthroughs)
-            resetUsedMessages() {
-                this.usedMessages.clear();
-                console.log('Used messages reset - all messages can be shown again');
+                // Note: Welcome message will be shown when first song starts
+                // Messages will be scheduled when tracks change via onTrackChange()
             },
 
             onTrackChange(trackDuration, songName) {
@@ -1979,18 +2482,11 @@
                 // Clear existing timeouts
                 this.clearAllTimeouts();
 
-                // Only schedule messages if this track has specific messages assigned
-                if (this.currentSongMessages && this.currentSongMessages.length > 0) {
-                    // Filter out already used messages
-                    const availableMessages = this.currentSongMessages.filter(msg => !this.usedMessages.has(msg));
-                    
-                    if (availableMessages.length > 0) {
-                        this.scheduleTrackMessages(availableMessages);
-                    } else {
-                        console.log(`All messages for "${songName}" have been used - no messages will be shown`);
-                    }
+                // Schedule all messages for this track if we have messages
+                if (this.currentSongMessages.length > 0) {
+                    this.scheduleAllMessages();
                 } else {
-                    console.log(`No messages defined for song: "${songName}" - no messages will be shown`);
+                    console.log(`No messages defined for song: ${songName}`);
                 }
             },
 
@@ -2008,8 +2504,8 @@
                 }
             },
 
-            scheduleTrackMessages(availableMessages) {
-                const totalMessages = availableMessages.length;
+            scheduleAllMessages() {
+                const totalMessages = this.currentSongMessages.length;
                 const songDurationMs = this.currentTrackDuration * 1000;
                 
                 console.log(`Scheduling ${totalMessages} messages over ${Math.round(songDurationMs/1000)}s for "${this.currentSongName}"`);
@@ -2017,12 +2513,11 @@
                 if (totalMessages === 1) {
                     // Single message - show in middle of track
                     const delay = songDurationMs * 0.4; // 40% into the track
-                    const message = availableMessages[0];
                     const timeout = setTimeout(() => {
-                        this.showTrackMessage(message);
+                        this.showSongSpecificMessage();
                     }, delay);
                     this.scheduledTimeouts.push(timeout);
-                    console.log(`Single message scheduled for ${Math.round(delay/1000)}s: "${message}"`);
+                    console.log(`Single message scheduled for ${Math.round(delay/1000)}s`);
                     return;
                 }
                 
@@ -2037,8 +2532,6 @@
                 
                 // Schedule each message at evenly spaced intervals
                 for (let i = 0; i < totalMessages; i++) {
-                    const message = availableMessages[i];
-                    
                     // Calculate base delay time
                     const baseDelay = startReserveMs + (interval * i);
                     
@@ -2049,35 +2542,48 @@
                     
                     // Schedule the message
                     const timeout = setTimeout(() => {
-                        this.showTrackMessage(message);
+                        this.showScheduledMessage(i);
                     }, delay);
                     
                     this.scheduledTimeouts.push(timeout);
-                    console.log(`Message ${i + 1}/${totalMessages} scheduled for ${Math.round(delay/1000)}s: "${message}"`);
+                    console.log(`Message ${i + 1}/${totalMessages} scheduled for ${Math.round(delay/1000)}s: "${this.currentSongMessages[i]}"`);
                 }
             },
 
-            showTrackMessage(message) {
-                // Validate that we have a message and it's for the current track
-                if (!message || !this.currentSongMessages.includes(message)) {
-                    console.log('Invalid message for current track');
+            showScheduledMessage(messageIndex) {
+                // Check if we have messages for the current song
+                if (!this.currentSongMessages || this.currentSongMessages.length === 0) {
+                    console.log('No messages available for current song');
                     return;
                 }
                 
-                // Check if message has already been used
-                if (this.usedMessages.has(message)) {
-                    console.log(`Message "${message}" already used - skipping`);
+                // Validate message index
+                if (messageIndex < 0 || messageIndex >= this.currentSongMessages.length) {
+                    console.log(`Invalid message index: ${messageIndex}`);
                     return;
                 }
 
-                console.log(`Showing track message: "${message}" for "${this.currentSongName}"`);
-                
-                // Mark message as used to prevent repeats
-                this.usedMessages.add(message);
-                
-                // Find message index for display purposes
-                const messageIndex = this.currentSongMessages.indexOf(message);
+                const message = this.currentSongMessages[messageIndex];
+                console.log(`Showing scheduled message ${messageIndex + 1}/${this.currentSongMessages.length}: "${message}"`);
+
                 this.displayMessage(message, messageIndex + 1, this.currentSongMessages.length);
+            },
+
+            showSongSpecificMessage() {
+                // This method is kept for backward compatibility (used by single message scheduling)
+                if (!this.currentSongMessages || this.currentSongMessages.length === 0) {
+                    console.log('No messages available for current song');
+                    return;
+                }
+
+                const message = this.currentSongMessages[this.currentMessageIndex];
+                console.log(`Showing message: "${message}" (${this.currentMessageIndex + 1}/${this.currentSongMessages.length})`);
+
+                this.displayMessage(message, this.currentMessageIndex + 1, this.currentSongMessages.length);
+                
+                // Advance to next message for any future calls
+                this.currentMessageIndex = (this.currentMessageIndex + 1) % this.currentSongMessages.length;
+                this.messageCount++;
             },
 
             displayMessage(message, messageNumber, totalMessages) {
@@ -2233,45 +2739,41 @@
 
             positionRandomly(element) {
                 const margin = 50;
-                const isMobile = window.innerWidth <= 768;
-                const screenWidth = window.innerWidth;
-                const screenHeight = window.innerHeight;
 
-                if (isMobile) {
-                    // Mobile: Center horizontally and vertically with slight random offset
-                    const elementWidth = 252; // Mobile scaled width
-                    const elementHeight = 96; // Mobile scaled height
-                    
-                    // Base center position
-                    const centerX = (screenWidth - elementWidth) / 2;
-                    const centerY = (screenHeight - elementHeight) / 2;
-                    
-                    // Add small random offset (±30px) to avoid overlapping messages
-                    const offsetX = (Math.random() - 0.5) * 60; // ±30px
-                    const offsetY = (Math.random() - 0.5) * 60; // ±30px
-                    
-                    const x = Math.max(margin, Math.min(screenWidth - elementWidth - margin, centerX + offsetX));
-                    const y = Math.max(margin, Math.min(screenHeight - elementHeight - margin, centerY + offsetY));
-                    
-                    element.style.left = x + 'px';
-                    element.style.top = y + 'px';
+                // Ensure we have valid dimensions
+                const elementWidth = 315; // Updated to match new scaled width
+                const elementHeight = 120; // Estimated height
+
+                // Check if we're on mobile
+                const isMobileCheck = window.innerWidth <= 768;
+
+                if (isMobileCheck) {
+                    // Mobile: Always center the message like a text message
+                    const screenWidth = window.innerWidth;
+                    const screenHeight = window.innerHeight;
+
+                    // Center horizontally, position in upper half to avoid webamp
+                    const x = (screenWidth - elementWidth) / 2;
+                    const y = (screenHeight * 0.3); // Position in upper 30% of screen
+
+                    element.style.left = Math.max(10, x) + 'px';
+                    element.style.top = Math.max(50, y) + 'px';
                 } else {
-                    // Desktop: Original right-third positioning
-                    const elementWidth = 315;
-                    const elementHeight = 120;
-                    
+                    // Desktop: Use the original right-third positioning
                     // Calculate the right third of the screen
-                    const rightThirdStart = screenWidth * (2 / 3);
-                    const rightThirdWidth = screenWidth * (1 / 3);
-                    
+                    const screenWidth = window.innerWidth;
+                    const rightThirdStart = screenWidth * (2 / 3); // Start at 2/3 of screen width
+                    const rightThirdWidth = screenWidth * (1 / 3); // Right third width
+
                     // Calculate the middle third of the right column (vertically)
-                    const middleThirdStart = screenHeight * (1 / 3);
-                    const middleThirdHeight = screenHeight * (1 / 3);
-                    
+                    const screenHeight = window.innerHeight;
+                    const middleThirdStart = screenHeight * (1 / 3); // Start at 1/3 of screen height
+                    const middleThirdHeight = screenHeight * (1 / 3); // Middle third height
+
                     // Calculate available area within the restricted zone
                     const availableWidth = rightThirdWidth - elementWidth - margin;
                     const availableHeight = middleThirdHeight - elementHeight - margin;
-                    
+
                     // Ensure we have enough space
                     if (availableWidth < 0 || availableHeight < 0) {
                         // Fallback to center of the restricted area if element is too large
@@ -2283,7 +2785,7 @@
                         // Random position within the restricted zone
                         const x = rightThirdStart + margin + Math.random() * availableWidth;
                         const y = middleThirdStart + margin + Math.random() * availableHeight;
-                        
+
                         element.style.left = x + 'px';
                         element.style.top = y + 'px';
                     }
@@ -2297,22 +2799,15 @@
                 let startLeft = 0;
                 let startTop = 0;
 
-                // Mouse events
+                // Use the entire window as the drag handle (not just title bar since we removed it)
                 element.addEventListener('mousedown', dragStart, { passive: false });
                 document.addEventListener('mousemove', drag, { passive: false });
                 document.addEventListener('mouseup', dragEnd, { passive: false });
                 
-                // Touch events for mobile
-                element.addEventListener('touchstart', touchDragStart, { passive: false });
+                // Add touch support for mobile dragging
+                element.addEventListener('touchstart', touchStart, { passive: false });
                 document.addEventListener('touchmove', touchDrag, { passive: false });
-                document.addEventListener('touchend', touchDragEnd, { passive: false });
-
-                function getEventCoords(e) {
-                    if (e.touches && e.touches.length > 0) {
-                        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                    }
-                    return { x: e.clientX, y: e.clientY };
-                }
+                document.addEventListener('touchend', touchEnd, { passive: false });
 
                 function dragStart(e) {
                     // Ignore if clicking on close button
@@ -2324,9 +2819,8 @@
                     e.stopPropagation();
 
                     isDragging = true;
-                    const coords = getEventCoords(e);
-                    startX = coords.x;
-                    startY = coords.y;
+                    startX = e.clientX;
+                    startY = e.clientY;
 
                     // Get current position
                     const rect = element.getBoundingClientRect();
@@ -2337,61 +2831,14 @@
                     element.style.zIndex = '1002'; // Bring to front while dragging
                 }
 
-                function touchDragStart(e) {
-                    // Ignore if touching close button
-                    if (e.target.closest('.deity-close-button')) {
-                        return;
-                    }
-
-                    // Only handle single touch
-                    if (e.touches.length !== 1) return;
-
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    isDragging = true;
-                    const coords = getEventCoords(e);
-                    startX = coords.x;
-                    startY = coords.y;
-
-                    // Get current position
-                    const rect = element.getBoundingClientRect();
-                    startLeft = rect.left;
-                    startTop = rect.top;
-
-                    element.style.zIndex = '1002'; // Bring to front while dragging
-                }
-
                 function drag(e) {
                     if (!isDragging) return;
 
                     e.preventDefault();
                     e.stopPropagation();
 
-                    const coords = getEventCoords(e);
-                    const deltaX = coords.x - startX;
-                    const deltaY = coords.y - startY;
-
-                    // Allow unrestricted movement
-                    const newLeft = startLeft + deltaX;
-                    const newTop = startTop + deltaY;
-
-                    element.style.left = newLeft + 'px';
-                    element.style.top = newTop + 'px';
-                }
-
-                function touchDrag(e) {
-                    if (!isDragging) return;
-
-                    // Only handle single touch
-                    if (e.touches.length !== 1) return;
-
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    const coords = getEventCoords(e);
-                    const deltaX = coords.x - startX;
-                    const deltaY = coords.y - startY;
+                    const deltaX = e.clientX - startX;
+                    const deltaY = e.clientY - startY;
 
                     // Allow unrestricted movement
                     const newLeft = startLeft + deltaX;
@@ -2409,7 +2856,48 @@
                     element.style.zIndex = '1001'; // Reset z-index
                 }
 
-                function touchDragEnd(e) {
+                // Touch event functions for mobile support
+                function touchStart(e) {
+                    // Ignore if touching on close button
+                    if (e.target.closest('.deity-close-button')) {
+                        return;
+                    }
+
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const touch = e.touches[0];
+                    isDragging = true;
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+
+                    // Get current position
+                    const rect = element.getBoundingClientRect();
+                    startLeft = rect.left;
+                    startTop = rect.top;
+
+                    element.style.zIndex = '1002'; // Bring to front while dragging
+                }
+
+                function touchDrag(e) {
+                    if (!isDragging) return;
+
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const touch = e.touches[0];
+                    const deltaX = touch.clientX - startX;
+                    const deltaY = touch.clientY - startY;
+
+                    // Allow unrestricted movement
+                    const newLeft = startLeft + deltaX;
+                    const newTop = startTop + deltaY;
+
+                    element.style.left = newLeft + 'px';
+                    element.style.top = newTop + 'px';
+                }
+
+                function touchEnd(e) {
                     if (!isDragging) return;
 
                     isDragging = false;
@@ -2452,9 +2940,6 @@
                     clearTimeout(this.nextMessageTimeout);
                     this.nextMessageTimeout = null;
                 }
-                
-                // Clear all scheduled timeouts
-                this.clearAllTimeouts();
 
                 // Remove all active windows
                 this.activeWindows.forEach(window => {
@@ -2469,11 +2954,6 @@
                 this.currentSongMessages = [];
                 this.currentMessageIndex = 0;
                 this.messageCount = 0;
-                
-                // Reset used messages to allow them to be shown again in a new session
-                this.usedMessages.clear();
-                
-                console.log('Deity message system cleaned up');
             }
         };
 
@@ -2544,8 +3024,8 @@
                     firstTrackBlobUrl = firstTrack.url; // Fallback to original URL
                 }
 
-                // Preload first video
-                if (trackBackgrounds[0] && !trackBackgrounds[0].preloadedVideo) {
+                // Preload first video (skip on mobile for performance)
+                if (!isMobile() && trackBackgrounds[0] && !trackBackgrounds[0].preloadedVideo) {
                     try {
                         await preloadVideoOnDemand(0);
                     } catch (error) {
@@ -2832,6 +3312,8 @@
             // Set up viewer buttons
             setupViewerControls();
 
+            // Set up mobile lightbox functionality
+            setupMobileLightbox();
 
             // Make the cover window draggable
             makeCoverDraggable();
@@ -2840,30 +3322,47 @@
             setupCoverControls();
         }
 
-
-        // Function to position viewer window for mobile (similar to deity message positioning)
-        function positionViewerForMobile(viewerWindow) {
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
-            const elementWidth = 302; // Mobile viewer width (updated to match new size)
-            const elementHeight = 302; // Mobile viewer height (updated to match new size)
+        // Standard browser and device detection
+        function getDeviceInfo() {
+            const ua = navigator.userAgent;
+            const platform = navigator.platform;
             
-            // Position 35% down from top, centered horizontally
-            const x = (screenWidth - elementWidth) / 2;
-            const y = screenHeight * 0.35; // 35% down from top
+            // iOS detection using standard method (works for iOS 13+ iPad too)
+            const isIOS = /iPad|iPhone|iPod/.test(platform) || 
+                         (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
             
-            // Set pixel-based positioning (like deity messages)
-            viewerWindow.style.left = x + 'px';
-            viewerWindow.style.top = y + 'px';
+            // iPhone specific detection
+            const isIPhone = /iPhone/.test(platform) || 
+                           (/iPhone/.test(ua) && isIOS);
             
-            console.log(`Mobile viewer positioned at: ${x}px, ${y}px`);
+            // Browser detection for iOS devices
+            const isIOSSafari = isIOS && /Safari/.test(ua) && !/CriOS|Chrome/.test(ua);
+            const isIOSChrome = isIOS && (/CriOS/.test(ua) || /Chrome/.test(ua));
+            
+            // General mobile detection
+            const isMobile = window.innerWidth <= 768 || isIOS || /Android/i.test(ua);
+            
+            return {
+                isIOS,
+                isIPhone,
+                isIOSSafari,
+                isIOSChrome,
+                isMobile,
+                isAndroid: /Android/i.test(ua),
+                isDesktop: !isMobile
+            };
+        }
+        
+        // Legacy function for compatibility
+        function isMobile() {
+            return getDeviceInfo().isMobile;
         }
 
         // Function to make the viewer window draggable
         function makeViewerDraggable() {
             const viewerWindow = document.getElementById('viewer-window');
 
-            if (!viewerWindow) return;
+            if (!viewerWindow) return; // Allow dragging on all devices including mobile
 
             let isDragging = false;
             let startX = 0;
@@ -2875,22 +3374,14 @@
             const dragHandle = viewerWindow.querySelector('.viewer-header');
 
             if (dragHandle) {
-                // Mouse events
                 dragHandle.addEventListener('mousedown', dragStart, { passive: false });
                 document.addEventListener('mousemove', drag, { passive: false });
                 document.addEventListener('mouseup', dragEnd, { passive: false });
                 
-                // Touch events for mobile
-                dragHandle.addEventListener('touchstart', touchDragStart, { passive: false });
+                // Add touch support for mobile dragging
+                dragHandle.addEventListener('touchstart', touchStart, { passive: false });
                 document.addEventListener('touchmove', touchDrag, { passive: false });
-                document.addEventListener('touchend', touchDragEnd, { passive: false });
-            }
-
-            function getEventCoords(e) {
-                if (e.touches && e.touches.length > 0) {
-                    return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                }
-                return { x: e.clientX, y: e.clientY };
+                document.addEventListener('touchend', touchEnd, { passive: false });
             }
 
             function dragStart(e) {
@@ -2903,9 +3394,8 @@
                 e.stopPropagation();
 
                 isDragging = true;
-                const coords = getEventCoords(e);
-                startX = coords.x;
-                startY = coords.y;
+                startX = e.clientX;
+                startY = e.clientY;
 
                 // Get current position
                 const rect = viewerWindow.getBoundingClientRect();
@@ -2926,79 +3416,14 @@
                 viewerWindow.style.zIndex = '6'; // Bring to front while dragging
             }
 
-            function touchDragStart(e) {
-                // Ignore if touching buttons
-                if (e.target.closest('.viewer-close-button')) {
-                    return;
-                }
-
-                // Only handle single touch
-                if (e.touches.length !== 1) return;
-
-                e.preventDefault();
-                e.stopPropagation();
-
-                isDragging = true;
-                const coords = getEventCoords(e);
-                startX = coords.x;
-                startY = coords.y;
-
-                // Get current position
-                const rect = viewerWindow.getBoundingClientRect();
-                startLeft = rect.left;
-                startTop = rect.top;
-
-                // Make sure transform is none for proper dragging
-                if (viewerWindow.style.transform === 'translate(-50%, -50%)') {
-                    viewerWindow.style.transform = 'none';
-
-                    // Center it if first drag after initialization
-                    const rect = viewerWindow.getBoundingClientRect();
-                    viewerWindow.style.top = `${(window.innerHeight - rect.height) / 2}px`;
-                    viewerWindow.style.left = `${(window.innerWidth - rect.width) / 2}px`;
-                }
-
-                viewerWindow.style.zIndex = '6'; // Bring to front while dragging
-            }
-
             function drag(e) {
                 if (!isDragging) return;
 
                 e.preventDefault();
                 e.stopPropagation();
 
-                const coords = getEventCoords(e);
-                const deltaX = coords.x - startX;
-                const deltaY = coords.y - startY;
-
-                let newLeft = startLeft + deltaX;
-                let newTop = startTop + deltaY;
-
-                // Constrain to screen bounds with some flexibility
-                const rect = viewerWindow.getBoundingClientRect();
-                const elementWidth = rect.width;
-                const elementHeight = rect.height;
-
-                // Allow more flexibility - only constrain when completely off-screen
-                newLeft = Math.max(-elementWidth + 100, Math.min(window.innerWidth - 50, newLeft));
-                newTop = Math.max(-50, Math.min(window.innerHeight - 50, newTop));
-
-                viewerWindow.style.left = newLeft + 'px';
-                viewerWindow.style.top = newTop + 'px';
-            }
-
-            function touchDrag(e) {
-                if (!isDragging) return;
-
-                // Only handle single touch
-                if (e.touches.length !== 1) return;
-
-                e.preventDefault();
-                e.stopPropagation();
-
-                const coords = getEventCoords(e);
-                const deltaX = coords.x - startX;
-                const deltaY = coords.y - startY;
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
 
                 let newLeft = startLeft + deltaX;
                 let newTop = startTop + deltaY;
@@ -3024,7 +3449,66 @@
                 viewerWindow.style.zIndex = '5'; // Reset z-index
             }
 
-            function touchDragEnd(e) {
+            // Touch event functions for mobile support
+            function touchStart(e) {
+                // Ignore if touching on buttons
+                if (e.target.closest('.viewer-close-button')) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const touch = e.touches[0];
+                isDragging = true;
+                startX = touch.clientX;
+                startY = touch.clientY;
+
+                // Get current position
+                const rect = viewerWindow.getBoundingClientRect();
+                startLeft = rect.left;
+                startTop = rect.top;
+
+                // Make sure transform is none for proper dragging
+                if (viewerWindow.style.transform === 'translate(-50%, -50%)') {
+                    viewerWindow.style.transform = 'none';
+
+                    // Center it if first drag after initialization
+                    const rect = viewerWindow.getBoundingClientRect();
+                    viewerWindow.style.top = `${(window.innerHeight - rect.height) / 2}px`;
+                    viewerWindow.style.left = `${(window.innerWidth - rect.width) / 2}px`;
+                }
+
+                viewerWindow.style.zIndex = '6'; // Bring to front while dragging
+            }
+
+            function touchDrag(e) {
+                if (!isDragging) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+
+                let newLeft = startLeft + deltaX;
+                let newTop = startTop + deltaY;
+
+                // Constrain to screen bounds with some flexibility
+                const rect = viewerWindow.getBoundingClientRect();
+                const elementWidth = rect.width;
+                const elementHeight = rect.height;
+
+                // Allow more flexibility - only constrain when completely off-screen
+                newLeft = Math.max(-elementWidth + 100, Math.min(window.innerWidth - 50, newLeft));
+                newTop = Math.max(-50, Math.min(window.innerHeight - 50, newTop));
+
+                viewerWindow.style.left = newLeft + 'px';
+                viewerWindow.style.top = newTop + 'px';
+            }
+
+            function touchEnd(e) {
                 if (!isDragging) return;
 
                 isDragging = false;
@@ -3050,6 +3534,54 @@
                 onComplete: null
             };
 
+            // Mobile optimization - load only first video on mobile for performance
+            if (isMobile()) {
+                console.log('Mobile detected - loading only first video for performance');
+                // Still load the first video on mobile, but skip the rest
+                async function preloadFirstVideoMobile() {
+                    try {
+                        const firstBackground = trackBackgrounds[0];
+                        if (firstBackground) {
+                            const video = document.createElement('video');
+                            video.src = firstBackground.url;
+                            video.muted = true;
+                            video.playsInline = true;
+                            video.loop = true;
+                            video.preload = 'metadata'; // Use metadata instead of auto for mobile
+
+                            video.onloadeddata = () => {
+                                firstBackground.preloadedVideo = video;
+                                console.log('First video preloaded on mobile');
+                                if (preloadManager.onComplete) {
+                                    preloadManager.onComplete({
+                                        successCount: 1,
+                                        total: 1,
+                                        failed: 0
+                                    });
+                                }
+                            };
+
+                            video.onerror = () => {
+                                console.log('Mobile video preload failed, continuing anyway');
+                                if (preloadManager.onComplete) {
+                                    preloadManager.onComplete({
+                                        successCount: 0,
+                                        total: 1,
+                                        failed: 1
+                                    });
+                                }
+                            };
+
+                            video.load();
+                        }
+                    } catch (error) {
+                        console.log('Mobile video preload error, continuing anyway');
+                    }
+                }
+
+                preloadFirstVideoMobile();
+                return preloadManager;
+            }
 
             // Load only the first video immediately on desktop, others on demand
             async function preloadFirstVideo() {
@@ -3110,6 +3642,11 @@
                 return Promise.resolve(background?.preloadedVideo || null);
             }
 
+            // Skip video preloading on mobile for performance
+            if (isMobile()) {
+                console.log(`Skipping video preload on mobile for track ${trackIndex}`);
+                return Promise.resolve(null);
+            }
 
             return new Promise((resolve) => {
                 const video = document.createElement('video');
@@ -3238,6 +3775,11 @@
 
         // Progressive background loading - load more videos in background (desktop only)
         function startProgressiveLoading() {
+            // Skip progressive loading on mobile to save bandwidth and improve performance
+            if (isMobile()) {
+                console.log('Mobile detected - skipping progressive video loading');
+                return;
+            }
 
             // Load videos 2-5 after a short delay
             setTimeout(() => {
@@ -3360,8 +3902,11 @@
             lastUserInteractionTime: 0,
             
             init() {
-                this.isEnabled = true;
-                console.log('Automatic viewer switching system initialized');
+                // Only enable on desktop
+                if (!isMobile()) {
+                    this.isEnabled = true;
+                    console.log('Automatic viewer switching system initialized (desktop only)');
+                }
             },
             
             onTrackChange(trackIndex, trackDuration) {
@@ -3532,6 +4077,13 @@
                     viewerWindow.classList.remove('tv-disappearing');
                 }, 800); // Match tvTurnOff duration
                 
+                // Hide album art window on mobile
+                if (isMobile()) {
+                    const coverWindow = document.getElementById('cover-window');
+                    if (coverWindow) {
+                        coverWindow.style.display = 'none';
+                    }
+                }
                 
                 // Hide Legendarium logo behind fullscreen video
                 const legendariumLogo = document.getElementById('legendarium-logo-link');
@@ -3562,6 +4114,13 @@
                     viewerWindow.classList.remove('tv-appearing');
                 }, 1200); // Match tvTurnOn duration
                 
+                // Show album art window again on mobile
+                if (isMobile()) {
+                    const coverWindow = document.getElementById('cover-window');
+                    if (coverWindow) {
+                        coverWindow.style.display = 'flex';
+                    }
+                }
                 
                 // Show Legendarium logo again
                 const legendariumLogo = document.getElementById('legendarium-logo-link');
@@ -3576,49 +4135,67 @@
             // Add double-click event listener to fullscreen background video for exit
             fullscreenBackgroundVideo.addEventListener('click', handleViewerDoubleClick);
 
+            // Mobile touch support for double-tap
+            if (isMobile()) {
+                let touchTimeout = null;
+                let touchCount = 0;
+                
+                function handleTouchEnd(e) {
+                    // Don't trigger if touching buttons
+                    if (e.target.closest('.viewer-close-button') || e.target.closest('.viewer-resize-handle')) {
+                        return;
+                    }
+                    
+                    // Track user interaction for automatic switching system
+                    automaticSwitchingSystem.onUserInteraction();
+                    
+                    touchCount++;
+                    
+                    if (touchCount === 1) {
+                        touchTimeout = setTimeout(() => {
+                            touchCount = 0;
+                        }, 300);
+                    } else if (touchCount === 2) {
+                        clearTimeout(touchTimeout);
+                        touchCount = 0;
+                        e.preventDefault();
+                        toggleFullscreenMode();
+                    }
+                }
+                
+                viewerWindow.addEventListener('touchend', handleTouchEnd, { passive: false });
+                fullscreenBackgroundVideo.addEventListener('touchend', handleTouchEnd, { passive: false });
+            }
 
-            // Position the viewer window
+            // Position the viewer window - mobile vs desktop
             requestAnimationFrame(() => {
-                // Fixed pixel size and position
-                viewerWindow.style.transform = 'none';
-                viewerWindow.style.width = '828px';
-                viewerWindow.style.height = '828px';
-                viewerWindow.style.top = '5%';
-                viewerWindow.style.left = '35%';
+                if (isMobile()) {
+                    // Mobile: Fixed position at bottom-left, handled by CSS
+                    // No need to set positions here, CSS handles it
+                } else {
+                    // Desktop: Fixed pixel size and position
+                    viewerWindow.style.transform = 'none';
+                    viewerWindow.style.width = '828px';
+                    viewerWindow.style.height = '828px';
+                    viewerWindow.style.top = '5%';
+                    viewerWindow.style.left = '35%';
+                }
             });
 
-            // Make the viewer resizable manually in addition to native resize
+            // Make the viewer resizable manually in addition to native resize (skip on mobile)
             const resizeHandle = viewerWindow.querySelector('.viewer-resize-handle');
-            if (resizeHandle) {
+            if (resizeHandle && !isMobile()) {
                 let isResizing = false;
                 let startX, startY;
                 let startWidth, startHeight;
 
-                function getEventCoords(e) {
-                    if (e.touches && e.touches.length > 0) {
-                        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                    }
-                    return { x: e.clientX, y: e.clientY };
-                }
-
-                // Mouse events
-                resizeHandle.addEventListener('mousedown', resizeStart, { passive: false });
-                document.addEventListener('mousemove', handleResize, { passive: false });
-                document.addEventListener('mouseup', stopResize, { passive: false });
-                
-                // Touch events
-                resizeHandle.addEventListener('touchstart', touchResizeStart, { passive: false });
-                document.addEventListener('touchmove', touchHandleResize, { passive: false });
-                document.addEventListener('touchend', touchStopResize, { passive: false });
-
-                function resizeStart(e) {
+                resizeHandle.addEventListener('mousedown', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
 
                     isResizing = true;
-                    const coords = getEventCoords(e);
-                    startX = coords.x;
-                    startY = coords.y;
+                    startX = e.clientX;
+                    startY = e.clientY;
 
                     // Get the current dimensions
                     const rect = viewerWindow.getBoundingClientRect();
@@ -3627,58 +4204,18 @@
 
                     // When user starts resizing, remove the aspect-ratio constraint
                     viewerWindow.style.aspectRatio = 'unset';
-                }
 
-                function touchResizeStart(e) {
-                    // Only handle single touch
-                    if (e.touches.length !== 1) return;
-                    
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    isResizing = true;
-                    const coords = getEventCoords(e);
-                    startX = coords.x;
-                    startY = coords.y;
-
-                    // Get the current dimensions
-                    const rect = viewerWindow.getBoundingClientRect();
-                    startWidth = rect.width;
-                    startHeight = rect.height;
-
-                    // When user starts resizing, remove the aspect-ratio constraint
-                    viewerWindow.style.aspectRatio = 'unset';
-                }
+                    // Add event listeners
+                    document.addEventListener('mousemove', handleResize);
+                    document.addEventListener('mouseup', stopResize);
+                });
 
                 function handleResize(e) {
                     if (!isResizing) return;
 
-                    const coords = getEventCoords(e);
                     // Calculate new dimensions
-                    const newWidth = startWidth + (coords.x - startX);
-                    const newHeight = startHeight + (coords.y - startY);
-
-                    // Allow any size, but maintain aspect ratio
-                    const size = Math.max(newWidth, newHeight);
-
-                    // Apply new dimensions
-                    viewerWindow.style.width = `${size}px`;
-                    viewerWindow.style.height = `${size}px`;
-                }
-
-                function touchHandleResize(e) {
-                    if (!isResizing) return;
-
-                    // Only handle single touch
-                    if (e.touches.length !== 1) return;
-                    
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    const coords = getEventCoords(e);
-                    // Calculate new dimensions
-                    const newWidth = startWidth + (coords.x - startX);
-                    const newHeight = startHeight + (coords.y - startY);
+                    const newWidth = startWidth + (e.clientX - startX);
+                    const newHeight = startHeight + (e.clientY - startY);
 
                     // Allow any size, but maintain aspect ratio
                     const size = Math.max(newWidth, newHeight);
@@ -3690,10 +4227,8 @@
 
                 function stopResize() {
                     isResizing = false;
-                }
-
-                function touchStopResize() {
-                    isResizing = false;
+                    document.removeEventListener('mousemove', handleResize);
+                    document.removeEventListener('mouseup', stopResize);
                 }
             }
         }
@@ -3702,7 +4237,7 @@
         function makeCoverDraggable() {
             const coverWindow = document.getElementById('cover-window');
 
-            if (!coverWindow) return;
+            if (!coverWindow) return; // Allow dragging on all devices including mobile
 
             let isDragging = false;
             let startX = 0;
@@ -3717,12 +4252,17 @@
                 dragHandle.addEventListener('mousedown', dragStart, { passive: false });
                 document.addEventListener('mousemove', drag, { passive: false });
                 document.addEventListener('mouseup', dragEnd, { passive: false });
+                
+                // Add touch support for mobile dragging
+                dragHandle.addEventListener('touchstart', touchStart, { passive: false });
+                document.addEventListener('touchmove', touchDrag, { passive: false });
+                document.addEventListener('touchend', touchEnd, { passive: false });
             }
 
             function dragStart(e) {
-                // Ignore if clicking on buttons or if minimized
+                // Ignore if clicking on buttons or if minimized (desktop only)
                 if (e.target.closest('.cover-close-button') || 
-                    coverWindow.classList.contains('minimized')) {
+                    (!isMobile() && coverWindow.classList.contains('minimized'))) {
                     return;
                 }
 
@@ -3775,6 +4315,62 @@
                 coverWindow.style.zIndex = '5'; // Reset z-index
             }
 
+            // Touch event functions for mobile support
+            function touchStart(e) {
+                // Ignore if touching on buttons or if minimized (desktop only)
+                if (e.target.closest('.cover-close-button') || 
+                    (!isMobile() && coverWindow.classList.contains('minimized'))) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const touch = e.touches[0];
+                isDragging = true;
+                startX = touch.clientX;
+                startY = touch.clientY;
+
+                // Get current position
+                const rect = coverWindow.getBoundingClientRect();
+                startLeft = rect.left;
+                startTop = rect.top;
+
+                coverWindow.style.zIndex = '6'; // Bring to front while dragging
+            }
+
+            function touchDrag(e) {
+                if (!isDragging) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+
+                let newLeft = startLeft + deltaX;
+                let newTop = startTop + deltaY;
+
+                // Constrain to screen bounds with some flexibility
+                const rect = coverWindow.getBoundingClientRect();
+                const elementWidth = rect.width;
+                const elementHeight = rect.height;
+
+                // Allow more flexibility - only constrain when completely off-screen
+                newLeft = Math.max(-elementWidth + 100, Math.min(window.innerWidth - 50, newLeft));
+                newTop = Math.max(-50, Math.min(window.innerHeight - 50, newTop));
+
+                coverWindow.style.left = newLeft + 'px';
+                coverWindow.style.top = newTop + 'px';
+            }
+
+            function touchEnd(e) {
+                if (!isDragging) return;
+
+                isDragging = false;
+                coverWindow.style.zIndex = '5'; // Reset z-index
+            }
 
             // Prevent text selection during drag
             coverWindow.addEventListener('selectstart', (e) => {
@@ -3782,7 +4378,79 @@
             });
         }
 
+        // Function to randomize mobile window positions
+        function randomizeMobileWindowPositions() {
+            if (!isMobile()) return;
 
+            const viewerWindow = document.getElementById('viewer-window');
+            const coverWindow = document.getElementById('cover-window');
+
+            if (viewerWindow) {
+                // Random position for viewer window
+                const maxX = window.innerWidth - 220; // Account for window width + padding
+                const maxY = window.innerHeight - 220; // Account for window height + padding
+                const randomX = Math.random() * Math.max(0, maxX - 20) + 20; // 20px minimum from edge
+                const randomY = Math.random() * Math.max(0, maxY - 20) + 20;
+
+                viewerWindow.style.left = randomX + 'px';
+                viewerWindow.style.top = randomY + 'px';
+            }
+
+            if (coverWindow) {
+                // Random position for cover window (avoid overlap with viewer)
+                const maxX = window.innerWidth - 200;
+                const maxY = window.innerHeight - 220;
+                const randomX = Math.random() * Math.max(0, maxX - 20) + 20;
+                const randomY = Math.random() * Math.max(0, maxY - 20) + 20;
+
+                coverWindow.style.left = randomX + 'px';
+                coverWindow.style.top = randomY + 'px';
+            }
+        }
+
+        // Set up mobile lightbox functionality
+        function setupMobileLightbox() {
+            if (!isMobile()) return;
+
+            const viewerWindow = document.getElementById('viewer-window');
+            const coverWindow = document.getElementById('cover-window');
+
+            // Viewer lightbox
+            if (viewerWindow) {
+                viewerWindow.addEventListener('click', (e) => {
+                    // Don't trigger if clicking on close button or resize handle
+                    if (e.target.closest('.viewer-close-button') || e.target.closest('.viewer-resize-handle')) {
+                        return;
+                    }
+
+                    if (viewerWindow.classList.contains('lightbox')) {
+                        // Exit lightbox
+                        viewerWindow.classList.remove('lightbox');
+                    } else {
+                        // Enter lightbox
+                        viewerWindow.classList.add('lightbox');
+                    }
+                });
+            }
+
+            // Cover lightbox
+            if (coverWindow) {
+                coverWindow.addEventListener('click', (e) => {
+                    // Don't trigger if clicking on close button or resize handle
+                    if (e.target.closest('.cover-close-button') || e.target.closest('.cover-resize-handle')) {
+                        return;
+                    }
+
+                    if (coverWindow.classList.contains('lightbox')) {
+                        // Exit lightbox
+                        coverWindow.classList.remove('lightbox');
+                    } else {
+                        // Enter lightbox
+                        coverWindow.classList.add('lightbox');
+                    }
+                });
+            }
+        }
 
         // Set up cover window controls
         function setupCoverControls() {
@@ -3790,31 +4458,43 @@
             const closeButton = coverWindow.querySelector('.cover-close-button');
             
             // Initialize cover window state
-            // Start as minimized icon
-            coverWindow.classList.add('minimized');
-            coverWindow.classList.add('visible');
+            if (isMobile()) {
+                // Mobile: Show as visible window
+                coverWindow.classList.add('visible');
+            } else {
+                // Desktop: Start as minimized icon
+                coverWindow.classList.add('minimized');
+                coverWindow.classList.add('visible');
+            }
             
             // Close button functionality
             if (closeButton) {
                 closeButton.addEventListener('click', (e) => {
                     e.stopPropagation();
                     
-                    // Minimize back to icon
-                    minimizeCoverWindow();
+                    if (isMobile()) {
+                        // Mobile: Hide the window completely
+                        coverWindow.classList.remove('visible');
+                    } else {
+                        // Desktop: Minimize back to icon
+                        minimizeCoverWindow();
+                    }
                 });
             }
             
-            // Click handler for expanding from minimized state
-            coverWindow.addEventListener('click', (e) => {
-                // Only respond to clicks when minimized
-                if (coverWindow.classList.contains('minimized')) {
-                    // Don't expand if clicking close button
-                    if (e.target.closest('.cover-close-button')) {
-                        return;
+            // Click handler for expanding from minimized state on desktop
+            if (!isMobile()) {
+                coverWindow.addEventListener('click', (e) => {
+                    // Only respond to clicks when minimized
+                    if (coverWindow.classList.contains('minimized')) {
+                        // Don't expand if clicking close button
+                        if (e.target.closest('.cover-close-button')) {
+                            return;
+                        }
+                        expandCoverWindow();
                     }
-                    expandCoverWindow();
-                }
-            });
+                });
+            }
             
             // Desktop minimize/maximize functions
             function minimizeCoverWindow() {
@@ -3832,15 +4512,27 @@
                 coverWindow.style.removeProperty('bottom');
             }
             
-            // Position the cover window
+            // Position the cover window - mobile vs desktop
             requestAnimationFrame(() => {
-                // Starts minimized, positioning handled by CSS classes
-                // No need to set inline styles here
+                if (isMobile()) {
+                    // Mobile: Fixed position at bottom-right, handled by CSS
+                    // Random position for mobile
+                    const maxX = window.innerWidth - 200;
+                    const maxY = window.innerHeight - 220;
+                    const randomX = Math.random() * Math.max(0, maxX - 20) + 20;
+                    const randomY = Math.random() * Math.max(0, maxY - 20) + 20;
+
+                    coverWindow.style.left = randomX + 'px';
+                    coverWindow.style.top = randomY + 'px';
+                } else {
+                    // Desktop: Starts minimized, positioning handled by CSS classes
+                    // No need to set inline styles here
+                }
             });
             
-            // Make the cover window resizable (when not minimized)
+            // Make the cover window resizable (skip on mobile and when minimized)
             const resizeHandle = coverWindow.querySelector('.cover-resize-handle');
-            if (resizeHandle) {
+            if (resizeHandle && !isMobile()) {
                 let isResizing = false;
                 let startX, startY;
                 let startWidth, startHeight;
@@ -3899,13 +4591,19 @@
             }
         }
 
-        // Simplified DVD Screensaver System for Album Cover
+        // DVD Screensaver System for Album Cover
         let dvdScreensaverSystem = {
             window: null,
             isActive: false,
+            isDragging: false,
             position: { x: 100, y: 100 },
             velocity: { x: 2, y: 1.5 },
+            baseVelocity: { x: 2, y: 1.5 },
             animationId: null,
+            isPaused: false,
+            pauseTimeout: null,
+            rampUpStartTime: null,
+            isRampingUp: false,
             
             init() {
                 this.window = document.getElementById('dvd-cover-window');
@@ -3937,28 +4635,20 @@
                         this.hideDVDWindow();
                     });
                 }
+                
+                // Make it resizable first (higher priority)
+                this.makeResizable();
+                
+                // Make it draggable second (lower priority)
+                this.makeDraggable();
             },
             
             showDVDWindow() {
                 if (!this.window) return;
                 
-                // Scale for mobile - 40% smaller total (25% + 15% more)
-                const isMobile = window.innerWidth <= 768;
-                let windowWidth = 300;
-                let windowHeight = 318;
-                
-                if (isMobile) {
-                    windowWidth = Math.floor(windowWidth * 0.60); // 40% smaller total
-                    windowHeight = Math.floor(windowHeight * 0.60); // 40% smaller total
-                    
-                    this.window.style.width = windowWidth + 'px';
-                    this.window.style.height = windowHeight + 'px';
-                }
-                
-                // Set initial random position within safe boundaries
-                const margin = 20;
-                this.position.x = margin + Math.random() * (window.innerWidth - windowWidth - margin * 2);
-                this.position.y = margin + Math.random() * (window.innerHeight - windowHeight - margin * 2);
+                // Set initial random position
+                this.position.x = Math.random() * (window.innerWidth - 300);
+                this.position.y = Math.random() * (window.innerHeight - 318);
                 
                 // Apply position immediately
                 this.window.style.left = this.position.x + 'px';
@@ -3967,30 +4657,44 @@
                 // Show window and start TV turn-on effect
                 this.window.style.display = 'flex';
                 
-                // Clear all animations and classes
+                // Completely clear all animations and classes
                 this.window.style.animation = 'none';
                 this.window.classList.remove('tv-disappearing', 'visible', 'tv-appearing');
                 
-                // Force reflow
+                // Force a reflow to ensure the animation clear takes effect
                 void this.window.offsetHeight;
                 
-                // Apply TV turn-on effect
+                // Now apply TV turn-on effect
                 this.window.classList.add('tv-appearing');
                 
-                console.log('Starting DVD screensaver with TV turn-on effect');
+                console.log('Starting TV turn-on effect');
                 
-                // Set consistent velocity - much slower for a relaxed bounce
-                this.velocity.x = (Math.random() > 0.5 ? 1 : -1) * 0.5;
-                this.velocity.y = (Math.random() > 0.5 ? 1 : -1) * 0.4;
+                // Set random velocity with initial slow start for gradual ramp-up
+                // Much slower full speeds to avoid dizzying motion
+                const baseSpeedX = (Math.random() - 0.5) * 2 + (Math.random() > 0.5 ? 1 : -1);
+                const baseSpeedY = (Math.random() - 0.5) * 2 + (Math.random() > 0.5 ? 0.75 : -0.75);
                 
-                // After TV turn-on effect completes, start bouncing
+                // Store base velocity for ramp-up calculations
+                this.baseVelocity.x = baseSpeedX;
+                this.baseVelocity.y = baseSpeedY;
+                
+                // Start with extremely slow initial velocity for 30-second ramp-up
+                this.velocity.x = baseSpeedX * 0.02; // Start at 2% of final speed
+                this.velocity.y = baseSpeedY * 0.02;
+                
+                // After TV turn-on effect completes, start normal operation
                 setTimeout(() => {
-                    console.log('TV turn-on complete, starting bounce animation');
+                    console.log('TV turn-on effect complete, starting normal operation');
                     this.window.classList.remove('tv-appearing');
                     this.window.classList.add('visible');
                     
+                    // Set floating animation with important to override any conflicting styles
+                    this.window.style.setProperty('animation', 'floatCoverSubtle 8.7s ease-in-out infinite', 'important');
+                    
                     this.isActive = true;
-                    this.startBounceAnimation();
+                    this.isRampingUp = true;
+                    this.rampUpStartTime = Date.now();
+                    this.startPhysics();
                 }, 1200); // Match tvTurnOn duration
             },
             
@@ -3998,16 +4702,27 @@
                 if (!this.window) return;
                 
                 this.isActive = false;
-                this.stopBounceAnimation();
+                this.stopPhysics();
+                
+                // Clear any pause timeouts
+                if (this.pauseTimeout) {
+                    clearTimeout(this.pauseTimeout);
+                    this.pauseTimeout = null;
+                }
+                
+                // Reset state
+                this.isPaused = false;
+                this.isRampingUp = false;
+                this.isDragging = false;
                 
                 // Stop all animations and start TV turn-off effect
                 this.window.style.animation = 'none';
                 this.window.classList.remove('visible', 'tv-appearing', 'tv-disappearing');
                 
-                // Force reflow
+                // Force a reflow to ensure the animation clear takes effect
                 void this.window.offsetHeight;
                 
-                // Apply TV turn-off effect
+                // Now apply TV turn-off effect
                 this.window.classList.add('tv-disappearing');
                 
                 console.log('Starting TV turn-off effect');
@@ -4016,24 +4731,44 @@
                 setTimeout(() => {
                     this.window.classList.remove('tv-disappearing');
                     this.window.style.display = 'none';
-                    
-                    // Reset size for next time
-                    this.window.style.width = '';
-                    this.window.style.height = '';
                 }, 800); // Match tvTurnOff duration
             },
             
-            startBounceAnimation() {
+            startPhysics() {
                 if (this.animationId) {
                     cancelAnimationFrame(this.animationId);
                 }
                 
                 const animate = () => {
-                    if (!this.isActive) {
-                        return; // Stop animation if not active
+                    if (!this.isActive || this.isDragging || this.isPaused) {
+                        this.animationId = requestAnimationFrame(animate);
+                        return;
                     }
                     
-                    // Get current window dimensions
+                    // Handle ramp-up speed after pause
+                    if (this.isRampingUp && this.rampUpStartTime) {
+                        const elapsed = Date.now() - this.rampUpStartTime;
+                        const rampDuration = 10000; // 10 seconds ramp-up
+                        
+                        if (elapsed < rampDuration) {
+                            const progress = elapsed / rampDuration;
+                            // Use smooth easing
+                            const easeProgress = 1 - Math.pow(1 - progress, 3);
+                            
+                            // Start at 10%, ramp to 100%
+                            const minSpeed = 0.1;
+                            this.velocity.x = this.baseVelocity.x * Math.max(minSpeed, easeProgress);
+                            this.velocity.y = this.baseVelocity.y * Math.max(minSpeed, easeProgress);
+                        } else {
+                            // Ramp-up complete
+                            this.isRampingUp = false;
+                            this.rampUpStartTime = null;
+                            this.velocity.x = this.baseVelocity.x;
+                            this.velocity.y = this.baseVelocity.y;
+                        }
+                    }
+                    
+                    // Get current window bounds BEFORE position update for accurate collision detection
                     const rect = this.window.getBoundingClientRect();
                     const windowWidth = rect.width;
                     const windowHeight = rect.height;
@@ -4042,49 +4777,223 @@
                     const screenWidth = window.innerWidth;
                     const screenHeight = window.innerHeight;
                     
-                    // Update position
-                    this.position.x += this.velocity.x;
-                    this.position.y += this.velocity.y;
+                    // Calculate next position
+                    let nextX = this.position.x + this.velocity.x;
+                    let nextY = this.position.y + this.velocity.y;
                     
-                    // Bounce off edges - simple and reliable collision detection
-                    if (this.position.x <= 0) {
-                        this.position.x = 0;
-                        this.velocity.x = Math.abs(this.velocity.x); // Always positive after hitting left edge
-                    } else if (this.position.x >= screenWidth - windowWidth) {
-                        this.position.x = screenWidth - windowWidth;
-                        this.velocity.x = -Math.abs(this.velocity.x); // Always negative after hitting right edge
+                    // Bounce off edges with proper collision detection and margin
+                    const margin = 5; // Larger margin to prevent sticking
+                    
+                    // Horizontal collision detection
+                    if (nextX <= 0) {
+                        nextX = margin;
+                        this.velocity.x = Math.abs(this.velocity.x);
+                        console.log('Bounced off left edge');
+                    } else if (nextX >= screenWidth - windowWidth - margin) {
+                        nextX = screenWidth - windowWidth - margin;
+                        this.velocity.x = -Math.abs(this.velocity.x);
+                        console.log('Bounced off right edge');
                     }
                     
-                    if (this.position.y <= 0) {
-                        this.position.y = 0;
-                        this.velocity.y = Math.abs(this.velocity.y); // Always positive after hitting top edge
-                    } else if (this.position.y >= screenHeight - windowHeight) {
-                        this.position.y = screenHeight - windowHeight;
-                        this.velocity.y = -Math.abs(this.velocity.y); // Always negative after hitting bottom edge
+                    // Vertical collision detection  
+                    if (nextY <= 0) {
+                        nextY = margin;
+                        this.velocity.y = Math.abs(this.velocity.y);
+                        console.log('Bounced off top edge');
+                    } else if (nextY >= screenHeight - windowHeight - margin) {
+                        nextY = screenHeight - windowHeight - margin;
+                        this.velocity.y = -Math.abs(this.velocity.y);
+                        console.log('Bounced off bottom edge');
                     }
+                    
+                    // Update position with collision-corrected values
+                    this.position.x = nextX;
+                    this.position.y = nextY;
                     
                     // Apply position
-                    this.window.style.left = Math.round(this.position.x) + 'px';
-                    this.window.style.top = Math.round(this.position.y) + 'px';
+                    this.window.style.left = this.position.x + 'px';
+                    this.window.style.top = this.position.y + 'px';
                     
-                    // Continue animation
                     this.animationId = requestAnimationFrame(animate);
                 };
                 
-                // Start the animation
                 animate();
             },
             
-            stopBounceAnimation() {
+            stopPhysics() {
                 if (this.animationId) {
                     cancelAnimationFrame(this.animationId);
                     this.animationId = null;
                 }
             },
             
+            makeDraggable() {
+                if (!this.window) return;
+                
+                const dragArea = this.window.querySelector('.drag-area');
+                if (!dragArea) return;
+                
+                let startX = 0;
+                let startY = 0;
+                let startLeft = 0;
+                let startTop = 0;
+                
+                // Only listen to mousedown on the drag area (top 80%)
+                dragArea.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('Starting drag operation from drag area');
+                    this.isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    const rect = this.window.getBoundingClientRect();
+                    startLeft = rect.left;
+                    startTop = rect.top;
+                    
+                    this.window.style.zIndex = '1002';
+                    dragArea.style.cursor = 'grabbing';
+                    
+                    // Update position tracking
+                    this.position.x = startLeft;
+                    this.position.y = startTop;
+                    
+                    // Pause DVD movement while dragging
+                    this.pauseDVDMovement();
+                    
+                    const handleMouseMove = (e) => {
+                        if (!this.isDragging) return;
+                        
+                        const deltaX = e.clientX - startX;
+                        const deltaY = e.clientY - startY;
+                        
+                        const newLeft = startLeft + deltaX;
+                        const newTop = startTop + deltaY;
+                        
+                        this.position.x = newLeft;
+                        this.position.y = newTop;
+                        
+                        this.window.style.left = newLeft + 'px';
+                        this.window.style.top = newTop + 'px';
+                    };
+                    
+                    const handleMouseUp = () => {
+                        this.isDragging = false;
+                        this.window.style.zIndex = '1001';
+                        dragArea.style.cursor = 'move';
+                        
+                        // Synchronize position tracking with actual window position
+                        const rect = this.window.getBoundingClientRect();
+                        this.position.x = rect.left;
+                        this.position.y = rect.top;
+                        
+                        console.log('Position synchronized after drag:', this.position);
+                        
+                        // Resume DVD movement with speed ramp-up
+                        this.isPaused = false;
+                        this.isRampingUp = true;
+                        this.rampUpStartTime = Date.now();
+                        
+                        // Start with slow velocity for ramp-up
+                        this.velocity.x = this.baseVelocity.x * 0.1;
+                        this.velocity.y = this.baseVelocity.y * 0.1;
+                        
+                        console.log('DVD movement resumed with ramp-up');
+                        
+                        console.log('DVD movement resumed immediately with ramp-up');
+                        
+                        document.removeEventListener('mousemove', handleMouseMove);
+                        document.removeEventListener('mouseup', handleMouseUp);
+                    };
+                    
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp);
+                });
+            },
+            
+            makeResizable() {
+                const resizeHandle = this.window.querySelector('.cover-resize-handle');
+                if (!resizeHandle) return;
+                
+                let isResizing = false;
+                let startX, startY, startWidth, startHeight;
+                
+                // Simple event handler - no conflicts since bottom area is drag-free
+                resizeHandle.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('Resize handle clicked - starting resize');
+                    
+                    isResizing = true;
+                    this.isPaused = true; // Pause physics while resizing
+                    
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    const rect = this.window.getBoundingClientRect();
+                    startWidth = rect.width;
+                    startHeight = rect.height;
+                    
+                    const handleMouseMove = (e) => {
+                        if (!isResizing) return;
+                        
+                        const newWidth = startWidth + (e.clientX - startX);
+                        const newHeight = startHeight + (e.clientY - startY);
+                        
+                        const size = Math.max(newWidth, newHeight - 33);
+                        const finalWidth = Math.max(150, size);
+                        const finalHeight = finalWidth + 33;
+                        
+                        this.window.style.width = finalWidth + 'px';
+                        this.window.style.height = finalHeight + 'px';
+                    };
+                    
+                    const handleMouseUp = () => {
+                        isResizing = false;
+                        
+                        // Sync position after resize and resume with ramp-up
+                        const rect = this.window.getBoundingClientRect();
+                        this.position.x = rect.left;
+                        this.position.y = rect.top;
+                        
+                        this.isPaused = false;
+                        this.isRampingUp = true;
+                        this.rampUpStartTime = Date.now();
+                        this.velocity.x = this.baseVelocity.x * 0.1;
+                        this.velocity.y = this.baseVelocity.y * 0.1;
+                        
+                        document.removeEventListener('mousemove', handleMouseMove);
+                        document.removeEventListener('mouseup', handleMouseUp);
+                    };
+                    
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp);
+                });
+            },
+            
+            pauseDVDMovement() {
+                this.isPaused = true;
+                
+                // Clear any existing pause timeout
+                if (this.pauseTimeout) {
+                    clearTimeout(this.pauseTimeout);
+                    this.pauseTimeout = null;
+                }
+            },
+            
+            // resumeDVDMovement function removed - we now resume immediately in handleMouseUp
+            
             cleanup() {
                 this.isActive = false;
-                this.stopBounceAnimation();
+                this.stopPhysics();
+                
+                // Clear pause timeout
+                if (this.pauseTimeout) {
+                    clearTimeout(this.pauseTimeout);
+                    this.pauseTimeout = null;
+                }
             }
         };
 
@@ -4184,17 +5093,37 @@
             if (!webampInstance || !webampInstance.store) return;
 
             const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
-            // Position windows
+            const isMobile = window.innerWidth <= 768;
+
+            // Position windows based on device type
             let posX, posY, eqY, playlistY;
 
-            // Stack windows on the left side
-            posX = Math.floor((window.innerWidth * 0.08) / zoomFactor); // 8% from left edge
-            posY = Math.floor((window.innerHeight * 0.12) / zoomFactor); // 12% from top
-            eqY = posY + 116; // EQ window starts right after main window
-            playlistY = eqY + 116; // Playlist starts right after EQ window
+            if (isMobile) {
+                // Mobile: Simple positioning in starfield area
+                const mainWindowWidth = 275;
+
+                posX = Math.floor((window.innerWidth / zoomFactor - mainWindowWidth) / 2); // Center horizontally
+
+                // Position at a fixed percentage of the available starfield space
+                // Bottom squares take up 50vw, so starfield is roughly the top 50-70% of screen
+                posY = Math.floor((window.innerHeight * 0.08) / zoomFactor); // Start at 8% from top
+
+                eqY = posY + 116; // EQ window starts right after main window (but hidden)
+                playlistY = posY + 116; // Playlist starts right after main window (skip EQ space)
+            } else {
+                // Desktop: Stack windows on the left side
+                posX = Math.floor((window.innerWidth * 0.08) / zoomFactor); // 8% from left edge
+                posY = Math.floor((window.innerHeight * 0.12) / zoomFactor); // 12% from top
+                eqY = posY + 116; // EQ window starts right after main window
+                playlistY = eqY + 116; // Playlist starts right after EQ window
+            }
 
             // Store these positions for animation reference
-            window.lastKnownPositions = {
+            window.lastKnownPositions = isMobile ? {
+                main: { x: posX, y: posY },
+                equalizer: { x: posX, y: posY }, // Position EQ at same location as main (since it's hidden)
+                playlist: { x: posX, y: playlistY }
+            } : {
                 main: { x: posX, y: posY },
                 equalizer: { x: posX, y: eqY },
                 playlist: { x: posX, y: playlistY }
@@ -4231,6 +5160,11 @@
 
         // Modified animation function to handle mouse interactions
         function startHauntedAnimation() {
+            // Skip animation entirely on mobile
+            if (isMobile()) {
+                console.log('Skipping haunted animation on mobile');
+                return;
+            }
 
             // Clean up any existing animation
             if (animationId) {
@@ -4453,6 +5387,12 @@
             }
 
             function animate() {
+                // Exit immediately if on mobile
+                if (isMobile()) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                    return;
+                }
 
                 if (!webampInstance?.store) {
                     cancelAnimationFrame(animationId);
@@ -4617,7 +5557,7 @@
 
 
 
-                // Set consistent playlist size
+                // Set consistent playlist size for both mobile and desktop
                 const initialPlaylistSize = 4.4; // Show 12 tracks
 
                 // Set initial position (can be dragged anywhere later)
@@ -4631,22 +5571,30 @@
                 const trackHeight = 14;
                 const playlistHeight = playlistHeaderHeight + (initialPlaylistSize * trackHeight);
 
-                // Position windows on desktop
+                // Position windows based on device type
                 let leftPosX, mainPosY, eqPosY, playlistPosY;
+                const deviceInfo = getDeviceInfo();
 
-                // Stack windows on the left side
-                leftPosX = Math.floor((window.innerWidth * 0.08) / zoomFactor);
-                mainPosY = Math.floor((window.innerHeight * 0.12) / zoomFactor);
-                eqPosY = mainPosY + mainWindowHeight;
-                playlistPosY = eqPosY + equalizerHeight;
+                if (deviceInfo.isMobile) {
+                    // Simplified mobile positioning - let Webamp handle most of it
+                    leftPosX = Math.floor((window.innerWidth - mainWindowWidth) / 2);
+                    mainPosY = 50; // Fixed position from top
+                    eqPosY = mainPosY;
+                    playlistPosY = mainPosY + mainWindowHeight;
+                } else {
+                    // Desktop: Stack windows on the left side
+                    leftPosX = Math.floor((window.innerWidth * 0.08) / zoomFactor);
+                    mainPosY = Math.floor((window.innerHeight * 0.12) / zoomFactor);
+                    eqPosY = mainPosY + mainWindowHeight;
+                    playlistPosY = eqPosY + equalizerHeight;
+                }
 
-                // Initialize Webamp with preloaded tracks (matching webamp.org config)
+                // Initialize Webamp with preloaded tracks
                 const webampOptions = {
                     initialTracks: tracks,
                     initialSkin: skinOption,
                     zIndex: 100,
-                    enableHotkeys: true,
-                    enableMediaSession: true,
+                    enableHotkeys: false,
                     __initialWindowLayout: {
                         main: { position: { x: leftPosX, y: mainPosY } },
                         equalizer: { position: { x: leftPosX, y: eqPosY } },
@@ -4666,7 +5614,7 @@
 
                 // Add timeout for render
                 const renderTimeout = new Promise((_, reject) => {
-                    setTimeout(() => reject(new Error('Webamp render timeout')), 10000);
+                    setTimeout(() => reject(new Error('Webamp render timeout')), isMobile() ? 15000 : 10000);
                 });
 
                 await Promise.race([renderPromise, renderTimeout]);
@@ -4691,23 +5639,12 @@
                     console.log('No custom skin, skipping skin load wait');
                 }
 
-                // Set up audio analyzer and ensure AudioContext is available
+                // Set up audio analyzer
                 try {
                     await setupAudioAnalyzer();
-                    // Ensure we have an AudioContext reference for mobile interaction
-                    if (webampInstance && !webampInstance.audioContext) {
-                        webampInstance.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    }
                 } catch (error) {
                     console.error('Audio analyzer setup failed:', error);
-                    // Ensure we have an AudioContext reference even if analyzer fails
-                    try {
-                        if (webampInstance && !webampInstance.audioContext) {
-                            webampInstance.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                        }
-                    } catch (audioError) {
-                        console.error('AudioContext creation failed:', audioError);
-                    }
+                    // Continue without analyzer
                 }
 
                 // Intercept Redux store to prevent playlist reordering
@@ -4722,6 +5659,12 @@
                     return originalDispatch(action);
                 };
 
+                // Mobile: Let Webamp handle its own touch events
+                if (isMobile()) {
+                    console.log('Using native Webamp mobile support');
+                    // Webamp 1.4.2 has built-in mobile support
+                    // Don't override its touch handling
+                }
 
                 // Show the player
                 const container = document.getElementById('webamp-container');
@@ -4732,85 +5675,22 @@
                     console.error('Webamp container not found');
                 }
 
-                // Initialize viewer system
+                // Initialize viewer system (skip heavy parts on mobile)
                 try {
                     initBackgroundSystem();
                 } catch (error) {
                     console.error('Background system initialization failed:', error);
                 }
 
-                // Initialize DVD screensaver system
+                // Initialize DVD screensaver system (desktop only)
                 try {
-                    dvdScreensaverSystem.init();
-                    console.log('DVD screensaver system initialized');
+                    if (!isMobile()) {
+                        dvdScreensaverSystem.init();
+                        console.log('DVD screensaver system initialized');
+                    }
                 } catch (error) {
                     console.error('DVD screensaver system initialization failed:', error);
                 }
-
-                // Hide EQ and playlist windows on mobile using Webamp API
-                if (window.innerWidth <= 768) {
-                    console.log('Mobile detected - attempting to hide EQ and playlist windows');
-                    
-                    // Add CSS to immediately hide windows and position viewer on mobile
-                    const mobileHideStyle = document.createElement('style');
-                    mobileHideStyle.textContent = `
-                        @media screen and (max-width: 768px) {
-                            /* Hide EQ and playlist windows on mobile */
-                            #webamp #equalizer-window,
-                            #webamp [id*="equalizer"],
-                            #webamp #playlist-window,
-                            #webamp [id*="playlist"] {
-                                display: none !important;
-                            }
-                            
-                            /* Viewer window positioning handled by CSS media queries above */
-                            
-                            /* Ensure viewer content scales properly */
-                            #viewer-window .viewer-content {
-                                width: 100% !important;
-                                height: 100% !important;
-                            }
-                            
-                            /* Scale viewer videos to fill */
-                            #viewer-window .viewer-loop,
-                            #viewer-window .viewer-video {
-                                width: 100% !important;
-                                height: 100% !important;
-                                object-fit: cover !important;
-                            }
-                            
-                        }
-                    `;
-                    document.head.appendChild(mobileHideStyle);
-                    
-                    // Also use API to properly close them
-                    setTimeout(() => {
-                        try {
-                            webampInstance.store.dispatch({
-                                type: 'CLOSE_WINDOW',
-                                windowId: 'equalizer'
-                            });
-                            webampInstance.store.dispatch({
-                                type: 'CLOSE_WINDOW', 
-                                windowId: 'playlist'
-                            });
-                            console.log('Window close actions dispatched');
-                        } catch (error) {
-                            console.error('Error hiding windows:', error);
-                        }
-                    }, 100); // Reduced delay
-                }
-
-                // Set up track change handler
-                webampInstance.onTrackDidChange(trackInfo => {
-                    try {
-                        handleTrackChange(trackInfo);
-                        // Try to set up audio analyzer again for new track
-                        setupAudioAnalyzer();
-                    } catch (error) {
-                        console.error('Track change handler error:', error);
-                    }
-                });
 
                 // Set up track change handler
                 webampInstance.onTrackDidChange(trackInfo => {
@@ -4844,8 +5724,8 @@
                 // Set playlist size to the specified number of tracks explicitly
                 setTimeout(() => {
                     if (webampInstance && webampInstance.store) {
-                        const playlistSize = initialPlaylistSize;
-                        console.log(`Setting playlist size to ${playlistSize} tracks`);
+                        const playlistSize = isMobile() ? 4 : initialPlaylistSize; // Mobile playlist size
+                        console.log(`Setting playlist size to ${playlistSize} tracks (mobile: ${isMobile()})`);
                         webampInstance.store.dispatch({
                             type: 'SET_PLAYLIST_WINDOW_SIZE',
                             size: [0, playlistSize]
@@ -5041,116 +5921,59 @@
                     // Try to set up audio analyzer again for new track
                     setupAudioAnalyzer();
                 });
-
-                // Set up mobile touch interaction for playlist playback
-                setupMobileTouchInteraction();
             }, 1000);
         }
 
-        // Set up mobile touch interaction for playlist clicks
-        function setupMobileTouchInteraction() {
-            if (!webampInstance) return;
+        // Enhanced mobile touch fix for Webamp playlist
+        function setupMobileTouchFix() {
+            if (!isMobile() || !webampInstance) return;
 
-            // Function to handle user gesture events for mobile playback
-            async function handleUserGesture(trackIndex = null) {
-                try {
-                    // Resume AudioContext if suspended (required for mobile autoplay)
-                    if (webampInstance.audioContext && webampInstance.audioContext.state === 'suspended') {
-                        console.log('Resuming AudioContext for mobile playback');
-                        await webampInstance.audioContext.resume();
-                    }
+            console.log('Setting up mobile touch fix for playlist');
 
-                    // If a specific track index was provided, select it first
-                    if (trackIndex !== null && trackIndex >= 0) {
-                        console.log(`Mobile: selecting track ${trackIndex}`);
-                        webampInstance.setCurrentTrack(trackIndex);
-                    }
-
-                    // Start playback using official API
-                    console.log('Mobile: starting playback');
-                    webampInstance.play();
-
-                } catch (error) {
-                    console.error('Mobile playback gesture error:', error);
+            // Wait a bit for Webamp to fully initialize
+            setTimeout(() => {
+                // Find all track elements in the playlist
+                const tracks = document.querySelectorAll('#webamp .playlist-tracks .track');
+                
+                if (tracks.length === 0) {
+                    console.log('No tracks found, retrying...');
+                    setTimeout(setupMobileTouchFix, 500);
+                    return;
                 }
-            }
 
-            // Listen for clicks/touches on playlist items
-            const playlistElement = document.querySelector('#webamp [class*="playlist"]');
-            if (playlistElement) {
-                // Delegate event listener for playlist track items
-                playlistElement.addEventListener('click', (event) => {
-                    // Find the closest track element
-                    const trackElement = event.target.closest('[class*="track"]');
-                    if (trackElement) {
-                        // Try to extract track index from the element
-                        const trackIndex = extractTrackIndex(trackElement);
-                        if (trackIndex !== null) {
-                            handleUserGesture(trackIndex);
-                        } else {
-                            // If we can't determine the track, just try to resume and play
-                            handleUserGesture();
+                // Add click handler to each track
+                tracks.forEach((track, index) => {
+                    track.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        console.log(`Playing track ${index}`);
+                        
+                        // Use Webamp's API to play the track
+                        if (webampInstance) {
+                            webampInstance.store.dispatch({
+                                type: "SET_CURRENT_TRACK",
+                                id: index
+                            });
+                            
+                            setTimeout(() => {
+                                webampInstance.play();
+                            }, 100);
                         }
-                    }
-                }, { passive: false });
-
-                // Also listen for touch events specifically
-                playlistElement.addEventListener('touchend', (event) => {
-                    const trackElement = event.target.closest('[class*="track"]');
-                    if (trackElement) {
-                        const trackIndex = extractTrackIndex(trackElement);
-                        if (trackIndex !== null) {
-                            handleUserGesture(trackIndex);
-                        } else {
-                            handleUserGesture();
-                        }
-                    }
-                }, { passive: false });
-            }
-
-            // Also listen for clicks on main window play button
-            const mainWindow = document.querySelector('#webamp [class*="main"]');
-            if (mainWindow) {
-                mainWindow.addEventListener('click', (event) => {
-                    // Check if it's the play button or similar control
-                    const playButton = event.target.closest('[class*="play"], [title*="play"], [title*="Play"]');
-                    if (playButton) {
-                        handleUserGesture();
-                    }
-                }, { passive: false });
-            }
-
-            console.log('Mobile touch interaction setup complete');
+                    });
+                });
+                
+                console.log(`Mobile touch fix applied to ${tracks.length} tracks`);
+            }, 500);
         }
 
-
-        // Helper function to extract track index from playlist elements
-        function extractTrackIndex(trackElement) {
-            try {
-                // Look for data attributes or class names that might contain the index
-                const dataIndex = trackElement.dataset.index;
-                if (dataIndex !== undefined) {
-                    return parseInt(dataIndex, 10);
-                }
-
-                // Try to get index from parent playlist container
-                const playlist = trackElement.closest('[class*="playlist"]');
-                if (playlist) {
-                    const trackElements = playlist.querySelectorAll('[class*="track"]');
-                    for (let i = 0; i < trackElements.length; i++) {
-                        if (trackElements[i] === trackElement) {
-                            return i;
-                        }
-                    }
-                }
-
-                return null;
-            } catch (error) {
-                console.error('Error extracting track index:', error);
-                return null;
-            }
+        // Let Webamp handle its own touch events
+        function ensureWebampTouchDragging() {
+            if (!isMobile() || !webampInstance) return;
+            
+            console.log('Webamp native touch support enabled');
+            // Webamp has built-in touch support - we don't need to override it
         }
-
 
 
 
@@ -5280,20 +6103,19 @@
                             const viewerWindow = document.getElementById('viewer-window');
                             if (viewerWindow) {
                                 viewerWindow.classList.add('visible');
-                                
-                                // Position for mobile if needed
-                                if (window.innerWidth <= 768) {
-                                    positionViewerForMobile(viewerWindow);
-                                }
-                                
                                 console.log('Viewer window made visible');
                             }
 
-                            // Hide the cover window on desktop
+                            // Show the cover window (always show on mobile, hide on desktop)
                             const coverWindow = document.getElementById('cover-window');
                             if (coverWindow) {
-                                coverWindow.style.display = 'none';
-                                console.log('Desktop: cover window hidden');
+                                if (isMobile()) {
+                                    coverWindow.classList.add('visible');
+                                    console.log('Mobile layout: viewer and cover windows positioned by CSS');
+                                } else {
+                                    coverWindow.style.display = 'none';
+                                    console.log('Desktop: cover window hidden');
+                                }
                             }
 
                             // After password overlay fades out, start playback
@@ -5326,7 +6148,7 @@
                                     }
                                 }
 
-                                // Initialize deity messages with standard delay
+                                // Delay deity messages more on mobile
                                 setTimeout(() => {
                                     try {
                                         console.log('Initializing deity message system...');
@@ -5334,10 +6156,10 @@
                                     } catch (error) {
                                         console.error('Error initializing deity messages:', error);
                                     }
-                                }, 5000);
+                                }, isMobile() ? 8000 : 5000);
 
                                 console.log('Post-password initialization complete');
-                            }, 2000);
+                            }, isMobile() ? 1000 : 2000); // Shorter delay on mobile
                         }, 700);
                     }
                 } else {
@@ -5349,14 +6171,15 @@
             }
         }
 
-        // Media Session API for background playback
+        // Enhanced Media Session API for background playback with iPhone Chrome fixes
         function setupMediaSession() {
             if (!('mediaSession' in navigator)) {
                 console.log('Media Session API not supported');
                 return;
             }
 
-            console.log('Setting up Media Session API for background playback');
+            const deviceInfo = getDeviceInfo();
+            console.log('Setting up Media Session API for background playback', deviceInfo);
 
             // Set up media session metadata
             function updateMediaSessionMetadata(trackInfo) {
@@ -5379,11 +6202,21 @@
                 console.log('Media session metadata updated:', metadata.title);
             }
 
-            // Set up standard action handlers
+            // Enhanced action handlers with iPhone Chrome specific handling
             navigator.mediaSession.setActionHandler('play', () => {
                 console.log('Media session: play');
                 if (webampInstance) {
-                    webampInstance.play();
+                    // iPhone Chrome sometimes needs audio context resume
+                    if (deviceInfo.isIOSChrome && webampInstance.audioContext?.state === 'suspended') {
+                        webampInstance.audioContext.resume().then(() => {
+                            webampInstance.play();
+                        }).catch(err => {
+                            console.log('Audio context resume failed:', err);
+                            webampInstance.play(); // Try anyway
+                        });
+                    } else {
+                        webampInstance.play();
+                    }
                 }
             });
 
@@ -5408,6 +6241,27 @@
                 }
             });
 
+            // iPhone Chrome specific: Set additional action handlers for better control
+            if (deviceInfo.isIOSChrome) {
+                try {
+                    navigator.mediaSession.setActionHandler('stop', () => {
+                        console.log('Media session: stop (iPhone Chrome)');
+                        if (webampInstance) {
+                            webampInstance.pause();
+                        }
+                    });
+                    
+                    // Enhanced seek support for iPhone Chrome
+                    navigator.mediaSession.setActionHandler('seekto', (details) => {
+                        console.log('Media session: seek to', details.seekTime);
+                        if (webampInstance && details.seekTime != null) {
+                            webampInstance.seekToTime(details.seekTime);
+                        }
+                    });
+                } catch (error) {
+                    console.log('Optional media session handlers not supported:', error);
+                }
+            }
 
             // Store the update function for use in track changes
             window.updateMediaSessionMetadata = updateMediaSessionMetadata;
@@ -5420,17 +6274,28 @@
             }
         }
 
-        // Audio analyzer setup
+        // Enhanced audio analyzer setup with iPhone Chrome support
         async function setupAudioAnalyzer() {
             try {
                 // Check if we already have an analyzer set up
                 if (webampInstance.analyzer) {
                     return;
                 }
+
+                const deviceInfo = getDeviceInfo();
                 
                 // Create audio context and analyzer only if they don't exist
                 if (!webampInstance.audioContext) {
-                    webampInstance.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    // iPhone Chrome specific audio context handling
+                    if (deviceInfo.isIOSChrome) {
+                        console.log('Setting up audio context for iPhone Chrome');
+                        webampInstance.audioContext = new (window.AudioContext || window.webkitAudioContext)({
+                            latencyHint: 'playback',
+                            sampleRate: 44100 // Explicit sample rate for iPhone Chrome
+                        });
+                    } else {
+                        webampInstance.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    }
                 }
 
                 if (!webampInstance.analyzer) {
@@ -5476,25 +6341,32 @@
                     });
                 };
 
-                // Try to connect with standard retry logic
+                // Try to connect with increasing delays, longer for iPhone Chrome
                 let retries = 0;
-                const maxRetries = 5;
+                const maxRetries = deviceInfo.isIOSChrome ? 8 : 5; // More retries for iPhone Chrome
                 const tryConnect = async () => {
                     try {
                         await connectAudio();
                     } catch (e) {
                         if (retries < maxRetries) {
                             retries++;
-                            const delay = Math.min(1000 * Math.pow(2, retries), 15000);
+                            // Wait longer between each retry, especially for iPhone Chrome
+                            const baseDelay = deviceInfo.isIOSChrome ? 1500 : 1000;
+                            const delay = Math.min(baseDelay * Math.pow(2, retries), 15000);
                             setTimeout(tryConnect, delay);
                         }
                     }
                 };
 
-                // Resume audio context if it's suspended
+                // Resume audio context if it's suspended (critical for iPhone Chrome)
                 if (webampInstance.audioContext.state === 'suspended') {
                     console.log('Resuming suspended audio context');
                     await webampInstance.audioContext.resume();
+                    
+                    // iPhone Chrome often needs additional time after resume
+                    if (deviceInfo.isIOSChrome) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
                 }
 
                 // Start trying to connect
@@ -5537,8 +6409,69 @@
             requestAnimationFrame(animate);
         }
 
+        // Handle window resize for mobile layout adjustments
+        function handleResize() {
+            // Windows should maintain their positions after initial placement
+            // Only handle other resize-related adjustments if needed
+        }
 
+        // Mobile-first loading optimization with iPhone Chrome fixes
+        function initializeMobile() {
+            const deviceInfo = getDeviceInfo();
+            console.log('Mobile optimized initialization', deviceInfo);
 
+            // iPhone Chrome specific viewport fix
+            if (deviceInfo.isIOSChrome) {
+                console.log('Applying iPhone Chrome specific fixes');
+                
+                // Fix viewport handling for iPhone Chrome
+                const viewport = document.querySelector('meta[name="viewport"]');
+                if (viewport) {
+                    viewport.setAttribute('content', 
+                        'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover');
+                }
+                
+                // Add iPhone Chrome specific CSS fixes
+                const style = document.createElement('style');
+                style.textContent = `
+                    /* iPhone Chrome specific fixes */
+                    @supports (-webkit-touch-callout: none) {
+                        body {
+                            -webkit-text-size-adjust: 100%;
+                            -webkit-font-smoothing: antialiased;
+                        }
+                        
+                        #webamp-container {
+                            -webkit-transform: translateZ(0);
+                            transform: translateZ(0);
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Initialize starfield background
+            starField = new StarField();
+
+            // Setup password validation
+            setupPasswordValidation();
+
+            // Show password overlay
+            const passwordOverlay = document.getElementById('password-overlay');
+            if (passwordOverlay) {
+                passwordOverlay.style.opacity = '1';
+                passwordOverlay.style.pointerEvents = 'auto';
+            }
+
+            // Focus on password input with longer delay for iPhone Chrome
+            const focusDelay = deviceInfo.isIOSChrome ? 300 : 100;
+            setTimeout(() => {
+                const passwordInput = document.getElementById('password-input');
+                if (passwordInput) {
+                    passwordInput.focus();
+                }
+            }, focusDelay);
+        }
 
         // Desktop initialization with full features
         function initializeDesktop() {
@@ -5549,7 +6482,6 @@
 
             // Setup password validation
             setupPasswordValidation();
-            
 
             // Show password overlay
             const passwordOverlay = document.getElementById('password-overlay');
@@ -5570,11 +6502,16 @@
         // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('DOM loaded, starting initialization...');
+            const deviceInfo = getDeviceInfo();
+            console.log('Device detected:', deviceInfo);
 
-
-            // Initialize desktop version
+            // Show password screen immediately on all devices
             try {
-                initializeDesktop();
+                if (deviceInfo.isMobile) {
+                    initializeMobile();
+                } else {
+                    initializeDesktop();
+                }
             } catch (error) {
                 console.error('Initialization error:', error);
                 // Fallback to basic initialization
@@ -5604,20 +6541,58 @@
                 startLegendariumLogoAnimation();
             }
 
+            // Add resize listener for mobile layout adjustments
+            window.addEventListener('resize', handleResize);
 
-            // Standard visibility changes to maintain background playback
+            // Enhanced visibility changes to maintain background playback (iPhone Chrome fixes)
             document.addEventListener('visibilitychange', () => {
+                const deviceInfo = getDeviceInfo();
+                
                 if (document.hidden) {
                     console.log('Page hidden - maintaining audio context for background playback');
                     
-                    // Standard handling for all browsers
-                    if (webampInstance?.audioContext && webampInstance.audioContext.state === 'suspended') {
-                        webampInstance.audioContext.resume().catch(err => {
-                            console.log('Could not resume audio context:', err);
-                        });
+                    // iPhone Chrome specific handling
+                    if (deviceInfo.isIOSChrome) {
+                        // Keep audio context active more aggressively on iPhone Chrome
+                        if (webampInstance?.audioContext) {
+                            // Prevent audio context suspension
+                            const resumeAudio = () => {
+                                if (webampInstance.audioContext.state === 'suspended') {
+                                    webampInstance.audioContext.resume().catch(err => {
+                                        console.log('Background audio context resume failed:', err);
+                                    });
+                                }
+                            };
+                            
+                            // Try to resume immediately and set up periodic resume attempts
+                            resumeAudio();
+                            
+                            // Set up periodic resume for iPhone Chrome
+                            if (!window.iPhoneChromeResumeInterval) {
+                                window.iPhoneChromeResumeInterval = setInterval(resumeAudio, 1000);
+                            }
+                        }
+                        
+                        // Update media session playback state
+                        if (navigator.mediaSession) {
+                            navigator.mediaSession.playbackState = 'playing';
+                        }
+                    } else {
+                        // Standard handling for other browsers
+                        if (webampInstance?.audioContext && webampInstance.audioContext.state === 'suspended') {
+                            webampInstance.audioContext.resume().catch(err => {
+                                console.log('Could not resume audio context:', err);
+                            });
+                        }
                     }
                 } else {
                     console.log('Page visible - resuming normal operation');
+                    
+                    // Clear iPhone Chrome specific intervals
+                    if (deviceInfo.isIOSChrome && window.iPhoneChromeResumeInterval) {
+                        clearInterval(window.iPhoneChromeResumeInterval);
+                        window.iPhoneChromeResumeInterval = null;
+                    }
                     
                     // Ensure audio context is active when returning to page
                     if (webampInstance?.audioContext && webampInstance.audioContext.state === 'suspended') {
