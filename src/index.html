@@ -50,15 +50,15 @@
             /* Star brightness (0-1) */
         }
 
-        /* Starfield Canvas - positioned behind everything */
+        /* Starfield Canvas - positioned behind everything except unlock overlay */
         #starfield-canvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
-            /* Behind everything */
+            z-index: 999;
+            /* Behind unlock overlay (1000) but above body background */
             pointer-events: none;
             background: #000;
         }
@@ -161,90 +161,147 @@
             cursor: pointer !important;
         }
 
-        /* Password protection overlay */
-        #password-overlay {
+        /* Dunes background - separate from lock overlay */
+        #dunes-background {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #000;
+            background-image: url('./assets/images/Dunes.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            pointer-events: none;
+        }
+
+        #dunes-background.slide-out {
+            animation: dunesSlideOut 2s ease-in-out forwards;
+        }
+
+        /* Key unlocking system overlay */
+        #unlock-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            z-index: 1001;
             transition: opacity 2s ease-out;
         }
 
-
-        #password-container {
-            position: relative;
-            width: 300px;
+        #unlock-overlay.tv-turn-off {
+            animation: tvTurnOff 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
 
-        #password-label {
+        @keyframes dunesSlideOut {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(100vh);
+            }
+        }
+
+        #lock {
             position: absolute;
-            font-family: monospace;
-            color: #222;
-            font-size: 10px;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            text-transform: uppercase;
-            pointer-events: none;
-            letter-spacing: 0px;
+            width: 180px;
+            height: 180px;
+            cursor: default;
+            transition: transform 0.3s ease;
         }
 
-        #password-input {
+        #lock img {
             width: 100%;
-            padding: 15px;
-            background-color: #111;
-            border: 1px solid #333;
-            color: #FF0000;
-            font-family: monospace;
-            font-size: 14px;
-            letter-spacing: 0px;
-            text-align: center;
-            outline: none;
-            transition: border 0.3s ease-in-out;
-            box-sizing: border-box;
-            caret-color: #FF0000;
+            height: 100%;
+            object-fit: contain;
         }
 
-        #password-input:focus {
-            border-color: #555;
+        #lock.spinning {
+            animation: spin 2s linear infinite;
+        }
+        
+        #lock.glowing {
+            animation: yellowOrangeGlow 3s ease-in-out infinite alternate;
+        }
+        
+        #lock.spinning.glowing {
+            animation: spin 2s linear infinite, yellowOrangeGlow 3s ease-in-out infinite alternate;
         }
 
-        @keyframes flash-red {
+        #key {
+            position: absolute;
+            width: 264px;
+            height: 264px;
+            cursor: grab;
+            transition: none;
+            z-index: 1001;
+            animation: yellowOrangeGlow 3s ease-in-out infinite alternate;
+        }
+
+        #key:active {
+            cursor: grabbing;
+        }
+
+        #key img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        @keyframes spin {
             0% {
-                color: #FF0000;
+                transform: translate(-50%, -50%) rotate(0deg);
             }
-
-            50% {
-                color: #CC0000;
-            }
-
             100% {
-                color: #FF0000;
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+        
+        @keyframes yellowOrangeGlow {
+            0% {
+                filter: drop-shadow(0 0 15px rgba(255, 165, 0, 0.9)) 
+                        drop-shadow(0 0 30px rgba(255, 140, 0, 0.6));
+            }
+            50% {
+                filter: drop-shadow(0 0 25px rgba(255, 165, 0, 1.0)) 
+                        drop-shadow(0 0 50px rgba(255, 140, 0, 0.8))
+                        drop-shadow(0 0 75px rgba(255, 69, 0, 0.5));
+            }
+            100% {
+                filter: drop-shadow(0 0 20px rgba(255, 165, 0, 0.8)) 
+                        drop-shadow(0 0 40px rgba(255, 140, 0, 0.7));
             }
         }
 
-        .flashing {
-            animation: flash-red 0.5s infinite;
+        /* Mobile responsive sizing */
+        @media (max-width: 768px) {
+            #lock {
+                width: 150px;
+                height: 150px;
+            }
+            
+            #key {
+                width: 231px;
+                height: 231px;
+            }
         }
 
-        #access-indicator {
-            margin-top: 15px;
-            height: 2px;
-            background-color: #222;
-            transform-origin: left;
-            transform: scaleX(0);
-            transition: transform 0.5s ease-in-out, background-color 0.5s ease-in-out;
-        }
-
-        .granted {
-            transform: scaleX(1) !important;
-            background-color: #FF0000 !important;
+        @media (max-width: 480px) {
+            #lock {
+                width: 120px;
+                height: 120px;
+            }
+            
+            #key {
+                width: 198px;
+                height: 198px;
+            }
         }
 
         /* Add styles for viewer videos */
@@ -1748,12 +1805,16 @@
         <div class="cover-bottom"></div>
     </div>
 
-    <!-- Password protection overlay -->
-    <div id="password-overlay">
-        <div id="password-container">
-            <div id="password-label"></div>
-            <input type="text" id="password-input" autocomplete="off" spellcheck="false">
-            <div id="access-indicator"></div>
+    <!-- Dunes background -->
+    <div id="dunes-background"></div>
+
+    <!-- Key unlocking system overlay -->
+    <div id="unlock-overlay">
+        <div id="lock">
+            <img src="./assets/images/Lock.png" alt="Lock" draggable="false">
+        </div>
+        <div id="key">
+            <img src="./assets/images/Key.png" alt="Key" draggable="false">
         </div>
     </div>
 
@@ -5206,147 +5267,319 @@
             initWebamp();
         }
 
-        // Password validation function
-        function setupPasswordValidation() {
-            const passwordInput = document.getElementById('password-input');
-            const accessIndicator = document.getElementById('access-indicator');
-            const passwordOverlay = document.getElementById('password-overlay');
-            const correctPassword = '99';
+        // Key unlocking system
+        function setupKeyUnlockingSystem() {
+            const unlockOverlay = document.getElementById('unlock-overlay');
+            const lock = document.getElementById('lock');
+            const key = document.getElementById('key');
+            let isDragging = false;
+            let dragOffset = { x: 0, y: 0 };
+            let passwordUnlocked = false;
 
-            // Show/hide the password label based on input
-            passwordInput.addEventListener('input', function () {
-                const label = document.getElementById('password-label');
-                if (this.value) {
-                    label.style.opacity = '0';
-                } else {
-                    label.style.opacity = '1';
-                }
-
-                // Add flashing effect when typing
-                this.classList.add('flashing');
-                setTimeout(() => {
-                    this.classList.remove('flashing');
-                }, 500);
-            });
-
-            // Check password on enter key
-            passwordInput.addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    checkPassword();
-                }
-            });
-
-            // Password validation
-            function checkPassword() {
-                if (passwordInput.value.toLowerCase() === correctPassword) {
-                    // Show success indicator
-                    accessIndicator.classList.add('granted');
-
-                    // Initialize Webamp with timeout protection
-                    const initTimeout = setTimeout(() => {
-                        console.error('Webamp initialization timeout - forcing continue');
-                        continueAfterPassword();
-                    }, 20000); // 20 second timeout
-
-                    // Initialize Webamp here before showing it
-                    initWebamp().then((instance) => {
-                        clearTimeout(initTimeout);
-                        console.log('Webamp initialized successfully');
-                        continueAfterPassword();
-
-                        // Start background preloading AFTER the site is shown
-                        setTimeout(() => {
-                            console.log('Starting background preloading...');
-                            preloadRemainingTracks();
-                        }, 2000);
-                    }).catch((error) => {
-                        clearTimeout(initTimeout);
-                        console.error('Webamp initialization failed:', error);
-                        // Continue anyway to prevent hanging
-                        continueAfterPassword();
-                    });
-
-                    function continueAfterPassword() {
-                        console.log('Continuing after password validation...');
-
-                        // Wait a moment, then fade out the overlay
-                        setTimeout(() => {
-                            console.log('Fading out password overlay...');
-                            passwordOverlay.style.opacity = '0';
-                            passwordOverlay.style.pointerEvents = 'none';
-                            passwordUnlocked = true;
-
-                            // Show the viewer window normally
-                            const viewerWindow = document.getElementById('viewer-window');
-                            if (viewerWindow) {
-                                viewerWindow.classList.add('visible');
-                                
-                                // Position for mobile if needed
-                                if (window.innerWidth <= 768) {
-                                    positionViewerForMobile(viewerWindow);
-                                }
-                                
-                                console.log('Viewer window made visible');
-                            }
-
-                            // Hide the cover window on desktop
-                            const coverWindow = document.getElementById('cover-window');
-                            if (coverWindow) {
-                                coverWindow.style.display = 'none';
-                                console.log('Desktop: cover window hidden');
-                            }
-
-                            // After password overlay fades out, start playback
-                            setTimeout(() => {
-                                console.log('Starting post-password initialization...');
-
-                                try {
-                                    // Initialize the first track's video in viewer window
-                                    console.log('Switching to first track background...');
-                                    switchBackground(0);
-
-                                    if (webampInstance) {
-                                        console.log('Starting first track playback...');
-                                        playFirstTrack();
-                                    } else {
-                                        console.warn('Webamp instance not available for playback');
-                                    }
-                                } catch (error) {
-                                    console.error('Error starting playback:', error);
-                                }
-
-                                // Fade in the logo and start animation
-                                const logoLink = document.getElementById('legendarium-logo-link');
-                                if (logoLink) {
-                                    logoLink.classList.add('visible');
-                                    console.log('Logo made visible');
-                                    if (!window.legendariumLogoAnimStarted) {
-                                        window.legendariumLogoAnimStarted = true;
-                                        startLegendariumLogoAnimation();
-                                    }
-                                }
-
-                                // Initialize deity messages with standard delay
-                                setTimeout(() => {
-                                    try {
-                                        console.log('Initializing deity message system...');
-                                        deityMessageSystem.init();
-                                    } catch (error) {
-                                        console.error('Error initializing deity messages:', error);
-                                    }
-                                }, 5000);
-
-                                console.log('Post-password initialization complete');
-                            }, 2000);
-                        }, 700);
+            // Position key randomly on screen (avoiding lock area)
+            function positionKeyRandomly() {
+                const margin = 100; // Keep key away from edges
+                const keySize = window.innerWidth <= 480 ? 180 : window.innerWidth <= 768 ? 210 : 240;
+                const maxX = window.innerWidth - margin - keySize;
+                const maxY = window.innerHeight - margin - keySize;
+                
+                let x, y;
+                let attempts = 0;
+                const maxAttempts = 50;
+                
+                do {
+                    x = margin + Math.random() * Math.max(0, maxX);
+                    y = margin + Math.random() * Math.max(0, maxY);
+                    attempts++;
+                    
+                    // Check if key would overlap with lock (center of screen)
+                    const keyCenterX = x + keySize / 2;
+                    const keyCenterY = y + keySize / 2;
+                    const lockCenterX = window.innerWidth / 2;
+                    const lockCenterY = window.innerHeight / 2;
+                    
+                    const distance = Math.sqrt(
+                        Math.pow(lockCenterX - keyCenterX, 2) + 
+                        Math.pow(lockCenterY - keyCenterY, 2)
+                    );
+                    
+                    // Ensure key is at least 200px away from lock center
+                    if (distance > 200 || attempts >= maxAttempts) {
+                        break;
                     }
-                } else {
-                    // Show failure indication (shake the input)
-                    passwordInput.style.animation = 'none';
-                    void passwordInput.offsetWidth; // Trigger reflow
-                    passwordInput.style.animation = 'shake 0.5s';
+                } while (true);
+                
+                key.style.left = x + 'px';
+                key.style.top = y + 'px';
+            }
+
+            // Calculate angle from key to lock
+            function calculateKeyRotation() {
+                const lockRect = lock.getBoundingClientRect();
+                const keyRect = key.getBoundingClientRect();
+                
+                const lockCenterX = lockRect.left + lockRect.width / 2;
+                const lockCenterY = lockRect.top + lockRect.height / 2;
+                const keyCenterX = keyRect.left + keyRect.width / 2;
+                const keyCenterY = keyRect.top + keyRect.height / 2;
+                
+                const deltaX = lockCenterX - keyCenterX;
+                const deltaY = lockCenterY - keyCenterY;
+                
+                const angleRad = Math.atan2(deltaY, deltaX);
+                const angleDeg = angleRad * (180 / Math.PI);
+                
+                return angleDeg;
+            }
+
+            // Update key rotation
+            function updateKeyRotation() {
+                const rotation = calculateKeyRotation();
+                key.style.transform = `rotate(${rotation}deg)`;
+            }
+
+            // Check if key overlaps with lock
+            function checkCollision() {
+                const lockRect = lock.getBoundingClientRect();
+                const keyRect = key.getBoundingClientRect();
+                
+                const lockCenterX = lockRect.left + lockRect.width / 2;
+                const lockCenterY = lockRect.top + lockRect.height / 2;
+                const keyCenterX = keyRect.left + keyRect.width / 2;
+                const keyCenterY = keyRect.top + keyRect.height / 2;
+                
+                const distance = Math.sqrt(
+                    Math.pow(lockCenterX - keyCenterX, 2) + 
+                    Math.pow(lockCenterY - keyCenterY, 2)
+                );
+                
+                // Collision threshold based on sizes
+                const threshold = 120; // Adjusted for larger elements
+                return distance < threshold;
+            }
+
+            // Handle unlock sequence
+            function handleUnlock() {
+                if (passwordUnlocked) return;
+                passwordUnlocked = true;
+                
+                console.log('Key unlocking sequence started...');
+                
+                // Transfer glow from key to lock, then hide key and start lock spinning
+                lock.classList.add('glowing'); // Add glow to lock
+                key.style.opacity = '0'; // Hide key (glow transfers to lock)
+                lock.classList.add('spinning'); // Start spinning (now with glow)
+                
+                // Track when spinning started to ensure at least one full rotation
+                const spinStartTime = Date.now();
+                const minSpinDuration = 2000; // 2 seconds = one full rotation (matches CSS animation)
+                
+                // Start dunes sliding animation
+                const dunesBackground = document.getElementById('dunes-background');
+                if (dunesBackground) {
+                    dunesBackground.classList.add('slide-out');
+                }
+                
+                // Initialize Webamp and wait for both completion AND minimum spin time
+                console.log('Starting Webamp initialization...');
+                const webampPromise = initWebamp().then((instance) => {
+                    console.log('Webamp initialized successfully');
+                    
+                    // Start background preloading AFTER the site is shown
+                    setTimeout(() => {
+                        console.log('Starting background preloading...');
+                        preloadRemainingTracks();
+                    }, 2000);
+                    
+                    return instance;
+                }).catch((error) => {
+                    console.error('Webamp initialization failed:', error);
+                    // Continue anyway to prevent hanging
+                    return null;
+                });
+                
+                // Wait for both Webamp initialization AND minimum spin duration
+                Promise.all([
+                    webampPromise,
+                    new Promise(resolve => {
+                        const elapsed = Date.now() - spinStartTime;
+                        const remaining = Math.max(0, minSpinDuration - elapsed);
+                        setTimeout(resolve, remaining);
+                    })
+                ]).then(() => {
+                    console.log('Both Webamp and minimum spin duration completed - stopping spinner');
+                    continueAfterUnlock();
+                });
+
+                function continueAfterUnlock() {
+                    console.log('continueAfterUnlock() called');
+
+                    // Get current lock rotation before stopping animation to preserve it for TV turn-off
+                    const lockStyle = getComputedStyle(lock);
+                    const transform = lockStyle.transform;
+                    
+                    // Stop lock spinning and remove glow, but preserve final rotation
+                    lock.classList.remove('spinning');
+                    lock.classList.remove('glowing');
+                    if (transform && transform !== 'none') {
+                        lock.style.transform = transform; // Keep whatever rotation it ended at
+                    }
+                    
+                    // Apply TV turn off effect to overlay
+                    unlockOverlay.classList.add('tv-turn-off');
+                    unlockOverlay.style.pointerEvents = 'none';
+                    
+                    // Also hide dunes background
+                    const dunesBackground = document.getElementById('dunes-background');
+                    if (dunesBackground) {
+                        dunesBackground.style.display = 'none';
+                    }
+                    
+                    // Ensure starfield stays in background
+                    const starfieldCanvas = document.getElementById('starfield-canvas');
+                    if (starfieldCanvas) {
+                        starfieldCanvas.style.zIndex = '-1';
+                    }
+
+                    // Wait a moment before starting site initialization
+                    setTimeout(() => {
+
+                        // Show the viewer window normally
+                        const viewerWindow = document.getElementById('viewer-window');
+                        if (viewerWindow) {
+                            viewerWindow.classList.add('visible');
+                            
+                            // Position for mobile if needed
+                            if (window.innerWidth <= 768) {
+                                positionViewerForMobile(viewerWindow);
+                            }
+                            
+                            console.log('Viewer window made visible');
+                        }
+
+                        // Hide the cover window on desktop
+                        const coverWindow = document.getElementById('cover-window');
+                        if (coverWindow) {
+                            coverWindow.style.display = 'none';
+                            console.log('Desktop: cover window hidden');
+                        }
+
+                        // After overlay fades out, start playback
+                        setTimeout(() => {
+                            console.log('Starting post-unlock initialization...');
+
+                            try {
+                                // Initialize the first track's video in viewer window
+                                console.log('Switching to first track background...');
+                                switchBackground(0);
+
+                                if (webampInstance) {
+                                    console.log('Starting first track playback...');
+                                    playFirstTrack();
+                                } else {
+                                    console.warn('Webamp instance not available for playback');
+                                }
+                            } catch (error) {
+                                console.error('Error starting playback:', error);
+                            }
+
+                            // Fade in the logo and start animation
+                            const logoLink = document.getElementById('legendarium-logo-link');
+                            if (logoLink) {
+                                logoLink.classList.add('visible');
+                                console.log('Logo made visible');
+                                if (!window.legendariumLogoAnimStarted) {
+                                    window.legendariumLogoAnimStarted = true;
+                                    startLegendariumLogoAnimation();
+                                }
+                            }
+
+                            // Initialize deity messages with standard delay
+                            setTimeout(() => {
+                                try {
+                                    console.log('Initializing deity message system...');
+                                    deityMessageSystem.init();
+                                } catch (error) {
+                                    console.error('Error initializing deity messages:', error);
+                                }
+                            }, 5000);
+
+                            console.log('Post-unlock initialization complete');
+                        }, 2000);
+                    }, 700);
                 }
             }
+
+            // Mouse/touch event handlers
+            function handleStart(e) {
+                if (passwordUnlocked) return;
+                
+                isDragging = true;
+                const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+                const keyRect = key.getBoundingClientRect();
+                
+                dragOffset.x = clientX - keyRect.left;
+                dragOffset.y = clientY - keyRect.top;
+                
+                key.style.transition = 'none';
+                e.preventDefault();
+            }
+
+            function handleMove(e) {
+                if (!isDragging || passwordUnlocked) return;
+                
+                const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+                
+                const newX = clientX - dragOffset.x;
+                const newY = clientY - dragOffset.y;
+                
+                // Keep key within bounds
+                const keySize = window.innerWidth <= 480 ? 198 : window.innerWidth <= 768 ? 231 : 264;
+                const boundedX = Math.max(0, Math.min(newX, window.innerWidth - keySize));
+                const boundedY = Math.max(0, Math.min(newY, window.innerHeight - keySize));
+                
+                key.style.left = boundedX + 'px';
+                key.style.top = boundedY + 'px';
+                
+                updateKeyRotation();
+                
+                if (checkCollision()) {
+                    handleUnlock();
+                }
+                
+                e.preventDefault();
+            }
+
+            function handleEnd(e) {
+                if (!isDragging) return;
+                
+                isDragging = false;
+                key.style.transition = 'transform 0.1s ease';
+                e.preventDefault();
+            }
+
+            // Set up event listeners
+            key.addEventListener('mousedown', handleStart);
+            key.addEventListener('touchstart', handleStart, { passive: false });
+            
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('touchmove', handleMove, { passive: false });
+            
+            document.addEventListener('mouseup', handleEnd);
+            document.addEventListener('touchend', handleEnd);
+
+            // Initialize system
+            positionKeyRandomly();
+            updateKeyRotation();
+            
+            // Update rotation on window resize
+            window.addEventListener('resize', () => {
+                setTimeout(() => {
+                    updateKeyRotation();
+                }, 100);
+            });
         }
 
         // Media Session API for background playback
@@ -5547,24 +5780,16 @@
             // Initialize starfield background
             starField = new StarField();
 
-            // Setup password validation
-            setupPasswordValidation();
+            // Setup key unlocking system
+            setupKeyUnlockingSystem();
             
 
-            // Show password overlay
-            const passwordOverlay = document.getElementById('password-overlay');
-            if (passwordOverlay) {
-                passwordOverlay.style.opacity = '1';
-                passwordOverlay.style.pointerEvents = 'auto';
+            // Show unlock overlay
+            const unlockOverlay = document.getElementById('unlock-overlay');
+            if (unlockOverlay) {
+                unlockOverlay.style.opacity = '1';
+                unlockOverlay.style.pointerEvents = 'auto';
             }
-
-            // Focus on password input
-            setTimeout(() => {
-                const passwordInput = document.getElementById('password-input');
-                if (passwordInput) {
-                    passwordInput.focus();
-                }
-            }, 500);
         }
 
         // Initialize everything when page loads
@@ -5578,11 +5803,11 @@
             } catch (error) {
                 console.error('Initialization error:', error);
                 // Fallback to basic initialization
-                setupPasswordValidation();
-                const passwordOverlay = document.getElementById('password-overlay');
-                if (passwordOverlay) {
-                    passwordOverlay.style.opacity = '1';
-                    passwordOverlay.style.pointerEvents = 'auto';
+                setupKeyUnlockingSystem();
+                const unlockOverlay = document.getElementById('unlock-overlay');
+                if (unlockOverlay) {
+                    unlockOverlay.style.opacity = '1';
+                    unlockOverlay.style.pointerEvents = 'auto';
                 }
             }
 
