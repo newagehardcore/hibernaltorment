@@ -5701,12 +5701,42 @@
                 
                 // Check collision immediately for both desktop and mobile
                 if (checkCollision()) {
-                    // On mobile, try autoplay immediately during touch event for better success
+                    // On mobile, try immediate AudioContext setup during actual touch event
                     if (window.innerWidth <= 768 && e.type.includes('touch')) {
-                        console.log('Mobile: attempting autoplay during collision touchmove');
+                        console.log('Mobile: immediate AudioContext setup during collision touchmove');
+                        
+                        // Resume AudioContext immediately during this touch event
+                        if (window.AudioContext || window.webkitAudioContext) {
+                            try {
+                                if (!window.globalAudioContext) {
+                                    window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                                }
+                                if (window.globalAudioContext.state === 'suspended') {
+                                    window.globalAudioContext.resume().then(() => {
+                                        console.log('Mobile: AudioContext resumed during touchmove');
+                                    }).catch(err => {
+                                        console.error('Mobile: AudioContext resume failed:', err);
+                                    });
+                                }
+                            } catch (error) {
+                                console.error('Mobile: AudioContext setup during touch failed:', error);
+                            }
+                        }
+                        
                         // Store that we should autoplay when Webamp is ready
                         window.mobileAutoplayRequested = true;
                         window.mobileAutoplayStartTime = Date.now();
+                        
+                        // Also try to trigger video play immediately if viewer video exists
+                        setTimeout(() => {
+                            const viewerVideo = document.querySelector('#viewer-window video');
+                            if (viewerVideo) {
+                                console.log('Mobile: attempting immediate viewer video play during touch');
+                                viewerVideo.play().catch(err => {
+                                    console.log('Mobile: immediate viewer video play failed:', err);
+                                });
+                            }
+                        }, 50); // Tiny delay
                     }
                     
                     handleUnlock();
