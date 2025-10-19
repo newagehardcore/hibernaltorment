@@ -4781,13 +4781,15 @@
                     console.log('No custom skin, skipping skin load wait');
                 }
 
-                // Set up basic audio context for mobile compatibility
+                // Use the already resumed AudioContext for mobile autoplay
                 try {
                     if (webampInstance && !webampInstance.audioContext) {
-                        webampInstance.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        // Use the global AudioContext that was resumed during unlock gesture
+                        webampInstance.audioContext = window.globalAudioContext || new (window.AudioContext || window.webkitAudioContext)();
+                        console.log('Using AudioContext for Webamp, state:', webampInstance.audioContext.state);
                     }
                 } catch (audioError) {
-                    console.error('AudioContext creation failed:', audioError);
+                    console.error('AudioContext assignment failed:', audioError);
                 }
 
                 // Intercept Redux store to prevent playlist reordering
@@ -5409,6 +5411,26 @@
                 }
                 
                 console.log('Key unlocking sequence started...');
+                
+                // CRITICAL: Resume AudioContext immediately during user gesture for mobile autoplay
+                if (window.AudioContext || window.webkitAudioContext) {
+                    try {
+                        // Create and store AudioContext globally for mobile autoplay
+                        if (!window.globalAudioContext) {
+                            window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        }
+                        // Resume immediately during user interaction
+                        if (window.globalAudioContext.state === 'suspended') {
+                            window.globalAudioContext.resume().then(() => {
+                                console.log('AudioContext resumed for mobile autoplay');
+                            }).catch(err => {
+                                console.error('Failed to resume AudioContext:', err);
+                            });
+                        }
+                    } catch (error) {
+                        console.error('AudioContext setup failed:', error);
+                    }
+                }
                 
                 // Transfer glow from key to lock, then hide key and start lock spinning
                 lock.classList.add('glowing'); // Add glow to lock
