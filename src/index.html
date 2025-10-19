@@ -5466,6 +5466,27 @@
                     }
                 }
                 
+                // Store mobile autoplay function to execute immediately when Webamp is ready
+                if (window.innerWidth <= 768) {
+                    window.pendingMobileAutoplay = function() {
+                        if (webampInstance && window.globalAudioContext && window.globalAudioContext.state === 'running') {
+                            console.log('Executing stored mobile autoplay function');
+                            try {
+                                webampInstance.store.dispatch({type: "SET_CURRENT_TRACK", id: 0});
+                                webampInstance.store.dispatch({type: "STOP"});
+                                webampInstance.play();
+                                webampInstance.store.dispatch({type: "PLAY"});
+                                console.log('Mobile autoplay successful via stored function');
+                                return true;
+                            } catch (error) {
+                                console.error('Mobile autoplay failed:', error);
+                                return false;
+                            }
+                        }
+                        return false;
+                    };
+                }
+                
                 // Transfer glow from key to lock, then hide key and start lock spinning
                 lock.classList.add('glowing'); // Add glow to lock
                 key.style.opacity = '0'; // Hide key (glow transfers to lock)
@@ -5487,6 +5508,17 @@
                 
                 const webampPromise = initWebamp().then((instance) => {
                     console.log('Webamp initialized successfully', instance ? 'with instance' : 'without instance');
+                    
+                    // Try mobile autoplay immediately while potentially still in gesture context
+                    if (window.pendingMobileAutoplay && typeof window.pendingMobileAutoplay === 'function') {
+                        console.log('Attempting mobile autoplay immediately after Webamp init');
+                        const success = window.pendingMobileAutoplay();
+                        if (success) {
+                            console.log('Mobile autoplay succeeded immediately after init');
+                        } else {
+                            console.log('Mobile autoplay failed immediately after init');
+                        }
+                    }
                     
                     // Start background preloading AFTER the site is shown
                     setTimeout(() => {
@@ -5625,21 +5657,12 @@
                         try {
                             switchBackground(0);
                             if (webampInstance) {
-                                // Try mobile autoplay using same approach as desktop playFirstTrack
-                                if (window.innerWidth <= 768 && window.globalAudioContext && window.globalAudioContext.state === 'running') {
-                                    console.log('Attempting mobile autoplay using desktop approach');
-                                    try {
-                                        // Exact same sequence as playFirstTrack
-                                        webampInstance.store.dispatch({type: "SET_CURRENT_TRACK", id: 0});
-                                        webampInstance.store.dispatch({type: "STOP"});
-                                        
-                                        // No setTimeout delay for mobile - immediate execution while in gesture
-                                        webampInstance.play();
-                                        webampInstance.store.dispatch({type: "PLAY"});
-                                        
-                                        console.log('Mobile autoplay successful');
-                                    } catch (mobileError) {
-                                        console.log('Mobile autoplay failed, falling back to playFirstTrack:', mobileError);
+                                // Try mobile autoplay one more time if it hasn't worked yet
+                                if (window.innerWidth <= 768 && window.pendingMobileAutoplay && typeof window.pendingMobileAutoplay === 'function') {
+                                    console.log('Final mobile autoplay attempt');
+                                    const success = window.pendingMobileAutoplay();
+                                    if (!success) {
+                                        console.log('All mobile autoplay attempts failed, falling back to playFirstTrack');
                                         playFirstTrack();
                                     }
                                 } else {
