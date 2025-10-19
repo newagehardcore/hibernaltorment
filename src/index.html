@@ -3590,9 +3590,16 @@
                     fullscreenBackgroundVideo.currentTime = viewerVideo.currentTime;
                     
                     // Activate fullscreen background video with TV turn-on effect
+                    fullscreenBackgroundVideo.style.display = 'block'; // Ensure it's visible on mobile
                     fullscreenBackgroundVideo.classList.add('active', 'tv-appearing');
                     fullscreenBackgroundVideo.play().catch(err => {
                         console.error('Fullscreen video play failed:', err);
+                        // On mobile, force play again after a short delay
+                        if (window.innerWidth <= 768) {
+                            setTimeout(() => {
+                                fullscreenBackgroundVideo.play().catch(e => console.log('Mobile retry failed:', e));
+                            }, 100);
+                        }
                     });
                     
                     // Remove TV effect after animation completes
@@ -3627,8 +3634,15 @@
                 // After TV turn-off completes, hide fullscreen background video
                 setTimeout(() => {
                     fullscreenBackgroundVideo.classList.remove('active', 'tv-disappearing');
-                    fullscreenBackgroundVideo.pause();
-                    fullscreenBackgroundVideo.src = '';
+                    // Keep background video playing on mobile for autoplay continuity
+                    if (window.innerWidth > 768) {
+                        fullscreenBackgroundVideo.pause();
+                        fullscreenBackgroundVideo.src = '';
+                    } else {
+                        console.log('Mobile: keeping background video playing during transition');
+                        // On mobile, just hide visually but keep playing for autoplay continuity
+                        fullscreenBackgroundVideo.style.display = 'none';
+                    }
                 }, 800); // Match tvTurnOff duration
                 
                 // Show viewer window with TV turn-on effect
@@ -5479,26 +5493,29 @@
                     dunesBackground.classList.add('slide-out');
                 }
                 
-                // Initialize Webamp immediately during user gesture (exact password approach)
+                // Initialize Webamp immediately during user gesture (like password approach)
                 console.log('Starting Webamp initialization immediately during user gesture...');
                 console.log('Mobile device detected:', window.innerWidth <= 768);
                 
-                // Match password approach exactly: init Webamp, then call continueAfterUnlock when ready
                 initWebamp().then((instance) => {
                     console.log('Webamp initialized successfully', instance ? 'with instance' : 'without instance');
                     
-                    // Try immediate autoplay during gesture (for mobile)
-                    if (window.innerWidth <= 768 && instance) {
-                        console.log('Mobile: attempting immediate autoplay during user gesture');
-                        try {
-                            switchBackground(0);
-                            setTimeout(() => {
-                                playFirstTrack();
-                                console.log('Mobile: immediate autoplay attempted');
-                            }, 100); // Tiny delay for background to load
-                        } catch (error) {
-                            console.error('Mobile immediate autoplay failed:', error);
+                    // Check if mobile autoplay was requested during touch and is still recent
+                    if (window.mobileAutoplayRequested && window.mobileAutoplayStartTime) {
+                        const timeSinceRequest = Date.now() - window.mobileAutoplayStartTime;
+                        if (timeSinceRequest < 5000 && window.innerWidth <= 768) { // Within 5 seconds
+                            console.log('Mobile: executing autoplay request from touchmove collision');
+                            try {
+                                switchBackground(0);
+                                setTimeout(() => {
+                                    playFirstTrack();
+                                    console.log('Mobile: autoplay executed from touchmove request');
+                                }, 100);
+                            } catch (error) {
+                                console.error('Mobile autoplay from touchmove failed:', error);
+                            }
                         }
+                        window.mobileAutoplayRequested = false;
                     }
                     
                     continueAfterUnlock();
@@ -5684,6 +5701,14 @@
                 
                 // Check collision immediately for both desktop and mobile
                 if (checkCollision()) {
+                    // On mobile, try autoplay immediately during touch event for better success
+                    if (window.innerWidth <= 768 && e.type.includes('touch')) {
+                        console.log('Mobile: attempting autoplay during collision touchmove');
+                        // Store that we should autoplay when Webamp is ready
+                        window.mobileAutoplayRequested = true;
+                        window.mobileAutoplayStartTime = Date.now();
+                    }
+                    
                     handleUnlock();
                 }
                 
