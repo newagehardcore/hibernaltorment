@@ -5583,18 +5583,25 @@
                             }
                         }
 
-                        // Start everything immediately - no more delays
-                        try {
-                            switchBackground(0);
-                            if (webampInstance) {
-                                console.log('Starting first track playback...');
-                                playFirstTrack();
-                            } else {
-                                console.warn('Webamp instance not available for playback');
+                        // Match password approach timing - start playback after a short delay
+                        setTimeout(() => {
+                            console.log('Starting post-unlock initialization...');
+                            
+                            try {
+                                // Initialize the first track's video in viewer window
+                                console.log('Switching to first track background...');
+                                switchBackground(0);
+                                
+                                if (webampInstance) {
+                                    console.log('Starting first track playback...');
+                                    playFirstTrack();
+                                } else {
+                                    console.warn('Webamp instance not available for playback');
+                                }
+                            } catch (error) {
+                                console.error('Error starting playback:', error);
                             }
-                        } catch (error) {
-                            console.error('Error starting playback:', error);
-                        }
+                        }, window.innerWidth <= 768 ? 1000 : 2000); // Match password approach timing
 
                         // Start deity messages after standard delay
                         setTimeout(() => {
