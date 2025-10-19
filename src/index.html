@@ -5466,26 +5466,7 @@
                     }
                 }
                 
-                // Store mobile autoplay function to execute immediately when Webamp is ready
-                if (window.innerWidth <= 768) {
-                    window.pendingMobileAutoplay = function() {
-                        if (webampInstance && window.globalAudioContext && window.globalAudioContext.state === 'running') {
-                            console.log('Executing stored mobile autoplay function');
-                            try {
-                                webampInstance.store.dispatch({type: "SET_CURRENT_TRACK", id: 0});
-                                webampInstance.store.dispatch({type: "STOP"});
-                                webampInstance.play();
-                                webampInstance.store.dispatch({type: "PLAY"});
-                                console.log('Mobile autoplay successful via stored function');
-                                return true;
-                            } catch (error) {
-                                console.error('Mobile autoplay failed:', error);
-                                return false;
-                            }
-                        }
-                        return false;
-                    };
-                }
+                // Mobile autoplay will happen immediately when Webamp initializes during gesture
                 
                 // Transfer glow from key to lock, then hide key and start lock spinning
                 lock.classList.add('glowing'); // Add glow to lock
@@ -5502,11 +5483,21 @@
                     dunesBackground.classList.add('slide-out');
                 }
                 
-                // Initialize Webamp and wait for both completion AND minimum spin time
-                console.log('Starting Webamp initialization...');
+                // Initialize Webamp immediately during user gesture (like password approach)
+                console.log('Starting Webamp initialization immediately during user gesture...');
                 console.log('Mobile device detected:', window.innerWidth <= 768);
                 
                 const webampPromise = initWebamp().then((instance) => {
+                    // On mobile, trigger autoplay immediately while still in gesture context
+                    if (window.innerWidth <= 768 && instance) {
+                        console.log('Mobile: Webamp ready, attempting autoplay during gesture');
+                        try {
+                            playFirstTrack();
+                            console.log('Mobile autoplay triggered successfully during gesture');
+                        } catch (error) {
+                            console.error('Mobile autoplay failed during gesture:', error);
+                        }
+                    }
                     console.log('Webamp initialized successfully', instance ? 'with instance' : 'without instance');
                     
                     // Try mobile autoplay immediately while potentially still in gesture context
@@ -5657,16 +5648,11 @@
                         try {
                             switchBackground(0);
                             if (webampInstance) {
-                                // Try mobile autoplay one more time if it hasn't worked yet
-                                if (window.innerWidth <= 768 && window.pendingMobileAutoplay && typeof window.pendingMobileAutoplay === 'function') {
-                                    console.log('Final mobile autoplay attempt');
-                                    const success = window.pendingMobileAutoplay();
-                                    if (!success) {
-                                        console.log('All mobile autoplay attempts failed, falling back to playFirstTrack');
-                                        playFirstTrack();
-                                    }
-                                } else {
+                                // Desktop always calls playFirstTrack here, mobile already did during gesture
+                                if (window.innerWidth > 768) {
                                     playFirstTrack();
+                                } else {
+                                    console.log('Mobile: autoplay already attempted during gesture');
                                 }
                             }
                         } catch (error) {
