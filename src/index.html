@@ -4893,11 +4893,23 @@
                 });
 
                 // Set up audio analyzer for proper audio connectivity
-                try {
-                    await setupAudioAnalyzer();
-                } catch (error) {
-                    console.error('Audio analyzer setup failed:', error);
-                    // Continue without analyzer but audio might not work
+                // On mobile, do this asynchronously to avoid blocking the unlock sequence
+                if (window.innerWidth <= 768) {
+                    // Mobile: Setup audio analyzer in background without waiting
+                    console.log('Mobile detected - setting up audio analyzer asynchronously');
+                    setTimeout(() => {
+                        setupAudioAnalyzer().catch(error => {
+                            console.error('Mobile audio analyzer setup failed:', error);
+                        });
+                    }, 100);
+                } else {
+                    // Desktop: Wait for audio analyzer setup
+                    try {
+                        await setupAudioAnalyzer();
+                    } catch (error) {
+                        console.error('Audio analyzer setup failed:', error);
+                        // Continue without analyzer but audio might not work
+                    }
                 }
 
                 // Set up Media Session API for background playback
