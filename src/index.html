@@ -4286,6 +4286,30 @@
             });
         }
 
+        // Function to center Webamp for mobile
+        function centerWebampForMobile() {
+            if (!webampInstance || !webampInstance.store) return;
+
+            const zoomFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--webamp-zoom'));
+            
+            // Center the main window horizontally, position near top
+            const mainWindowWidth = 275;
+            const posX = Math.floor((window.innerWidth - mainWindowWidth * zoomFactor) / 2 / zoomFactor);
+            const posY = Math.floor((window.innerHeight * 0.1) / zoomFactor); // 10% from top
+
+            // Only position main window on mobile (EQ and playlist are hidden)
+            const mobilePositions = {
+                main: { x: posX, y: posY }
+            };
+
+            // Update window positions
+            webampInstance.store.dispatch({
+                type: 'UPDATE_WINDOW_POSITIONS',
+                positions: mobilePositions,
+                absolute: true
+            });
+        }
+
         // Function to get current window positions
         function getCurrentWindowPositions() {
             const state = webampInstance.store.getState();
@@ -4757,23 +4781,13 @@
                     console.log('No custom skin, skipping skin load wait');
                 }
 
-                // Set up audio analyzer and ensure AudioContext is available
+                // Set up basic audio context for mobile compatibility
                 try {
-                    await setupAudioAnalyzer();
-                    // Ensure we have an AudioContext reference for mobile interaction
                     if (webampInstance && !webampInstance.audioContext) {
                         webampInstance.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     }
-                } catch (error) {
-                    console.error('Audio analyzer setup failed:', error);
-                    // Ensure we have an AudioContext reference even if analyzer fails
-                    try {
-                        if (webampInstance && !webampInstance.audioContext) {
-                            webampInstance.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                        }
-                    } catch (audioError) {
-                        console.error('AudioContext creation failed:', audioError);
-                    }
+                } catch (audioError) {
+                    console.error('AudioContext creation failed:', audioError);
                 }
 
                 // Intercept Redux store to prevent playlist reordering
@@ -4857,8 +4871,6 @@
                 webampInstance.onTrackDidChange(trackInfo => {
                     try {
                         handleTrackChange(trackInfo);
-                        // Try to set up audio analyzer again for new track
-                        setupAudioAnalyzer();
                     } catch (error) {
                         console.error('Track change handler error:', error);
                     }
@@ -4871,13 +4883,16 @@
                     console.error('Media Session setup failed:', error);
                 }
 
-                // Center windows (desktop only)
-                if (window.innerWidth > 768) {
-                    try {
+                // Center windows
+                try {
+                    if (window.innerWidth > 768) {
                         centerWindows();
-                    } catch (error) {
-                        console.error('Window centering failed:', error);
+                    } else {
+                        // Mobile Webamp positioning
+                        centerWebampForMobile();
                     }
+                } catch (error) {
+                    console.error('Window centering failed:', error);
                 }
 
 
@@ -4975,16 +4990,7 @@
                     cleanup();
                 });
 
-                // In initWebamp, after setting up the store
-                webampInstance.store.subscribe(() => {
-                    const state = webampInstance.store.getState();
-                    const media = state?.media;
-
-                    // If media starts playing and we don't have an analyzer yet
-                    if (media?.status === "PLAYING" && !webampInstance.analyzer) {
-                        setupAudioAnalyzer();
-                    }
-                });
+                // Removed complex audio analyzer subscription for mobile compatibility
 
 
 
@@ -5041,8 +5047,7 @@
                     // Also try the direct Redux action
                     webampInstance.store.dispatch({ type: "PLAY" });
 
-                    // Set up audio analyzer after playback starts
-                    setTimeout(setupAudioAnalyzer, 1000);
+                    // Removed complex audio analyzer for mobile compatibility
 
                     // Update media session for background playback
                     if (window.updateMediaSessionMetadata && tracksData[0]) {
@@ -5083,8 +5088,7 @@
                 // Use official Webamp API for track changes only
                 webampInstance.onTrackDidChange(trackInfo => {
                     handleTrackChange(trackInfo);
-                    // Try to set up audio analyzer again for new track
-                    setupAudioAnalyzer();
+                    // Removed complex audio analyzer for mobile compatibility
                 });
 
                 // Set up mobile touch interaction for playlist playback
