@@ -5613,7 +5613,26 @@
                         try {
                             switchBackground(0);
                             if (webampInstance) {
-                                playFirstTrack();
+                                // Try mobile autoplay using same approach as desktop playFirstTrack
+                                if (window.innerWidth <= 768 && window.globalAudioContext && window.globalAudioContext.state === 'running') {
+                                    console.log('Attempting mobile autoplay using desktop approach');
+                                    try {
+                                        // Exact same sequence as playFirstTrack
+                                        webampInstance.store.dispatch({type: "SET_CURRENT_TRACK", id: 0});
+                                        webampInstance.store.dispatch({type: "STOP"});
+                                        
+                                        // No setTimeout delay for mobile - immediate execution while in gesture
+                                        webampInstance.play();
+                                        webampInstance.store.dispatch({type: "PLAY"});
+                                        
+                                        console.log('Mobile autoplay successful');
+                                    } catch (mobileError) {
+                                        console.log('Mobile autoplay failed, falling back to playFirstTrack:', mobileError);
+                                        playFirstTrack();
+                                    }
+                                } else {
+                                    playFirstTrack();
+                                }
                             }
                         } catch (error) {
                             console.error('Error starting playback:', error);
