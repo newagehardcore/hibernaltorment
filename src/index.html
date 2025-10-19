@@ -4871,46 +4871,46 @@
 
 
 
-                // Set playlist size to the specified number of tracks explicitly
-                setTimeout(() => {
-                    if (webampInstance && webampInstance.store) {
-                        const playlistSize = initialPlaylistSize;
-                        console.log(`Setting playlist size to ${playlistSize} tracks`);
-                        webampInstance.store.dispatch({
-                            type: 'SET_PLAYLIST_WINDOW_SIZE',
-                            size: [0, playlistSize]
-                        });
-
-
-                    }
-                }, 500);
-
-                // Focus the playlist window to bring it to the foreground
-                setTimeout(() => {
-                    if (webampInstance && webampInstance.store) {
-                        webampInstance.store.dispatch({
-                            type: 'SET_FOCUSED_WINDOW',
-                            window: 'playlist'
-                        });
-
-                        // Try multiple approaches to set visualizer to oscilloscope
-                        // Approach 1: Try TOGGLE_VISUALIZER_STYLE (might cycle between modes)
-                        webampInstance.store.dispatch({
-                            type: 'TOGGLE_VISUALIZER_STYLE'
-                        });
-                    }
-                }, 100);
-
-                // Try another approach after a short delay
-                setTimeout(() => {
-                    if (webampInstance && webampInstance.store) {
-                        // Approach 2: Try clicking on the visualizer area programmatically
-                        const visualizerElement = document.querySelector('#webamp .visualizer');
-                        if (visualizerElement) {
-                            visualizerElement.click();
+                // Set playlist size to the specified number of tracks explicitly (desktop only)
+                if (window.innerWidth > 768) {
+                    setTimeout(() => {
+                        if (webampInstance && webampInstance.store) {
+                            const playlistSize = initialPlaylistSize;
+                            console.log(`Setting playlist size to ${playlistSize} tracks`);
+                            webampInstance.store.dispatch({
+                                type: 'SET_PLAYLIST_WINDOW_SIZE',
+                                size: [0, playlistSize]
+                            });
                         }
-                    }
-                }, 500);
+                    }, 500);
+
+                    // Focus the playlist window to bring it to the foreground (desktop only)
+                    setTimeout(() => {
+                        if (webampInstance && webampInstance.store) {
+                            webampInstance.store.dispatch({
+                                type: 'SET_FOCUSED_WINDOW',
+                                window: 'playlist'
+                            });
+
+                            // Try multiple approaches to set visualizer to oscilloscope
+                            // Approach 1: Try TOGGLE_VISUALIZER_STYLE (might cycle between modes)
+                            webampInstance.store.dispatch({
+                                type: 'TOGGLE_VISUALIZER_STYLE'
+                            });
+                        }
+                    }, 100);
+
+                    // Try another approach after a short delay (desktop only)
+                    setTimeout(() => {
+                        if (webampInstance && webampInstance.store) {
+                            // Approach 2: Try clicking on the visualizer area programmatically
+                            const visualizerElement = document.querySelector('#webamp .visualizer');
+                            if (visualizerElement) {
+                                visualizerElement.click();
+                            }
+                        }
+                    }, 500);
+                }
 
 
 
