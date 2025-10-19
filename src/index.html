@@ -5473,78 +5473,30 @@
                 key.style.opacity = '0'; // Hide key (glow transfers to lock)
                 lock.classList.add('spinning'); // Start spinning (now with glow)
                 
-                // Track when spinning started to ensure at least one full rotation
-                const spinStartTime = Date.now();
-                const minSpinDuration = 2000; // 2 seconds = one full rotation (matches CSS animation)
-                
                 // Start dunes sliding animation
                 const dunesBackground = document.getElementById('dunes-background');
                 if (dunesBackground) {
                     dunesBackground.classList.add('slide-out');
                 }
                 
-                // Initialize Webamp immediately during user gesture (like password approach)
+                // Initialize Webamp immediately during user gesture (exact password approach)
                 console.log('Starting Webamp initialization immediately during user gesture...');
                 console.log('Mobile device detected:', window.innerWidth <= 768);
                 
-                const webampPromise = initWebamp().then((instance) => {
-                    // On mobile, trigger autoplay immediately while still in gesture context
-                    if (window.innerWidth <= 768 && instance) {
-                        console.log('Mobile: Webamp ready, attempting autoplay during gesture');
-                        try {
-                            playFirstTrack();
-                            console.log('Mobile autoplay triggered successfully during gesture');
-                        } catch (error) {
-                            console.error('Mobile autoplay failed during gesture:', error);
-                        }
-                    }
+                // Match password approach exactly: init Webamp, then call continueAfterUnlock when ready
+                initWebamp().then((instance) => {
                     console.log('Webamp initialized successfully', instance ? 'with instance' : 'without instance');
-                    
-                    // Try mobile autoplay immediately while potentially still in gesture context
-                    if (window.pendingMobileAutoplay && typeof window.pendingMobileAutoplay === 'function') {
-                        console.log('Attempting mobile autoplay immediately after Webamp init');
-                        const success = window.pendingMobileAutoplay();
-                        if (success) {
-                            console.log('Mobile autoplay succeeded immediately after init');
-                        } else {
-                            console.log('Mobile autoplay failed immediately after init');
-                        }
-                    }
+                    continueAfterUnlock();
                     
                     // Start background preloading AFTER the site is shown
                     setTimeout(() => {
                         console.log('Starting background preloading...');
                         preloadRemainingTracks();
                     }, 2000);
-                    
-                    return instance;
                 }).catch((error) => {
                     console.error('Webamp initialization failed:', error);
                     console.error('Error stack:', error.stack);
                     // Continue anyway to prevent hanging
-                    return null;
-                });
-                
-                // Create the minimum spin duration promise
-                const spinDurationPromise = new Promise(resolve => {
-                    const elapsed = Date.now() - spinStartTime;
-                    const remaining = Math.max(0, minSpinDuration - elapsed);
-                    console.log(`Spin duration: ${elapsed}ms elapsed, ${remaining}ms remaining`);
-                    setTimeout(() => {
-                        console.log('Minimum spin duration completed');
-                        resolve();
-                    }, remaining);
-                });
-                
-                // Wait for both Webamp initialization AND minimum spin duration
-                console.log('Waiting for both Webamp init and spin duration...');
-                Promise.all([webampPromise, spinDurationPromise]).then((results) => {
-                    console.log('Both Webamp and minimum spin duration completed - stopping spinner');
-                    console.log('Webamp instance result:', results[0] ? 'success' : 'null/failed');
-                    continueAfterUnlock();
-                }).catch((error) => {
-                    console.error('Promise.all failed during unlock:', error);
-                    console.log('Attempting to continue anyway...');
                     continueAfterUnlock();
                 });
 
@@ -5580,17 +5532,6 @@
                         starfieldCanvas.style.zIndex = '-1';
                     }
                     
-                    // Debug: Check visibility state right now
-                    const webampContainer = document.getElementById('webamp-container');
-                    const coverWindow = document.getElementById('cover-window');
-                    const viewerWindow = document.getElementById('viewer-window');
-                    console.log('TV off start - Element visibility check:');
-                    console.log('- webamp-container opacity:', webampContainer?.style.opacity || getComputedStyle(webampContainer)?.opacity);
-                    console.log('- cover-window opacity:', coverWindow?.style.opacity || getComputedStyle(coverWindow)?.opacity);
-                    console.log('- cover-window classes:', coverWindow?.className);
-                    console.log('- viewer-window opacity:', viewerWindow?.style.opacity || getComputedStyle(viewerWindow)?.opacity);
-                    console.log('- viewer-window classes:', viewerWindow?.className);
-
                     // Wait for TV turn-off effect to complete (1.2s), then show everything at once
                     setTimeout(() => {
                         console.log('TV off complete - showing all elements');
@@ -5642,18 +5583,14 @@
                             }
                         }
 
-                        // Logo will be shown later as easter egg after viewer powers on
-
                         // Start everything immediately - no more delays
                         try {
                             switchBackground(0);
                             if (webampInstance) {
-                                // Desktop always calls playFirstTrack here, mobile already did during gesture
-                                if (window.innerWidth > 768) {
-                                    playFirstTrack();
-                                } else {
-                                    console.log('Mobile: autoplay already attempted during gesture');
-                                }
+                                console.log('Starting first track playback...');
+                                playFirstTrack();
+                            } else {
+                                console.warn('Webamp instance not available for playback');
                             }
                         } catch (error) {
                             console.error('Error starting playback:', error);
