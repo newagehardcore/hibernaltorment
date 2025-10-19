@@ -4728,30 +4728,18 @@
                 webampInstance = new Webamp(webampOptions);
 
                 console.log('Rendering Webamp...');
-                // Render Webamp and set up the player with timeout
-                const renderPromise = webampInstance.renderWhenReady(document.getElementById('webamp-container'));
-
-                // Add timeout for render
-                const renderTimeout = new Promise((_, reject) => {
-                    setTimeout(() => reject(new Error('Webamp render timeout')), 10000);
-                });
-
-                await Promise.race([renderPromise, renderTimeout]);
+                // Render Webamp directly without timeout wrapper
+                await webampInstance.renderWhenReady(document.getElementById('webamp-container'));
                 console.log('Webamp rendered successfully');
 
-                // Wait for skin to be loaded with timeout
+                // Wait for skin to be loaded without timeout
                 if (skinOption) {
                     console.log('Waiting for skin to load...');
-                    const skinPromise = webampInstance.skinIsLoaded();
-                    const skinTimeout = new Promise((_, reject) => {
-                        setTimeout(() => reject(new Error('Skin load timeout')), 8000);
-                    });
-
                     try {
-                        await Promise.race([skinPromise, skinTimeout]);
+                        await webampInstance.skinIsLoaded();
                         console.log('Skin loaded successfully');
                     } catch (error) {
-                        console.error('Skin loading failed or timed out:', error);
+                        console.error('Skin loading failed:', error);
                         // Continue anyway
                     }
                 } else {
@@ -5256,6 +5244,19 @@
             let isDragging = false;
             let dragOffset = { x: 0, y: 0 };
             let passwordUnlocked = false;
+            let safetyTimeoutId = null;
+            
+            // Safety timeout for mobile devices - if unlock hasn't happened after 30 seconds, force unlock
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                console.log('Mobile device detected - setting up 30-second safety timeout');
+                safetyTimeoutId = setTimeout(() => {
+                    if (!passwordUnlocked) {
+                        console.log('Safety timeout triggered - forcing unlock for mobile compatibility');
+                        handleUnlock();
+                    }
+                }, 30000); // 30 seconds
+            }
 
             // Position key randomly on screen (keeping it in outer 50% of screen)
             function positionKeyRandomly() {
@@ -5330,30 +5331,63 @@
                 key.style.transform = `rotate(${rotation}deg)`;
             }
 
-            // Check if key overlaps with lock
+            // Check if key overlaps with lock - improved for mobile compatibility
             function checkCollision() {
-                const lockRect = lock.getBoundingClientRect();
-                const keyRect = key.getBoundingClientRect();
-                
-                const lockCenterX = lockRect.left + lockRect.width / 2;
-                const lockCenterY = lockRect.top + lockRect.height / 2;
-                const keyCenterX = keyRect.left + keyRect.width / 2;
-                const keyCenterY = keyRect.top + keyRect.height / 2;
-                
-                const distance = Math.sqrt(
-                    Math.pow(lockCenterX - keyCenterX, 2) + 
-                    Math.pow(lockCenterY - keyCenterY, 2)
-                );
-                
-                // Collision threshold based on sizes
-                const threshold = 120; // Adjusted for larger elements
-                return distance < threshold;
+                try {
+                    const lockRect = lock.getBoundingClientRect();
+                    const keyRect = key.getBoundingClientRect();
+                    
+                    // Fallback to CSS positioning if getBoundingClientRect fails
+                    let lockCenterX, lockCenterY, keyCenterX, keyCenterY;
+                    
+                    if (lockRect.width === 0 || keyRect.width === 0) {
+                        // Fallback: use CSS positioning
+                        const lockSize = window.innerWidth <= 480 ? 120 : window.innerWidth <= 768 ? 150 : 180;
+                        const keySize = window.innerWidth <= 480 ? 226 : window.innerWidth <= 768 ? 264 : 302;
+                        
+                        lockCenterX = window.innerWidth / 2;
+                        lockCenterY = window.innerHeight / 2;
+                        
+                        const keyLeft = parseFloat(key.style.left) || 0;
+                        const keyTop = parseFloat(key.style.top) || 0;
+                        keyCenterX = keyLeft + keySize / 2;
+                        keyCenterY = keyTop + keySize / 2;
+                    } else {
+                        // Normal case: use getBoundingClientRect
+                        lockCenterX = lockRect.left + lockRect.width / 2;
+                        lockCenterY = lockRect.top + lockRect.height / 2;
+                        keyCenterX = keyRect.left + keyRect.width / 2;
+                        keyCenterY = keyRect.top + keyRect.height / 2;
+                    }
+                    
+                    const distance = Math.sqrt(
+                        Math.pow(lockCenterX - keyCenterX, 2) + 
+                        Math.pow(lockCenterY - keyCenterY, 2)
+                    );
+                    
+                    // Mobile-friendly collision threshold - more generous for touch
+                    const isMobile = window.innerWidth <= 768;
+                    const threshold = isMobile ? 150 : 120; // Larger threshold for mobile
+                    
+                    console.log(`Collision check: distance=${Math.round(distance)}, threshold=${threshold}, collision=${distance < threshold}`);
+                    return distance < threshold;
+                } catch (error) {
+                    console.error('Error in checkCollision:', error);
+                    // Fallback: always return false to prevent hanging
+                    return false;
+                }
             }
 
             // Handle unlock sequence
             function handleUnlock() {
                 if (passwordUnlocked) return;
                 passwordUnlocked = true;
+                
+                // Clear safety timeout if it exists
+                if (safetyTimeoutId) {
+                    clearTimeout(safetyTimeoutId);
+                    safetyTimeoutId = null;
+                }
                 
                 console.log('Key unlocking sequence started...');
                 
@@ -5555,8 +5589,19 @@
             function handleMove(e) {
                 if (!isDragging || passwordUnlocked) return;
                 
-                const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-                const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+                // Ensure we have touch data for mobile
+                let clientX, clientY;
+                if (e.type.includes('touch')) {
+                    if (!e.touches || e.touches.length === 0) {
+                        console.log('Touch move event but no touches data');
+                        return;
+                    }
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
                 
                 const newX = clientX - dragOffset.x;
                 const newY = clientY - dragOffset.y;
@@ -5571,6 +5616,7 @@
                 
                 updateKeyRotation();
                 
+                // Check collision immediately for both desktop and mobile
                 if (checkCollision()) {
                     handleUnlock();
                 }
