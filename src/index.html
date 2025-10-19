@@ -2599,6 +2599,17 @@
         async function preloadFirstTrackOnly() {
             console.log('Preloading first track only...');
 
+            // Clear any existing preloaded tracks to prevent blob URL corruption
+            if (window.preloadedTracks) {
+                console.log('Clearing existing preloaded tracks to prevent corruption');
+                window.preloadedTracks.forEach(track => {
+                    if (track.url && track.url.startsWith('blob:')) {
+                        URL.revokeObjectURL(track.url);
+                    }
+                });
+                delete window.preloadedTracks;
+            }
+
             try {
                 // Preload first audio track
                 const firstTrack = tracksData[0];
@@ -4860,11 +4871,13 @@
                     console.error('Media Session setup failed:', error);
                 }
 
-                // Center windows
-                try {
-                    centerWindows();
-                } catch (error) {
-                    console.error('Window centering failed:', error);
+                // Center windows (desktop only)
+                if (window.innerWidth > 768) {
+                    try {
+                        centerWindows();
+                    } catch (error) {
+                        console.error('Window centering failed:', error);
+                    }
                 }
 
 
@@ -4922,32 +4935,34 @@
 
 
 
-                // Set the title using direct skin data modification
-                try {
-                    // Access the skin data in the Redux store
-                    const state = webampInstance.store.getState();
-                    if (state && state.display && state.display.skinGenLetterWidths) {
-                        // Directly dispatch an action to update the skinInfo which controls the title
-                        webampInstance.store.dispatch({
-                            type: "SET_SKIN_DATA",
-                            data: {
-                                skinInfo: {
-                                    name: "TEST"
+                // Set the title using direct skin data modification (desktop only)
+                if (window.innerWidth > 768) {
+                    try {
+                        // Access the skin data in the Redux store
+                        const state = webampInstance.store.getState();
+                        if (state && state.display && state.display.skinGenLetterWidths) {
+                            // Directly dispatch an action to update the skinInfo which controls the title
+                            webampInstance.store.dispatch({
+                                type: "SET_SKIN_DATA",
+                                data: {
+                                    skinInfo: {
+                                        name: "TEST"
+                                    }
                                 }
-                            }
-                        });
+                            });
 
-                        // Also try the window info update as backup
-                        webampInstance.store.dispatch({
-                            type: "UPDATE_WINDOW_INFO",
-                            window: "main",
-                            info: {
-                                title: "TEST"
-                            }
-                        });
+                            // Also try the window info update as backup
+                            webampInstance.store.dispatch({
+                                type: "UPDATE_WINDOW_INFO",
+                                window: "main",
+                                info: {
+                                    title: "TEST"
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Error setting title:", e);
                     }
-                } catch (e) {
-                    console.error("Error setting title:", e);
                 }
 
                 // Clean up blob URLs when Webamp closes
@@ -5866,8 +5881,22 @@
 
         // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', async () => {
+            // Prevent multiple initializations
+            if (window.hibernalTormentInitialized) {
+                console.log('Already initialized, skipping...');
+                return;
+            }
+            window.hibernalTormentInitialized = true;
+            
+            // Reset global variables to prevent state persistence across refreshes
+            passwordUnlocked = false;
+            webampInstance = null;
+            starField = null;
+            animationId = null;
+            eqIntervalId = null;
+            lastKnownPositions = null;
+            
             console.log('DOM loaded, starting initialization...');
-
 
             // Initialize desktop version
             try {
