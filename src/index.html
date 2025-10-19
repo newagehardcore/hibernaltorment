@@ -288,8 +288,8 @@
             }
             
             #key {
-                width: 264px; /* 330px * 0.8 = 264px */
-                height: 264px; /* 330px * 0.8 = 264px */
+                width: 185px; /* 264px * 0.7 = 185px (30% smaller) */
+                height: 185px; /* 264px * 0.7 = 185px (30% smaller) */
             }
         }
 
@@ -300,8 +300,8 @@
             }
             
             #key {
-                width: 226px; /* 283px * 0.8 = 226px */
-                height: 226px; /* 283px * 0.8 = 226px */
+                width: 158px; /* 226px * 0.7 = 158px (30% smaller) */
+                height: 158px; /* 226px * 0.7 = 158px (30% smaller) */
             }
         }
 
@@ -5262,7 +5262,7 @@
             function positionKeyRandomly() {
                 const margin = 100; // Keep key away from edges
                 // Final adjusted key sizes
-                const keySize = window.innerWidth <= 480 ? 226 : window.innerWidth <= 768 ? 264 : 302;
+                const keySize = window.innerWidth <= 480 ? 158 : window.innerWidth <= 768 ? 185 : 302;
                 const screenWidth = window.innerWidth;
                 const screenHeight = window.innerHeight;
                 
@@ -5343,7 +5343,7 @@
                     if (lockRect.width === 0 || keyRect.width === 0) {
                         // Fallback: use CSS positioning
                         const lockSize = window.innerWidth <= 480 ? 120 : window.innerWidth <= 768 ? 150 : 180;
-                        const keySize = window.innerWidth <= 480 ? 226 : window.innerWidth <= 768 ? 264 : 302;
+                        const keySize = window.innerWidth <= 480 ? 158 : window.innerWidth <= 768 ? 185 : 302;
                         
                         lockCenterX = window.innerWidth / 2;
                         lockCenterY = window.innerHeight / 2;
@@ -5607,7 +5607,7 @@
                 const newY = clientY - dragOffset.y;
                 
                 // Keep key within bounds (final adjusted sizes)
-                const keySize = window.innerWidth <= 480 ? 226 : window.innerWidth <= 768 ? 264 : 302;
+                const keySize = window.innerWidth <= 480 ? 158 : window.innerWidth <= 768 ? 185 : 302;
                 const boundedX = Math.max(0, Math.min(newX, window.innerWidth - keySize));
                 const boundedY = Math.max(0, Math.min(newY, window.innerHeight - keySize));
                 
