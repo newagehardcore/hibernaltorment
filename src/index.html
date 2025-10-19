@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GATEKEEPER - WRONG PLANET</title>
+    <!-- Cache bust: 2025-10-19-1659 -->
     
     <!-- Open Graph Meta Tags for Social Media Sharing -->
     <meta property="og:type" content="website">
@@ -88,8 +89,8 @@
             left: 0;
             z-index: 10;
             opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-            /* Simplified transition */
+            /* No transition - instant appearance after unlock */
+            /* Keep visible for Webamp init but transparent */
         }
 
 
@@ -236,8 +237,8 @@
 
         #key {
             position: absolute;
-            width: 264px;
-            height: 264px;
+            width: 302px;  /* 377px * 0.8 = 302px (20% smaller) */
+            height: 302px; /* 377px * 0.8 = 302px (20% smaller) */
             cursor: grab;
             transition: none;
             z-index: 1001;
@@ -287,8 +288,8 @@
             }
             
             #key {
-                width: 231px;
-                height: 231px;
+                width: 264px; /* 330px * 0.8 = 264px */
+                height: 264px; /* 330px * 0.8 = 264px */
             }
         }
 
@@ -299,8 +300,8 @@
             }
             
             #key {
-                width: 198px;
-                height: 198px;
+                width: 226px; /* 283px * 0.8 = 226px */
+                height: 226px; /* 283px * 0.8 = 226px */
             }
         }
 
@@ -1053,7 +1054,8 @@
             height: auto;
             cursor: pointer;
             opacity: 0;
-            transition: opacity 3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* Smooth fade transition for easter egg reveal */
+            transition: opacity 2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #legendarium-logo-link.visible {
@@ -1104,7 +1106,7 @@
             width: 828px;
             height: 828px;
             opacity: 0;
-            transition: opacity 0.8s ease-in-out;
+            /* No transition - instant appearance after unlock */
             resize: both;
             overflow: hidden;
         }
@@ -1298,7 +1300,7 @@
             display: none !important;
         }
 
-        /* Cover Window Styles - Desktop Hidden */
+        /* Cover Window Styles - Keep completely hidden until unlock */
         #cover-window {
             position: fixed;
             transform: none;
@@ -1310,19 +1312,18 @@
             filter: none;
             will-change: transform;
             user-select: none;
-            display: flex;
             flex-direction: column;
             width: 300px;
             height: 333px;
             opacity: 0;
-            transition: opacity 0.8s ease-in-out;
+            /* No transition - instant appearance after unlock */
             resize: both;
             overflow: hidden;
+            /* Force hidden until unlock sequence */
+            display: none !important;
         }
 
-        #cover-window {
-            display: flex;
-        }
+        /* Redundant rule removed - display controlled by unlock sequence */
 
         #cover-window.visible {
             opacity: 1;
@@ -1336,14 +1337,19 @@
             left: 20px !important;
             width: 80px !important;
             height: 80px !important;
-            opacity: 0.8 !important;
             cursor: pointer !important;
             animation: none !important;
             z-index: 3 !important;
             transition: all 0.3s ease-in-out !important;
+            /* Don't set opacity here - let unlock sequence control visibility */
         }
 
-        #cover-window.minimized:hover {
+        /* Only show opacity when both minimized AND visible */
+        #cover-window.minimized.visible {
+            opacity: 0.8 !important;
+        }
+
+        #cover-window.minimized.visible:hover {
             opacity: 1 !important;
             transform: scale(1.05) !important;
         }
@@ -3851,9 +3857,9 @@
             const closeButton = coverWindow.querySelector('.cover-close-button');
             
             // Initialize cover window state
-            // Start as minimized icon
+            // Start as minimized icon but keep hidden until unlock sequence
             coverWindow.classList.add('minimized');
-            coverWindow.classList.add('visible');
+            // Don't add 'visible' class yet - wait for unlock sequence
             
             // Close button functionality
             if (closeButton) {
@@ -4784,11 +4790,11 @@
                 };
 
 
-                // Show the player
+                // Don't show the player yet - wait for unlock sequence
                 const container = document.getElementById('webamp-container');
                 if (container) {
-                    container.style.opacity = '1';
-                    console.log('Webamp container made visible');
+                    // Keep opacity at 0 until unlock sequence shows everything together
+                    console.log('Webamp container ready (keeping hidden until unlock)');
                 } else {
                     console.error('Webamp container not found');
                 }
@@ -4844,34 +4850,9 @@
                     `;
                     document.head.appendChild(mobileHideStyle);
                     
-                    // Also use API to properly close them
-                    setTimeout(() => {
-                        try {
-                            webampInstance.store.dispatch({
-                                type: 'CLOSE_WINDOW',
-                                windowId: 'equalizer'
-                            });
-                            webampInstance.store.dispatch({
-                                type: 'CLOSE_WINDOW', 
-                                windowId: 'playlist'
-                            });
-                            console.log('Window close actions dispatched');
-                        } catch (error) {
-                            console.error('Error hiding windows:', error);
-                        }
-                    }, 100); // Reduced delay
+                    console.log('Mobile CSS applied - windows will be hidden by CSS');
+                    // Remove the Redux dispatch calls that could interfere with initialization
                 }
-
-                // Set up track change handler
-                webampInstance.onTrackDidChange(trackInfo => {
-                    try {
-                        handleTrackChange(trackInfo);
-                        // Try to set up audio analyzer again for new track
-                        setupAudioAnalyzer();
-                    } catch (error) {
-                        console.error('Track change handler error:', error);
-                    }
-                });
 
                 // Set up track change handler
                 webampInstance.onTrackDidChange(trackInfo => {
@@ -5276,41 +5257,52 @@
             let dragOffset = { x: 0, y: 0 };
             let passwordUnlocked = false;
 
-            // Position key randomly on screen (avoiding lock area)
+            // Position key randomly on screen (keeping it in outer 50% of screen)
             function positionKeyRandomly() {
                 const margin = 100; // Keep key away from edges
-                const keySize = window.innerWidth <= 480 ? 180 : window.innerWidth <= 768 ? 210 : 240;
-                const maxX = window.innerWidth - margin - keySize;
-                const maxY = window.innerHeight - margin - keySize;
+                // Final adjusted key sizes
+                const keySize = window.innerWidth <= 480 ? 226 : window.innerWidth <= 768 ? 264 : 302;
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
+                
+                // Define center exclusion zone (inner 50% of screen)
+                const centerExclusionWidth = screenWidth * 0.5; // Inner 50% width
+                const centerExclusionHeight = screenHeight * 0.5; // Inner 50% height
+                const centerExclusionLeft = screenWidth * 0.25; // Start at 25% from left
+                const centerExclusionTop = screenHeight * 0.25; // Start at 25% from top
+                const centerExclusionRight = centerExclusionLeft + centerExclusionWidth;
+                const centerExclusionBottom = centerExclusionTop + centerExclusionHeight;
                 
                 let x, y;
                 let attempts = 0;
                 const maxAttempts = 50;
                 
                 do {
+                    // Generate random position anywhere on screen (within margins)
+                    const maxX = screenWidth - margin - keySize;
+                    const maxY = screenHeight - margin - keySize;
                     x = margin + Math.random() * Math.max(0, maxX);
                     y = margin + Math.random() * Math.max(0, maxY);
                     attempts++;
                     
-                    // Check if key would overlap with lock (center of screen)
+                    // Check if key center would be in center exclusion zone
                     const keyCenterX = x + keySize / 2;
                     const keyCenterY = y + keySize / 2;
-                    const lockCenterX = window.innerWidth / 2;
-                    const lockCenterY = window.innerHeight / 2;
                     
-                    const distance = Math.sqrt(
-                        Math.pow(lockCenterX - keyCenterX, 2) + 
-                        Math.pow(lockCenterY - keyCenterY, 2)
-                    );
+                    const isInCenterZone = (keyCenterX >= centerExclusionLeft && 
+                                           keyCenterX <= centerExclusionRight &&
+                                           keyCenterY >= centerExclusionTop && 
+                                           keyCenterY <= centerExclusionBottom);
                     
-                    // Ensure key is at least 200px away from lock center
-                    if (distance > 200 || attempts >= maxAttempts) {
+                    // Accept position if it's outside center zone or we've tried too many times
+                    if (!isInCenterZone || attempts >= maxAttempts) {
                         break;
                     }
                 } while (true);
                 
                 key.style.left = x + 'px';
                 key.style.top = y + 'px';
+                console.log(`Key positioned at (${x}, ${y}), size: ${keySize}px, avoiding center zone`);
             }
 
             // Calculate angle from key to lock
@@ -5382,8 +5374,10 @@
                 
                 // Initialize Webamp and wait for both completion AND minimum spin time
                 console.log('Starting Webamp initialization...');
+                console.log('Mobile device detected:', window.innerWidth <= 768);
+                
                 const webampPromise = initWebamp().then((instance) => {
-                    console.log('Webamp initialized successfully');
+                    console.log('Webamp initialized successfully', instance ? 'with instance' : 'without instance');
                     
                     // Start background preloading AFTER the site is shown
                     setTimeout(() => {
@@ -5394,20 +5388,31 @@
                     return instance;
                 }).catch((error) => {
                     console.error('Webamp initialization failed:', error);
+                    console.error('Error stack:', error.stack);
                     // Continue anyway to prevent hanging
                     return null;
                 });
                 
+                // Create the minimum spin duration promise
+                const spinDurationPromise = new Promise(resolve => {
+                    const elapsed = Date.now() - spinStartTime;
+                    const remaining = Math.max(0, minSpinDuration - elapsed);
+                    console.log(`Spin duration: ${elapsed}ms elapsed, ${remaining}ms remaining`);
+                    setTimeout(() => {
+                        console.log('Minimum spin duration completed');
+                        resolve();
+                    }, remaining);
+                });
+                
                 // Wait for both Webamp initialization AND minimum spin duration
-                Promise.all([
-                    webampPromise,
-                    new Promise(resolve => {
-                        const elapsed = Date.now() - spinStartTime;
-                        const remaining = Math.max(0, minSpinDuration - elapsed);
-                        setTimeout(resolve, remaining);
-                    })
-                ]).then(() => {
+                console.log('Waiting for both Webamp init and spin duration...');
+                Promise.all([webampPromise, spinDurationPromise]).then((results) => {
                     console.log('Both Webamp and minimum spin duration completed - stopping spinner');
+                    console.log('Webamp instance result:', results[0] ? 'success' : 'null/failed');
+                    continueAfterUnlock();
+                }).catch((error) => {
+                    console.error('Promise.all failed during unlock:', error);
+                    console.log('Attempting to continue anyway...');
                     continueAfterUnlock();
                 });
 
@@ -5425,11 +5430,13 @@
                         lock.style.transform = transform; // Keep whatever rotation it ended at
                     }
                     
+                    console.log('Starting TV turn-off effect...');
+                    
                     // Apply TV turn off effect to overlay
                     unlockOverlay.classList.add('tv-turn-off');
                     unlockOverlay.style.pointerEvents = 'none';
                     
-                    // Also hide dunes background
+                    // Hide dunes background immediately
                     const dunesBackground = document.getElementById('dunes-background');
                     if (dunesBackground) {
                         dunesBackground.style.display = 'none';
@@ -5440,73 +5447,92 @@
                     if (starfieldCanvas) {
                         starfieldCanvas.style.zIndex = '-1';
                     }
+                    
+                    // Debug: Check visibility state right now
+                    const webampContainer = document.getElementById('webamp-container');
+                    const coverWindow = document.getElementById('cover-window');
+                    const viewerWindow = document.getElementById('viewer-window');
+                    console.log('TV off start - Element visibility check:');
+                    console.log('- webamp-container opacity:', webampContainer?.style.opacity || getComputedStyle(webampContainer)?.opacity);
+                    console.log('- cover-window opacity:', coverWindow?.style.opacity || getComputedStyle(coverWindow)?.opacity);
+                    console.log('- cover-window classes:', coverWindow?.className);
+                    console.log('- viewer-window opacity:', viewerWindow?.style.opacity || getComputedStyle(viewerWindow)?.opacity);
+                    console.log('- viewer-window classes:', viewerWindow?.className);
 
-                    // Wait a moment before starting site initialization
+                    // Wait for TV turn-off effect to complete (1.2s), then show everything at once
                     setTimeout(() => {
+                        console.log('TV off complete - showing all elements');
 
-                        // Show the viewer window normally
+                        // Show webamp-container
+                        const webampContainer = document.getElementById('webamp-container');
+                        if (webampContainer) {
+                            webampContainer.style.opacity = '1';
+                        }
+
+                        // Show viewer window with TV turn-on effect
                         const viewerWindow = document.getElementById('viewer-window');
                         if (viewerWindow) {
-                            viewerWindow.classList.add('visible');
-                            
-                            // Position for mobile if needed
+                            // Position first (before TV effect)
                             if (window.innerWidth <= 768) {
                                 positionViewerForMobile(viewerWindow);
                             }
                             
-                            console.log('Viewer window made visible');
+                            // Start with TV turn-on effect
+                            viewerWindow.classList.add('tv-appearing');
+                            
+                            // After TV turn-on completes, add visible class and remove tv effect
+                            setTimeout(() => {
+                                viewerWindow.classList.remove('tv-appearing');
+                                viewerWindow.classList.add('visible');
+                                
+                                // Show logo as easter egg 1 second after viewer powers on
+                                setTimeout(() => {
+                                    const logoLink = document.getElementById('legendarium-logo-link');
+                                    if (logoLink) {
+                                        logoLink.classList.add('visible');
+                                        if (!window.legendariumLogoAnimStarted) {
+                                            window.legendariumLogoAnimStarted = true;
+                                            startLegendariumLogoAnimation();
+                                        }
+                                    }
+                                }, 1000); // 1 second after viewer is fully on
+                            }, 1200); // Match tvTurnOn duration
                         }
 
-                        // Hide the cover window on desktop
+                        // Show cover window/icon (desktop: minimized icon, mobile: hidden)
                         const coverWindow = document.getElementById('cover-window');
                         if (coverWindow) {
-                            coverWindow.style.display = 'none';
-                            console.log('Desktop: cover window hidden');
+                            if (window.innerWidth <= 768) {
+                                coverWindow.style.display = 'none'; // Hidden on mobile
+                            } else {
+                                coverWindow.style.display = 'flex'; // Show as minimized icon on desktop
+                                coverWindow.classList.add('visible');
+                            }
                         }
 
-                        // After overlay fades out, start playback
+                        // Logo will be shown later as easter egg after viewer powers on
+
+                        // Start everything immediately - no more delays
+                        try {
+                            switchBackground(0);
+                            if (webampInstance) {
+                                playFirstTrack();
+                            }
+                        } catch (error) {
+                            console.error('Error starting playback:', error);
+                        }
+
+                        // Start deity messages after standard delay
                         setTimeout(() => {
-                            console.log('Starting post-unlock initialization...');
-
                             try {
-                                // Initialize the first track's video in viewer window
-                                console.log('Switching to first track background...');
-                                switchBackground(0);
-
-                                if (webampInstance) {
-                                    console.log('Starting first track playback...');
-                                    playFirstTrack();
-                                } else {
-                                    console.warn('Webamp instance not available for playback');
-                                }
+                                deityMessageSystem.init();
                             } catch (error) {
-                                console.error('Error starting playback:', error);
+                                console.error('Error initializing deity messages:', error);
                             }
+                        }, 5000);
 
-                            // Fade in the logo and start animation
-                            const logoLink = document.getElementById('legendarium-logo-link');
-                            if (logoLink) {
-                                logoLink.classList.add('visible');
-                                console.log('Logo made visible');
-                                if (!window.legendariumLogoAnimStarted) {
-                                    window.legendariumLogoAnimStarted = true;
-                                    startLegendariumLogoAnimation();
-                                }
-                            }
-
-                            // Initialize deity messages with standard delay
-                            setTimeout(() => {
-                                try {
-                                    console.log('Initializing deity message system...');
-                                    deityMessageSystem.init();
-                                } catch (error) {
-                                    console.error('Error initializing deity messages:', error);
-                                }
-                            }, 5000);
-
-                            console.log('Post-unlock initialization complete');
-                        }, 2000);
-                    }, 700);
+                        console.log('Post-unlock initialization complete');
+                    }, 1200); // Match tvTurnOff animation duration exactly
                 }
             }
 
@@ -5535,8 +5561,8 @@
                 const newX = clientX - dragOffset.x;
                 const newY = clientY - dragOffset.y;
                 
-                // Keep key within bounds
-                const keySize = window.innerWidth <= 480 ? 198 : window.innerWidth <= 768 ? 231 : 264;
+                // Keep key within bounds (final adjusted sizes)
+                const keySize = window.innerWidth <= 480 ? 226 : window.innerWidth <= 768 ? 264 : 302;
                 const boundedX = Math.max(0, Math.min(newX, window.innerWidth - keySize));
                 const boundedY = Math.max(0, Math.min(newY, window.innerHeight - keySize));
                 
