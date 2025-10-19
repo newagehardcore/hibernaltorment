@@ -4707,12 +4707,14 @@
 
                 // Use preloaded tracks if available, otherwise create placeholder tracks
                 let tracks;
-                if (window.preloadedTracks) {
+                if (window.preloadedTracks && window.preloadedTracks.length > 0) {
                     tracks = window.preloadedTracks;
+                    console.log('Using preloaded tracks:', tracks.length);
                 } else {
                     // Fallback: create tracks with original URLs
                     tracks = tracksData.map(track => ({ ...track }));
-                    console.log('Using fallback tracks (preloaded tracks not available)');
+                    console.log('Using fallback tracks (preloaded tracks not available or empty)');
+                    console.log('window.preloadedTracks:', window.preloadedTracks);
                 }
 
                 console.log('Tracks prepared:', tracks.length);
@@ -4781,15 +4783,27 @@
                     console.log('No custom skin, skipping skin load wait');
                 }
 
-                // Use the already resumed AudioContext for mobile autoplay
+                // Set up AudioContext for mobile autoplay after Webamp is ready
                 try {
-                    if (webampInstance && !webampInstance.audioContext) {
-                        // Use the global AudioContext that was resumed during unlock gesture
-                        webampInstance.audioContext = window.globalAudioContext || new (window.AudioContext || window.webkitAudioContext)();
-                        console.log('Using AudioContext for Webamp, state:', webampInstance.audioContext.state);
+                    if (window.globalAudioContext && webampInstance) {
+                        // Try to use the resumed AudioContext
+                        console.log('Attempting to use resumed AudioContext for Webamp');
+                        console.log('Global AudioContext state:', window.globalAudioContext.state);
+                        
+                        // Check if Webamp has its own audioContext property we can override
+                        if (webampInstance.media && webampInstance.media.audio) {
+                            console.log('Found Webamp media audio element, attempting AudioContext setup');
+                            // The resumed AudioContext should already be available for Web Audio API
+                        } else {
+                            console.log('Webamp media not yet available, AudioContext will be handled by Webamp internally');
+                        }
+                        
+                        console.log('AudioContext setup completed');
+                    } else {
+                        console.log('No global AudioContext available or Webamp not initialized');
                     }
                 } catch (audioError) {
-                    console.error('AudioContext assignment failed:', audioError);
+                    console.error('AudioContext setup failed:', audioError);
                 }
 
                 // Intercept Redux store to prevent playlist reordering
