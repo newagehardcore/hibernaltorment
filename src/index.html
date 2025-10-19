@@ -5486,6 +5486,21 @@
                 // Match password approach exactly: init Webamp, then call continueAfterUnlock when ready
                 initWebamp().then((instance) => {
                     console.log('Webamp initialized successfully', instance ? 'with instance' : 'without instance');
+                    
+                    // Try immediate autoplay during gesture (for mobile)
+                    if (window.innerWidth <= 768 && instance) {
+                        console.log('Mobile: attempting immediate autoplay during user gesture');
+                        try {
+                            switchBackground(0);
+                            setTimeout(() => {
+                                playFirstTrack();
+                                console.log('Mobile: immediate autoplay attempted');
+                            }, 100); // Tiny delay for background to load
+                        } catch (error) {
+                            console.error('Mobile immediate autoplay failed:', error);
+                        }
+                    }
+                    
                     continueAfterUnlock();
                     
                     // Start background preloading AFTER the site is shown
@@ -5588,15 +5603,19 @@
                             console.log('Starting post-unlock initialization...');
                             
                             try {
-                                // Initialize the first track's video in viewer window
-                                console.log('Switching to first track background...');
-                                switchBackground(0);
-                                
-                                if (webampInstance) {
-                                    console.log('Starting first track playback...');
-                                    playFirstTrack();
+                                // Initialize the first track's video in viewer window (desktop only, mobile already did it)
+                                if (window.innerWidth > 768) {
+                                    console.log('Desktop: Switching to first track background...');
+                                    switchBackground(0);
+                                    
+                                    if (webampInstance) {
+                                        console.log('Desktop: Starting first track playback...');
+                                        playFirstTrack();
+                                    } else {
+                                        console.warn('Webamp instance not available for playback');
+                                    }
                                 } else {
-                                    console.warn('Webamp instance not available for playback');
+                                    console.log('Mobile: autoplay already attempted during gesture');
                                 }
                             } catch (error) {
                                 console.error('Error starting playback:', error);
