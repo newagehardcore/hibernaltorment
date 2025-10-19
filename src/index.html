@@ -4892,6 +4892,14 @@
                     }
                 });
 
+                // Set up audio analyzer for proper audio connectivity
+                try {
+                    await setupAudioAnalyzer();
+                } catch (error) {
+                    console.error('Audio analyzer setup failed:', error);
+                    // Continue without analyzer but audio might not work
+                }
+
                 // Set up Media Session API for background playback
                 try {
                     setupMediaSession();
@@ -5790,7 +5798,9 @@
                 
                 // Create audio context and analyzer only if they don't exist
                 if (!webampInstance.audioContext) {
-                    webampInstance.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    // Use the global resumed AudioContext if available for mobile autoplay
+                    webampInstance.audioContext = window.globalAudioContext || new (window.AudioContext || window.webkitAudioContext)();
+                    console.log('AudioContext assigned to Webamp, state:', webampInstance.audioContext.state);
                 }
 
                 if (!webampInstance.analyzer) {
