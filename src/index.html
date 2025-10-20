@@ -5783,111 +5783,91 @@
                 }
             }
 
-            // Mouse/touch event handlers
-            function handleStart(e) {
+            // Click/tap handler for key
+            function handleKeyTap(e) {
                 if (passwordUnlocked) return;
                 
-                isDragging = true;
-                const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-                const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+                console.log('Key tapped - starting automatic animation to lock');
+                e.preventDefault();
+                
+                // Mark user interaction immediately during the tap event
+                window.userHasInteracted = true;
+                
+                // Setup AudioContext during this tap event
+                if (window.AudioContext || window.webkitAudioContext) {
+                    try {
+                        if (!window.globalAudioContext) {
+                            window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                            console.log('AudioContext created during key tap');
+                        }
+                        if (window.globalAudioContext.state === 'suspended') {
+                            console.log('Resuming AudioContext during key tap');
+                            window.globalAudioContext.resume().then(() => {
+                                console.log('AudioContext resumed during tap');
+                            }).catch(err => {
+                                console.error('Failed to resume AudioContext during tap:', err);
+                            });
+                        }
+                    } catch (error) {
+                        console.error('AudioContext setup during tap failed:', error);
+                    }
+                }
+                
+                // Try to play any existing video elements immediately
+                const existingVideos = document.querySelectorAll('video');
+                existingVideos.forEach(video => {
+                    if (video.paused && document.contains(video)) {
+                        video.muted = true; // Ensure muted for autoplay
+                        video.play().catch(e => console.log('Video play during tap failed:', e));
+                    }
+                });
+                
+                // Animate key to lock position
+                animateKeyToLock();
+            }
+            
+            // Function to animate key to lock position
+            function animateKeyToLock() {
+                const lockRect = lock.getBoundingClientRect();
                 const keyRect = key.getBoundingClientRect();
                 
-                dragOffset.x = clientX - keyRect.left;
-                dragOffset.y = clientY - keyRect.top;
+                // Calculate lock center position
+                const lockCenterX = lockRect.left + lockRect.width / 2;
+                const lockCenterY = lockRect.top + lockRect.height / 2;
                 
-                key.style.transition = 'none';
-                e.preventDefault();
-            }
-
-            function handleMove(e) {
-                if (!isDragging || passwordUnlocked) return;
-                
-                // Ensure we have touch data for mobile
-                let clientX, clientY;
-                if (e.type.includes('touch')) {
-                    if (!e.touches || e.touches.length === 0) {
-                        console.log('Touch move event but no touches data');
-                        return;
-                    }
-                    clientX = e.touches[0].clientX;
-                    clientY = e.touches[0].clientY;
-                } else {
-                    clientX = e.clientX;
-                    clientY = e.clientY;
-                }
-                
-                const newX = clientX - dragOffset.x;
-                const newY = clientY - dragOffset.y;
-                
-                // Keep key within bounds (final adjusted sizes)
+                // Calculate key size
                 const keySize = window.innerWidth <= 480 ? 158 : window.innerWidth <= 768 ? 185 : 302;
-                const boundedX = Math.max(0, Math.min(newX, window.innerWidth - keySize));
-                const boundedY = Math.max(0, Math.min(newY, window.innerHeight - keySize));
                 
-                key.style.left = boundedX + 'px';
-                key.style.top = boundedY + 'px';
+                // Calculate target position (lock center minus half key size)
+                const targetX = lockCenterX - keySize / 2;
+                const targetY = lockCenterY - keySize / 2;
                 
+                console.log('Animating key to lock position');
+                
+                // Enable smooth transition
+                key.style.transition = 'left 1s ease-out, top 1s ease-out, transform 1s ease-out';
+                
+                // Move key to lock position
+                key.style.left = targetX + 'px';
+                key.style.top = targetY + 'px';
+                
+                // Rotate key to point at lock during animation
                 updateKeyRotation();
                 
-                // Check collision immediately for both desktop and mobile
-                if (checkCollision()) {
-                    console.log('Collision detected - triggering unlock with user gesture');
-                    
-                    // Mark user interaction immediately during the drag event
-                    window.userHasInteracted = true;
-                    
-                    // Setup AudioContext during this drag event (same as ENTER button)
-                    if (window.AudioContext || window.webkitAudioContext) {
-                        try {
-                            if (!window.globalAudioContext) {
-                                window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                                console.log('AudioContext created during drag collision');
-                            }
-                            if (window.globalAudioContext.state === 'suspended') {
-                                console.log('Resuming AudioContext during drag collision');
-                                window.globalAudioContext.resume().then(() => {
-                                    console.log('AudioContext resumed during drag');
-                                }).catch(err => {
-                                    console.error('Failed to resume AudioContext during drag:', err);
-                                });
-                            }
-                        } catch (error) {
-                            console.error('AudioContext setup during collision failed:', error);
-                        }
-                    }
-                    
-                    // Try to play any existing video elements immediately (same as ENTER button)
-                    const existingVideos = document.querySelectorAll('video');
-                    existingVideos.forEach(video => {
-                        if (video.paused && document.contains(video)) {
-                            video.muted = true; // Ensure muted for autoplay
-                            video.play().catch(e => console.log('Video play during drag failed:', e));
-                        }
-                    });
-                    
+                // After animation completes, trigger unlock
+                setTimeout(() => {
+                    console.log('Key animation complete - triggering unlock');
                     handleUnlock();
-                }
-                
-                e.preventDefault();
+                }, 1000); // Match animation duration
             }
 
-            function handleEnd(e) {
-                if (!isDragging) return;
-                
-                isDragging = false;
-                key.style.transition = 'transform 0.1s ease';
+            // Set up event listeners for tap/click instead of drag
+            key.addEventListener('click', handleKeyTap);
+            key.addEventListener('touchend', (e) => {
+                // Prevent both touchend and click from firing
                 e.preventDefault();
-            }
-
-            // Set up event listeners
-            key.addEventListener('mousedown', handleStart);
-            key.addEventListener('touchstart', handleStart, { passive: false });
-            
-            document.addEventListener('mousemove', handleMove);
-            document.addEventListener('touchmove', handleMove, { passive: false });
-            
-            document.addEventListener('mouseup', handleEnd);
-            document.addEventListener('touchend', handleEnd);
+                handleKeyTap(e);
+            }, { passive: false });
 
             // Initialize system
             positionKeyRandomly();
