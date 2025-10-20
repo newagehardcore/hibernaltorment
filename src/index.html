@@ -5585,17 +5585,27 @@
                         webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
                         webampInstance.store.dispatch({ type: 'PLAY' });
                         
-                        // Also try direct audio element access
-                        setTimeout(() => {
-                            const audioEl = document.querySelector('#webamp audio');
-                            if (audioEl && audioEl.paused) {
-                                audioEl.play().then(() => {
-                                    console.log('Mobile: Direct audio play successful during gesture');
-                                }).catch(e => console.log('Mobile: Direct audio play failed:', e));
-                            }
-                        }, 50);
+                        // Also try direct audio element access immediately (no setTimeout)
+                        const audioEl = document.querySelector('#webamp audio');
+                        if (audioEl && audioEl.paused) {
+                            audioEl.play().then(() => {
+                                console.log('Mobile: Direct audio play successful during gesture');
+                            }).catch(e => console.log('Mobile: Direct audio play failed:', e));
+                        }
                         
-                        console.log('Mobile: Webamp autoplay dispatched during user gesture');
+                        // Try Webamp API method immediately too
+                        if (webampInstance.play) {
+                            webampInstance.play().then(() => {
+                                console.log('Mobile: Webamp API play successful during gesture');
+                            }).catch(err => {
+                                console.log('Mobile: Webamp API play failed during gesture:', err);
+                            });
+                        }
+                        
+                        // Switch background video immediately for mobile during user gesture
+                        switchBackground(0);
+                        
+                        console.log('Mobile: Webamp autoplay attempted during user gesture');
                     } catch (error) {
                         console.error('Mobile: Immediate autoplay failed:', error);
                     }
