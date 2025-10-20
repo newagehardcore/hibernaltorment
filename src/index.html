@@ -5558,13 +5558,11 @@
                     dunesBackground.classList.add('slide-out');
                 }
                 
-                // Initialize Webamp immediately during user gesture (like ENTER button approach)
-                console.log('Starting Webamp initialization immediately during drag gesture...');
+                // Initialize or use existing Webamp
+                console.log('Setting up Webamp for unlock...');
                 console.log('Mobile device detected:', window.innerWidth <= 768);
                 
-                initWebamp().then((instance) => {
-                    console.log('Webamp initialized successfully during user gesture');
-                    
+                const setupWebamp = () => {
                     // For mobile, try autoplay immediately since we have user interaction
                     if (window.innerWidth <= 768 && window.userHasInteracted) {
                         console.log('Mobile: attempting immediate autoplay due to user interaction');
@@ -5589,18 +5587,29 @@
                     }
                     
                     continueAfterUnlock();
-                    
-                    // Start background preloading AFTER the site is shown
-                    setTimeout(() => {
-                        console.log('Starting background preloading...');
-                        preloadRemainingTracks();
-                    }, 2000);
-                }).catch((error) => {
-                    console.error('Webamp initialization failed:', error);
-                    console.error('Error stack:', error.stack);
-                    // Continue anyway to prevent hanging
-                    continueAfterUnlock();
-                });
+                };
+                
+                if (webampInstance) {
+                    console.log('Using existing Webamp instance');
+                    setupWebamp();
+                } else {
+                    console.log('Initializing Webamp during unlock...');
+                    initWebamp().then((instance) => {
+                        console.log('Webamp initialized successfully during unlock');
+                        setupWebamp();
+                        
+                        // Start background preloading AFTER the site is shown
+                        setTimeout(() => {
+                            console.log('Starting background preloading...');
+                            preloadRemainingTracks();
+                        }, 2000);
+                    }).catch((error) => {
+                        console.error('Webamp initialization failed:', error);
+                        console.error('Error stack:', error.stack);
+                        // Continue anyway to prevent hanging
+                        continueAfterUnlock();
+                    });
+                }
 
                 function continueAfterUnlock() {
                     console.log('continueAfterUnlock() called');
@@ -5740,11 +5749,64 @@
             // Real drag functionality with autoplay capture
             // isDragging and dragOffset already declared above
             
-            // Simple drag handlers
+            // Hybrid tap-then-drag approach
+            let mobileAutoplayEnabled = false;
+            
             function handleStart(e) {
                 if (passwordUnlocked) return;
                 
-                console.log('Drag start');
+                console.log('Drag/tap start');
+                
+                // For mobile: if this is the first interaction, enable autoplay but don't start drag yet
+                if (window.innerWidth <= 768 && e.type.includes('touch') && !mobileAutoplayEnabled) {
+                    console.log('Mobile: First tap detected - enabling autoplay permissions');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Enable autoplay permissions immediately in tap context
+                    if (window.AudioContext || window.webkitAudioContext) {
+                        try {
+                            if (!window.globalAudioContext) {
+                                window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                                console.log('AudioContext created during first mobile tap');
+                            }
+                            if (window.globalAudioContext.state === 'suspended') {
+                                window.globalAudioContext.resume().then(() => {
+                                    console.log('AudioContext resumed during first mobile tap');
+                                }).catch(err => {
+                                    console.error('Failed to resume AudioContext:', err);
+                                });
+                            }
+                        } catch (error) {
+                            console.error('AudioContext setup during tap failed:', error);
+                        }
+                    }
+                    
+                    // Mark autoplay as enabled
+                    window.userHasInteracted = true;
+                    mobileAutoplayEnabled = true;
+                    
+                    // Initialize Webamp in background during tap
+                    if (!webampInstance) {
+                        console.log('Mobile: Pre-initializing Webamp during first tap');
+                        initWebamp().catch(err => {
+                            console.error('Background Webamp init failed:', err);
+                        });
+                    }
+                    
+                    // Show visual feedback that tap was registered
+                    key.style.transform = key.style.transform + ' scale(1.1)';
+                    setTimeout(() => {
+                        key.style.transform = key.style.transform.replace(' scale(1.1)', '');
+                    }, 150);
+                    
+                    // Add instruction for mobile users
+                    console.log('Mobile: Autoplay enabled - now drag the key to the lock!');
+                    
+                    return; // Don't start drag on first tap
+                }
+                
+                // Normal drag start (desktop or mobile after first tap)
                 e.preventDefault();
                 e.stopPropagation();
                 
