@@ -3592,15 +3592,29 @@
                     // Activate fullscreen background video with TV turn-on effect
                     fullscreenBackgroundVideo.style.display = 'block'; // Ensure it's visible on mobile
                     fullscreenBackgroundVideo.classList.add('active', 'tv-appearing');
-                    fullscreenBackgroundVideo.play().catch(err => {
-                        console.error('Fullscreen video play failed:', err);
-                        // On mobile, force play again after a short delay
-                        if (window.innerWidth <= 768) {
+                    
+                    // Handle mobile autoplay with user interaction
+                    if (window.innerWidth <= 768 && window.userHasInteracted) {
+                        console.log('Mobile: fullscreen video play with user interaction');
+                        fullscreenBackgroundVideo.muted = true; // Ensure muted for autoplay
+                        fullscreenBackgroundVideo.play().then(() => {
+                            console.log('Mobile: fullscreen video started successfully');
+                        }).catch(err => {
+                            console.error('Mobile fullscreen video play failed:', err);
+                            // Multiple retry attempts for mobile
                             setTimeout(() => {
-                                fullscreenBackgroundVideo.play().catch(e => console.log('Mobile retry failed:', e));
+                                fullscreenBackgroundVideo.play().catch(e => {
+                                    setTimeout(() => {
+                                        fullscreenBackgroundVideo.play().catch(e => console.log('Mobile final retry failed:', e));
+                                    }, 100);
+                                });
                             }, 100);
-                        }
-                    });
+                        });
+                    } else {
+                        fullscreenBackgroundVideo.play().catch(err => {
+                            console.error('Fullscreen video play failed:', err);
+                        });
+                    }
                     
                     // Remove TV effect after animation completes
                     setTimeout(() => {
@@ -4237,7 +4251,22 @@
 
                     // Start playing after the video is in the DOM
                     requestAnimationFrame(() => {
-                        newViewerVideo.play().catch(err => console.error("Viewer video play failed:", err));
+                        // For mobile with user interaction, be more aggressive with video playback
+                        if (window.innerWidth <= 768 && window.userHasInteracted) {
+                            console.log('Mobile: aggressive video play attempt with user interaction');
+                            newViewerVideo.muted = true; // Ensure muted for autoplay
+                            newViewerVideo.play().then(() => {
+                                console.log('Mobile: viewer video started successfully');
+                            }).catch(err => {
+                                console.error("Mobile viewer video play failed:", err);
+                                // Try again after short delay
+                                setTimeout(() => {
+                                    newViewerVideo.play().catch(e => console.log('Mobile retry failed:', e));
+                                }, 100);
+                            });
+                        } else {
+                            newViewerVideo.play().catch(err => console.error("Viewer video play failed:", err));
+                        }
 
                         // Fade in viewer video
                         newViewerVideo.style.transition = `opacity ${backgroundConfig.fadeIn}s ease-in`;
@@ -4249,9 +4278,20 @@
                             console.log('Syncing fullscreen background video with new track');
                             fullscreenBackgroundVideo.src = backgroundConfig.url;
                             fullscreenBackgroundVideo.currentTime = newViewerVideo.currentTime;
-                            fullscreenBackgroundVideo.play().catch(err => {
-                                console.error('Fullscreen background video sync failed:', err);
-                            });
+                            
+                            // Also apply mobile-specific handling to fullscreen video
+                            if (window.innerWidth <= 768 && window.userHasInteracted) {
+                                fullscreenBackgroundVideo.muted = true;
+                                fullscreenBackgroundVideo.play().then(() => {
+                                    console.log('Mobile: fullscreen video started successfully');
+                                }).catch(err => {
+                                    console.error('Mobile fullscreen video sync failed:', err);
+                                });
+                            } else {
+                                fullscreenBackgroundVideo.play().catch(err => {
+                                    console.error('Fullscreen background video sync failed:', err);
+                                });
+                            }
                         }
                     });
                 };
@@ -5080,30 +5120,42 @@
             }
 
             try {
+                console.log('playFirstTrack called, user interaction:', window.userHasInteracted);
+                
                 // Make sure track is selected first
                 webampInstance.store.dispatch({
                     type: "SET_CURRENT_TRACK",
                     id: 0
                 });
 
-                // Force the play button to be "unpressed" before pressing it again
+                // Reset playback state
                 webampInstance.store.dispatch({ type: "STOP" });
 
-                // Short delay to ensure track is loaded
-                setTimeout(() => {
-                    // Try multiple methods to ensure playback starts
-                    webampInstance.play();
-
-                    // Also try the direct Redux action
-                    webampInstance.store.dispatch({ type: "PLAY" });
-
-                    // Removed complex audio analyzer for mobile compatibility
-
-                    // Update media session for background playback
-                    if (window.updateMediaSessionMetadata && tracksData[0]) {
-                        window.updateMediaSessionMetadata(tracksData[0]);
-                    }
-                }, 200);
+                // For mobile with user interaction, be more aggressive
+                if (window.innerWidth <= 768 && window.userHasInteracted) {
+                    console.log('Mobile: aggressive autoplay attempt');
+                    
+                    // Multiple rapid attempts for mobile
+                    setTimeout(() => {
+                        webampInstance.store.dispatch({ type: "PLAY" });
+                        webampInstance.play();
+                        
+                        // Additional attempt
+                        setTimeout(() => {
+                            webampInstance.play();
+                        }, 100);
+                    }, 50);
+                } else {
+                    // Desktop or no user interaction
+                    setTimeout(() => {
+                        webampInstance.play();
+                        webampInstance.store.dispatch({ type: "PLAY" });
+                        
+                        if (window.updateMediaSessionMetadata && tracksData[0]) {
+                            window.updateMediaSessionMetadata(tracksData[0]);
+                        }
+                    }, 200);
+                }
             } catch (e) {
                 console.error("Error playing track:", e);
             }
@@ -5460,27 +5512,38 @@
                 
                 console.log('Key unlocking sequence started...');
                 
-                // CRITICAL: Resume AudioContext immediately during user gesture for mobile autoplay
+                // CRITICAL: Create and resume AudioContext immediately during user gesture
                 if (window.AudioContext || window.webkitAudioContext) {
                     try {
-                        // Create and store AudioContext globally for mobile autoplay
                         if (!window.globalAudioContext) {
                             window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                            console.log('AudioContext created during user gesture');
                         }
-                        // Resume immediately during user interaction
                         if (window.globalAudioContext.state === 'suspended') {
                             window.globalAudioContext.resume().then(() => {
-                                console.log('AudioContext resumed for mobile autoplay');
+                                console.log('AudioContext resumed for autoplay support');
                             }).catch(err => {
                                 console.error('Failed to resume AudioContext:', err);
                             });
                         }
+                        
+                        // Store that we have user interaction for autoplay
+                        window.userHasInteracted = true;
+                        console.log('User interaction recorded for autoplay');
                     } catch (error) {
                         console.error('AudioContext setup failed:', error);
                     }
                 }
                 
-                // Mobile autoplay will happen immediately when Webamp initializes during gesture
+                // Also try to play any existing video elements immediately
+                const existingVideos = document.querySelectorAll('video');
+                existingVideos.forEach(video => {
+                    if (video.paused) {
+                        video.play().catch(e => console.log('Video play attempt failed:', e));
+                    }
+                });
+                
+                console.log('Starting immediate media activation for mobile autoplay');
                 
                 // Transfer glow from key to lock, then hide key and start lock spinning
                 lock.classList.add('glowing'); // Add glow to lock
@@ -5498,24 +5561,29 @@
                 console.log('Mobile device detected:', window.innerWidth <= 768);
                 
                 initWebamp().then((instance) => {
-                    console.log('Webamp initialized successfully', instance ? 'with instance' : 'without instance');
+                    console.log('Webamp initialized successfully during user gesture');
                     
-                    // Check if mobile autoplay was requested during touch and is still recent
-                    if (window.mobileAutoplayRequested && window.mobileAutoplayStartTime) {
-                        const timeSinceRequest = Date.now() - window.mobileAutoplayStartTime;
-                        if (timeSinceRequest < 5000 && window.innerWidth <= 768) { // Within 5 seconds
-                            console.log('Mobile: executing autoplay request from touchmove collision');
-                            try {
-                                switchBackground(0);
+                    // For mobile, try autoplay immediately since we have user interaction
+                    if (window.innerWidth <= 768 && window.userHasInteracted) {
+                        console.log('Mobile: attempting immediate autoplay due to user interaction');
+                        try {
+                            // Force first track to play using Webamp API
+                            if (webampInstance && webampInstance.store) {
+                                console.log('Mobile: dispatching PLAY action immediately');
+                                webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
+                                webampInstance.store.dispatch({ type: 'PLAY' });
+                                
+                                // Also try the API method
                                 setTimeout(() => {
-                                    playFirstTrack();
-                                    console.log('Mobile: autoplay executed from touchmove request');
+                                    webampInstance.play();
                                 }, 100);
-                            } catch (error) {
-                                console.error('Mobile autoplay from touchmove failed:', error);
                             }
+                            
+                            // Switch background video immediately
+                            switchBackground(0);
+                        } catch (error) {
+                            console.error('Mobile autoplay failed:', error);
                         }
-                        window.mobileAutoplayRequested = false;
                     }
                     
                     continueAfterUnlock();
@@ -5615,13 +5683,13 @@
                             }
                         }
 
-                        // Match password approach timing - start playback after a short delay
+                        // Start playback after a short delay
                         setTimeout(() => {
                             console.log('Starting post-unlock initialization...');
                             
                             try {
-                                // Initialize the first track's video in viewer window (desktop only, mobile already did it)
                                 if (window.innerWidth > 768) {
+                                    // Desktop: normal initialization
                                     console.log('Desktop: Switching to first track background...');
                                     switchBackground(0);
                                     
@@ -5632,12 +5700,25 @@
                                         console.warn('Webamp instance not available for playback');
                                     }
                                 } else {
-                                    console.log('Mobile: autoplay already attempted during gesture');
+                                    // Mobile: ensure playback started, try again if needed
+                                    console.log('Mobile: ensuring autoplay started...');
+                                    if (webampInstance) {
+                                        const state = webampInstance.store.getState();
+                                        const isPlaying = state?.media?.status === 'PLAYING';
+                                        
+                                        if (!isPlaying && window.userHasInteracted) {
+                                            console.log('Mobile: playback not detected, trying again...');
+                                            switchBackground(0);
+                                            playFirstTrack();
+                                        } else if (isPlaying) {
+                                            console.log('Mobile: playback confirmed running');
+                                        }
+                                    }
                                 }
                             } catch (error) {
                                 console.error('Error starting playback:', error);
                             }
-                        }, window.innerWidth <= 768 ? 1000 : 2000); // Match password approach timing
+                        }, window.innerWidth <= 768 ? 1000 : 2000);
 
                         // Start deity messages after standard delay
                         setTimeout(() => {
@@ -5701,42 +5782,24 @@
                 
                 // Check collision immediately for both desktop and mobile
                 if (checkCollision()) {
-                    // On mobile, try immediate AudioContext setup during actual touch event
-                    if (window.innerWidth <= 768 && e.type.includes('touch')) {
-                        console.log('Mobile: immediate AudioContext setup during collision touchmove');
-                        
-                        // Resume AudioContext immediately during this touch event
-                        if (window.AudioContext || window.webkitAudioContext) {
-                            try {
-                                if (!window.globalAudioContext) {
-                                    window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                                }
-                                if (window.globalAudioContext.state === 'suspended') {
-                                    window.globalAudioContext.resume().then(() => {
-                                        console.log('Mobile: AudioContext resumed during touchmove');
-                                    }).catch(err => {
-                                        console.error('Mobile: AudioContext resume failed:', err);
-                                    });
-                                }
-                            } catch (error) {
-                                console.error('Mobile: AudioContext setup during touch failed:', error);
+                    console.log('Collision detected - triggering unlock with user gesture');
+                    
+                    // Immediately prepare for autoplay during this user gesture
+                    if (window.AudioContext || window.webkitAudioContext) {
+                        try {
+                            if (!window.globalAudioContext) {
+                                window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
                             }
+                            if (window.globalAudioContext.state === 'suspended') {
+                                console.log('Resuming AudioContext during drag collision');
+                                window.globalAudioContext.resume();
+                            }
+                            
+                            // Mark that user has interacted (crucial for autoplay)
+                            window.userHasInteracted = true;
+                        } catch (error) {
+                            console.error('AudioContext setup during collision failed:', error);
                         }
-                        
-                        // Store that we should autoplay when Webamp is ready
-                        window.mobileAutoplayRequested = true;
-                        window.mobileAutoplayStartTime = Date.now();
-                        
-                        // Also try to trigger video play immediately if viewer video exists
-                        setTimeout(() => {
-                            const viewerVideo = document.querySelector('#viewer-window video');
-                            if (viewerVideo) {
-                                console.log('Mobile: attempting immediate viewer video play during touch');
-                                viewerVideo.play().catch(err => {
-                                    console.log('Mobile: immediate viewer video play failed:', err);
-                                });
-                            }
-                        }, 50); // Tiny delay
                     }
                     
                     handleUnlock();
