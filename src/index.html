@@ -5576,43 +5576,48 @@
                 
                 // User interaction is already recorded above
                 
-                // CRITICAL: All autoplay must happen immediately during user gesture for real mobile browsers
+                // Store autoplay function to call after unlock sound (avoid audio conflicts on mobile)
+                let webampAutoplayFunction = null;
                 if (window.innerWidth <= 768 && webampInstance && webampInstance.store) {
-                    console.log('Mobile: Attempting immediate autoplay during user gesture');
-                    try {
-                        // Set track and play immediately
-                        webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
-                        webampInstance.store.dispatch({ type: 'PLAY' });
-                        
-                        // Try direct audio element with retry for track loading
-                        const attemptAudioPlay = (attempt = 0) => {
-                            const audioEl = document.querySelector('#webamp audio');
-                            if (audioEl) {
-                                console.log(`Mobile: Audio play attempt ${attempt + 1}, readyState: ${audioEl.readyState}, src: ${audioEl.src}`);
-                                
-                                if (audioEl.readyState >= 2 || attempt >= 5) { // HAVE_CURRENT_DATA or max attempts
-                                    audioEl.play().then(() => {
-                                        console.log('Mobile: Webamp audio autoplay successful');
-                                    }).catch(e => {
-                                        console.log('Mobile: Webamp audio autoplay failed:', e);
-                                    });
-                                } else {
-                                    // Wait a bit for audio to load, but stay in gesture context
+                    console.log('Mobile: Setting up delayed autoplay after unlock sound');
+                    webampAutoplayFunction = () => {
+                        try {
+                            // Set track and play 
+                            webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
+                            webampInstance.store.dispatch({ type: 'PLAY' });
+                            
+                            // Try direct audio element with retry for track loading
+                            const attemptAudioPlay = (attempt = 0) => {
+                                const audioEl = document.querySelector('#webamp audio');
+                                if (audioEl) {
+                                    console.log(`Mobile: Audio play attempt ${attempt + 1}, readyState: ${audioEl.readyState}, src: ${audioEl.src}`);
+                                    
+                                    if (audioEl.readyState >= 2 || attempt >= 5) { // HAVE_CURRENT_DATA or max attempts
+                                        audioEl.play().then(() => {
+                                            console.log('Mobile: Webamp audio autoplay successful after unlock sound');
+                                        }).catch(e => {
+                                            console.log('Mobile: Webamp audio autoplay failed:', e);
+                                        });
+                                    } else {
+                                        // Wait a bit for audio to load, but stay in gesture context
+                                        setTimeout(() => attemptAudioPlay(attempt + 1), 50);
+                                    }
+                                } else if (attempt < 5) {
+                                    // Audio element not ready yet, retry
                                     setTimeout(() => attemptAudioPlay(attempt + 1), 50);
                                 }
-                            } else if (attempt < 5) {
-                                // Audio element not ready yet, retry
-                                setTimeout(() => attemptAudioPlay(attempt + 1), 50);
-                            }
-                        };
-                        attemptAudioPlay();
-                        
-                        // Switch background video immediately
-                        switchBackground(0);
-                        console.log('Mobile: Background video switched during gesture');
-                    } catch (error) {
-                        console.error('Mobile: Immediate autoplay failed:', error);
-                    }
+                            };
+                            attemptAudioPlay();
+                            
+                            console.log('Mobile: Webamp autoplay initiated after unlock sound');
+                        } catch (error) {
+                            console.error('Mobile: Delayed autoplay failed:', error);
+                        }
+                    };
+                    
+                    // Switch background video immediately (this shouldn't conflict)
+                    switchBackground(0);
+                    console.log('Mobile: Background video switched during gesture');
                 }
                 
                 // Also try to play any existing video elements immediately
@@ -5639,14 +5644,34 @@
                         openSound.currentTime = 0;
                         openSound.play().then(() => {
                             console.log('✓ Lock opening sound effect played successfully during user gesture');
+                            
+                            // Start Webamp autoplay after unlock sound finishes (mobile only)
+                            if (webampAutoplayFunction) {
+                                setTimeout(webampAutoplayFunction, 100); // Small delay after sound ends
+                            }
                         }).catch(err => {
                             console.log('Lock opening sound effect failed to play:', err);
+                            
+                            // If sound fails, still try Webamp autoplay (mobile only)
+                            if (webampAutoplayFunction) {
+                                setTimeout(webampAutoplayFunction, 100);
+                            }
                         });
                     } catch (error) {
                         console.error('Error playing lock opening sound effect:', error);
+                        
+                        // If sound fails, still try Webamp autoplay (mobile only)
+                        if (webampAutoplayFunction) {
+                            setTimeout(webampAutoplayFunction, 100);
+                        }
                     }
                 } else {
                     console.log('Lock opening sound not preloaded, skipping');
+                    
+                    // No unlock sound, start Webamp autoplay immediately (mobile only)
+                    if (webampAutoplayFunction) {
+                        webampAutoplayFunction();
+                    }
                 }
                 
                 // Start dunes sliding animation
