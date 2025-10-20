@@ -5818,31 +5818,71 @@
                 if (checkCollision()) {
                     console.log('Collision detected at end of drag - triggering autoplay and unlock');
                     
-                    // For mobile: enable autoplay NOW during touchend event
+                    // For mobile: FORCE autoplay by dispatching synthetic click during touchend
                     if (window.innerWidth <= 768 && e.type.includes('touch')) {
-                        console.log('Mobile touchend: Enabling autoplay permissions');
+                        console.log('Mobile touchend: FORCING autoplay with synthetic click');
                         
-                        // Enable autoplay during touchend (clean user gesture)
+                        // Create multiple types of synthetic events to convince the browser
+                        const clickEvent = new MouseEvent('click', {
+                            bubbles: true,
+                            cancelable: true,
+                            view: window,
+                            detail: 1,
+                            screenX: e.changedTouches ? e.changedTouches[0].screenX : 0,
+                            screenY: e.changedTouches ? e.changedTouches[0].screenY : 0,
+                            clientX: e.changedTouches ? e.changedTouches[0].clientX : 0,
+                            clientY: e.changedTouches ? e.changedTouches[0].clientY : 0,
+                            button: 0,
+                            buttons: 1
+                        });
+                        
+                        // Also create pointer event
+                        const pointerEvent = new PointerEvent('click', {
+                            bubbles: true,
+                            cancelable: true,
+                            view: window,
+                            pointerId: 1,
+                            isPrimary: true
+                        });
+                        
+                        // Dispatch on the key element (where the user actually touched)
+                        key.dispatchEvent(clickEvent);
+                        key.dispatchEvent(pointerEvent);
+                        
+                        // ALSO dispatch on document to ensure browser sees it
+                        document.dispatchEvent(clickEvent);
+                        
+                        // Enable autoplay in this synthetic click context
                         if (window.AudioContext || window.webkitAudioContext) {
                             try {
                                 if (!window.globalAudioContext) {
                                     window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                                    console.log('AudioContext created during touchend');
+                                    console.log('AudioContext created during synthetic click');
                                 }
                                 if (window.globalAudioContext.state === 'suspended') {
                                     window.globalAudioContext.resume().then(() => {
-                                        console.log('AudioContext resumed during touchend');
+                                        console.log('AudioContext resumed during synthetic click');
                                     }).catch(err => {
                                         console.error('Failed to resume AudioContext:', err);
                                     });
                                 }
                             } catch (error) {
-                                console.error('AudioContext setup during touchend failed:', error);
+                                console.error('AudioContext setup during synthetic click failed:', error);
                             }
                         }
                         
                         window.userHasInteracted = true;
-                        console.log('Mobile: Autoplay enabled during touchend');
+                        
+                        // Try to immediately play any existing media during synthetic click
+                        const existingVideos = document.querySelectorAll('video');
+                        existingVideos.forEach(video => {
+                            if (video.paused) {
+                                video.muted = true;
+                                video.play().catch(e => console.log('Video play during synthetic click failed:', e));
+                            }
+                        });
+                        
+                        console.log('Mobile: Autoplay FORCED via synthetic click events');
                     }
                     
                     // Trigger unlock sequence
