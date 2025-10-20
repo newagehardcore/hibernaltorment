@@ -5750,54 +5750,10 @@
             // Real drag functionality with autoplay capture
             // isDragging and dragOffset already declared above
             
-            // Hybrid tap-then-drag approach
-            let mobileAutoplayEnabled = false;
-            let firstTouchProcessed = false;
-            
+            // Simple drag handlers - autoplay happens at collision during touchend
             function handleStart(e) {
                 if (passwordUnlocked) return;
                 
-                // For mobile: if this is the first interaction, enable autoplay but allow drag to continue
-                if (window.innerWidth <= 768 && e.type.includes('touch') && !mobileAutoplayEnabled && !firstTouchProcessed) {
-                    console.log('Mobile: First touch - enabling autoplay permissions');
-                    firstTouchProcessed = true;
-                    
-                    // Enable autoplay permissions immediately in touch context
-                    if (window.AudioContext || window.webkitAudioContext) {
-                        try {
-                            if (!window.globalAudioContext) {
-                                window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                                console.log('AudioContext created during first mobile touch');
-                            }
-                            if (window.globalAudioContext.state === 'suspended') {
-                                window.globalAudioContext.resume().then(() => {
-                                    console.log('AudioContext resumed during first mobile touch');
-                                }).catch(err => {
-                                    console.error('Failed to resume AudioContext:', err);
-                                });
-                            }
-                        } catch (error) {
-                            console.error('AudioContext setup during touch failed:', error);
-                        }
-                    }
-                    
-                    // Mark autoplay as enabled
-                    window.userHasInteracted = true;
-                    mobileAutoplayEnabled = true;
-                    
-                    // Initialize Webamp in background during touch
-                    if (!webampInstance) {
-                        console.log('Mobile: Pre-initializing Webamp during first touch');
-                        initWebamp().catch(err => {
-                            console.error('Background Webamp init failed:', err);
-                        });
-                    }
-                    
-                    console.log('Mobile: Autoplay enabled - continue dragging to unlock!');
-                    // Don't return - let the drag start normally
-                }
-                
-                // Normal drag start for all cases
                 console.log('Starting drag');
                 e.preventDefault();
                 e.stopPropagation();
@@ -5846,12 +5802,6 @@
                 key.style.top = boundedY + 'px';
                 
                 updateKeyRotation();
-                
-                // Check collision during drag
-                if (checkCollision()) {
-                    console.log('Collision detected during real drag - triggering unlock');
-                    handleUnlock();
-                }
             }
 
             function handleEnd(e) {
@@ -5864,11 +5814,46 @@
                 key.style.transition = 'transform 0.1s ease';
                 key.style.cursor = 'grab';
                 
-                // Ensure rotation is preserved after drag ends
-                updateKeyRotation();
+                // Check for collision at end of drag
+                if (checkCollision()) {
+                    console.log('Collision detected at end of drag - triggering autoplay and unlock');
+                    
+                    // For mobile: enable autoplay NOW during touchend event
+                    if (window.innerWidth <= 768 && e.type.includes('touch')) {
+                        console.log('Mobile touchend: Enabling autoplay permissions');
+                        
+                        // Enable autoplay during touchend (clean user gesture)
+                        if (window.AudioContext || window.webkitAudioContext) {
+                            try {
+                                if (!window.globalAudioContext) {
+                                    window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                                    console.log('AudioContext created during touchend');
+                                }
+                                if (window.globalAudioContext.state === 'suspended') {
+                                    window.globalAudioContext.resume().then(() => {
+                                        console.log('AudioContext resumed during touchend');
+                                    }).catch(err => {
+                                        console.error('Failed to resume AudioContext:', err);
+                                    });
+                                }
+                            } catch (error) {
+                                console.error('AudioContext setup during touchend failed:', error);
+                            }
+                        }
+                        
+                        window.userHasInteracted = true;
+                        console.log('Mobile: Autoplay enabled during touchend');
+                    }
+                    
+                    // Trigger unlock sequence
+                    handleUnlock();
+                } else {
+                    // Ensure rotation is preserved after drag ends if no collision
+                    updateKeyRotation();
+                }
             }
             
-            // Set up event listeners for real drag
+            // Set up event listeners for drag
             key.addEventListener('mousedown', handleStart);
             key.addEventListener('touchstart', handleStart, { passive: false });
             
