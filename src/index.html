@@ -3602,12 +3602,12 @@
                     fullscreenBackgroundVideo.style.display = 'block'; // Ensure it's visible on mobile
                     fullscreenBackgroundVideo.classList.add('active', 'tv-appearing');
                     
-                    // Handle mobile autoplay with user interaction
-                    if (window.innerWidth <= 768 && window.userHasInteracted) {
-                        console.log('Mobile: fullscreen video play with user interaction');
+                    // Handle mobile autoplay with unlocked permission
+                    if (window.innerWidth <= 768 && (window.mobileVideoAutoplayUnlocked || window.userHasInteracted)) {
+                        console.log('Mobile: fullscreen video play with unlocked autoplay permission');
                         fullscreenBackgroundVideo.muted = true; // Ensure muted for autoplay
                         fullscreenBackgroundVideo.play().then(() => {
-                            console.log('Mobile: fullscreen video started successfully');
+                            console.log('Mobile: fullscreen video started successfully with unlocked autoplay');
                         }).catch(err => {
                             console.error('Mobile fullscreen video play failed:', err);
                             // Multiple retry attempts for mobile
@@ -4266,12 +4266,22 @@
                             return;
                         }
                         
-                        // For mobile with user interaction, be more aggressive with video playback
-                        if (window.innerWidth <= 768 && window.userHasInteracted) {
-                            console.log('Mobile: aggressive video play attempt with user interaction');
+                        // For mobile with unlocked autoplay permission
+                        if (window.innerWidth <= 768 && (window.mobileVideoAutoplayUnlocked || window.userHasInteracted)) {
+                            console.log('Mobile: video play with unlocked autoplay permission');
+                            
+                            // Clean up dummy video if it exists
+                            if (window.dummyVideo && document.contains(window.dummyVideo)) {
+                                try {
+                                    window.dummyVideo.pause();
+                                    window.dummyVideo.remove();
+                                    window.dummyVideo = null;
+                                } catch (e) { console.log('Dummy video cleanup error:', e); }
+                            }
+                            
                             newViewerVideo.muted = true; // Ensure muted for autoplay
                             newViewerVideo.play().then(() => {
-                                console.log('Mobile: viewer video started successfully');
+                                console.log('Mobile: viewer video started successfully with unlocked autoplay');
                             }).catch(err => {
                                 console.error("Mobile viewer video play failed:", err);
                                 // Try again after short delay, but check DOM first
@@ -4297,10 +4307,10 @@
                             fullscreenBackgroundVideo.currentTime = newViewerVideo.currentTime;
                             
                             // Also apply mobile-specific handling to fullscreen video
-                            if (window.innerWidth <= 768 && window.userHasInteracted) {
+                            if (window.innerWidth <= 768 && (window.mobileVideoAutoplayUnlocked || window.userHasInteracted)) {
                                 fullscreenBackgroundVideo.muted = true;
                                 fullscreenBackgroundVideo.play().then(() => {
-                                    console.log('Mobile: fullscreen video started successfully');
+                                    console.log('Mobile: fullscreen video started successfully with unlocked autoplay');
                                 }).catch(err => {
                                     console.error('Mobile fullscreen video sync failed:', err);
                                 });
@@ -5538,6 +5548,67 @@
                     }
                 }
                 
+                // MOBILE AUTOPLAY FIX: Create and start dummy media elements SYNCHRONOUSLY
+                let dummyAudio = null;
+                let dummyVideo = null;
+                
+                if (window.innerWidth <= 768) {
+                    console.log('Mobile detected - creating synchronous dummy media for autoplay');
+                    
+                    try {
+                        // Create dummy audio element and start playing immediately
+                        dummyAudio = document.createElement('audio');
+                        // short silent mp3 data URI (few bytes) to trigger gesture allowance
+                        dummyAudio.src = 'data:audio/mp3;base64,SUQzAwAAAAAA';
+                        dummyAudio.muted = true; // Ensure muted for autoplay
+                        dummyAudio.loop = true;
+                        dummyAudio.autoplay = true;
+                        dummyAudio.volume = 0;
+                        dummyAudio.style.display = 'none';
+                        document.body.appendChild(dummyAudio);
+                        
+                        // Start playing synchronously within gesture
+                        const audioPlayPromise = dummyAudio.play();
+                        if (audioPlayPromise) {
+                            audioPlayPromise.then(() => {
+                                console.log('Mobile: Dummy audio started successfully - autoplay unlocked!');
+                                window.mobileAutoplayUnlocked = true;
+                            }).catch(err => {
+                                console.error('Mobile: Dummy audio failed:', err);
+                            });
+                        }
+                        
+                        // Also create and start a dummy video
+                        dummyVideo = document.createElement('video');
+                        // minimal mp4 data (will likely error but still counts as play() call in gesture)
+                        dummyVideo.src = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAAA';
+                        dummyVideo.muted = true;
+                        dummyVideo.loop = true;
+                        dummyVideo.autoplay = true;
+                        dummyVideo.volume = 0;
+                        dummyVideo.style.display = 'none';
+                        dummyVideo.playsInline = true;
+                        document.body.appendChild(dummyVideo);
+                        
+                        const videoPlayPromise = dummyVideo.play();
+                        if (videoPlayPromise) {
+                            videoPlayPromise.then(() => {
+                                console.log('Mobile: Dummy video started successfully - video autoplay unlocked!');
+                                window.mobileVideoAutoplayUnlocked = true;
+                            }).catch(err => {
+                                console.error('Mobile: Dummy video failed:', err);
+                            });
+                        }
+                        
+                        // Store references for cleanup
+                        window.dummyAudio = dummyAudio;
+                        window.dummyVideo = dummyVideo;
+                        
+                    } catch (error) {
+                        console.error('Failed to create dummy media elements:', error);
+                    }
+                }
+                
                 // Also try to play any existing video elements immediately
                 const existingVideos = document.querySelectorAll('video');
                 existingVideos.forEach(video => {
@@ -5564,26 +5635,45 @@
                 console.log('Mobile device detected:', window.innerWidth <= 768);
                 
                 const setupWebamp = () => {
-                    // For mobile, try autoplay immediately since we have user interaction
-                    if (window.innerWidth <= 768 && window.userHasInteracted) {
-                        console.log('Mobile: attempting immediate autoplay due to user interaction');
+                    // For mobile, try autoplay immediately using dummy media's unlocked permission
+                    if (window.innerWidth <= 768 && (window.mobileAutoplayUnlocked || window.userHasInteracted)) {
+                        console.log('Mobile: attempting autoplay with unlocked permission');
+                        
+                        // Clean up dummy audio and transfer permission to real audio
+                        if (window.dummyAudio) {
+                            try {
+                                window.dummyAudio.pause();
+                                window.dummyAudio.remove();
+                                window.dummyAudio = null;
+                            } catch (e) { console.log('Dummy audio cleanup error:', e); }
+                        }
+                        
                         try {
                             // Force first track to play using Webamp API
                             if (webampInstance && webampInstance.store) {
-                                console.log('Mobile: dispatching PLAY action immediately');
+                                console.log('Mobile: dispatching PLAY action with unlocked autoplay');
                                 webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
                                 webampInstance.store.dispatch({ type: 'PLAY' });
                                 
                                 // Also try the API method
                                 setTimeout(() => {
-                                    webampInstance.play();
+                                    if (webampInstance.play) {
+                                        webampInstance.play().catch(err => {
+                                            console.log('Webamp API play failed, trying alternative:', err);
+                                            // Try to directly access the audio element
+                                            const audioEl = document.querySelector('#webamp audio');
+                                            if (audioEl) {
+                                                audioEl.play().catch(e => console.log('Direct audio play failed:', e));
+                                            }
+                                        });
+                                    }
                                 }, 100);
                             }
                             
                             // Switch background video immediately
                             switchBackground(0);
                         } catch (error) {
-                            console.error('Mobile autoplay failed:', error);
+                            console.error('Mobile autoplay with unlocked permission failed:', error);
                         }
                     }
                     
