@@ -5584,15 +5584,28 @@
                         webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
                         webampInstance.store.dispatch({ type: 'PLAY' });
                         
-                        // Try direct audio element immediately
-                        const audioEl = document.querySelector('#webamp audio');
-                        if (audioEl) {
-                            audioEl.play().then(() => {
-                                console.log('Mobile: Webamp audio autoplay successful');
-                            }).catch(e => {
-                                console.log('Mobile: Webamp audio autoplay failed:', e);
-                            });
-                        }
+                        // Try direct audio element with retry for track loading
+                        const attemptAudioPlay = (attempt = 0) => {
+                            const audioEl = document.querySelector('#webamp audio');
+                            if (audioEl) {
+                                console.log(`Mobile: Audio play attempt ${attempt + 1}, readyState: ${audioEl.readyState}, src: ${audioEl.src}`);
+                                
+                                if (audioEl.readyState >= 2 || attempt >= 5) { // HAVE_CURRENT_DATA or max attempts
+                                    audioEl.play().then(() => {
+                                        console.log('Mobile: Webamp audio autoplay successful');
+                                    }).catch(e => {
+                                        console.log('Mobile: Webamp audio autoplay failed:', e);
+                                    });
+                                } else {
+                                    // Wait a bit for audio to load, but stay in gesture context
+                                    setTimeout(() => attemptAudioPlay(attempt + 1), 50);
+                                }
+                            } else if (attempt < 5) {
+                                // Audio element not ready yet, retry
+                                setTimeout(() => attemptAudioPlay(attempt + 1), 50);
+                            }
+                        };
+                        attemptAudioPlay();
                         
                         // Switch background video immediately
                         switchBackground(0);
