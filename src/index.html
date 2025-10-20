@@ -5637,41 +5637,10 @@
                 key.style.opacity = '0'; // Hide key (glow transfers to lock)
                 lock.classList.add('spinning'); // Start spinning (now with glow)
                 
-                // Play lock opening sound effect during user gesture (using preloaded sound)
-                if (openSound) {
-                    try {
-                        // Reset the audio to the beginning in case it was played before
-                        openSound.currentTime = 0;
-                        openSound.play().then(() => {
-                            console.log('✓ Lock opening sound effect played successfully during user gesture');
-                            
-                            // Start Webamp autoplay after unlock sound finishes (mobile only)
-                            if (webampAutoplayFunction) {
-                                setTimeout(webampAutoplayFunction, 100); // Small delay after sound ends
-                            }
-                        }).catch(err => {
-                            console.log('Lock opening sound effect failed to play:', err);
-                            
-                            // If sound fails, still try Webamp autoplay (mobile only)
-                            if (webampAutoplayFunction) {
-                                setTimeout(webampAutoplayFunction, 100);
-                            }
-                        });
-                    } catch (error) {
-                        console.error('Error playing lock opening sound effect:', error);
-                        
-                        // If sound fails, still try Webamp autoplay (mobile only)
-                        if (webampAutoplayFunction) {
-                            setTimeout(webampAutoplayFunction, 100);
-                        }
-                    }
-                } else {
-                    console.log('Lock opening sound not preloaded, skipping');
-                    
-                    // No unlock sound, start Webamp autoplay immediately (mobile only)
-                    if (webampAutoplayFunction) {
-                        webampAutoplayFunction();
-                    }
+                // Skip open sound - go straight to Webamp autoplay after key pickup
+                console.log('Skipping open sound - starting Webamp autoplay immediately');
+                if (webampAutoplayFunction) {
+                    webampAutoplayFunction();
                 }
                 
                 // Start dunes sliding animation
