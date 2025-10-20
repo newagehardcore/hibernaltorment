@@ -100,6 +100,16 @@
             -moz-transform: scale(var(--webamp-zoom));
             -moz-transform-origin: top left;
         }
+        
+        /* Hide individual windows during initialization */
+        #webamp .window {
+            visibility: hidden;
+        }
+        
+        /* Show windows after positioning */
+        #webamp.positioned .window {
+            visibility: visible;
+        }
 
         
 
@@ -4807,14 +4817,23 @@
                 const trackHeight = 14;
                 const playlistHeight = playlistHeaderHeight + (initialPlaylistSize * trackHeight);
 
-                // Position windows on desktop
+                // Position windows on desktop using same logic as centerWindows()
                 let leftPosX, mainPosY, eqPosY, playlistPosY;
 
-                // Stack windows on the left side
-                leftPosX = Math.floor((window.innerWidth * 0.08) / zoomFactor);
-                mainPosY = Math.floor((window.innerHeight * 0.12) / zoomFactor);
-                eqPosY = mainPosY + mainWindowHeight;
-                playlistPosY = eqPosY + equalizerHeight;
+                if (window.innerWidth > 768) {
+                    // Desktop: use centerWindows() logic
+                    leftPosX = Math.floor((window.innerWidth * 0.08) / zoomFactor); // 8% from left edge
+                    mainPosY = Math.floor((window.innerHeight * 0.12) / zoomFactor); // 12% from top
+                    eqPosY = mainPosY + 116; // EQ window starts right after main window
+                    playlistPosY = eqPosY + 116; // Playlist starts right after EQ window
+                } else {
+                    // Mobile: use centerWebampForMobile() logic
+                    const mainWindowWidth = 275;
+                    leftPosX = Math.floor((window.innerWidth - mainWindowWidth * zoomFactor) / 2 / zoomFactor);
+                    mainPosY = Math.floor((window.innerHeight * 0.1) / zoomFactor); // 10% from top
+                    eqPosY = mainPosY + 116; // These won't be shown on mobile anyway
+                    playlistPosY = eqPosY + 116;
+                }
 
                 // Initialize Webamp with preloaded tracks (matching webamp.org config)
                 const webampOptions = {
@@ -4991,35 +5010,7 @@
                     console.error('Media Session setup failed:', error);
                 }
 
-                // Position windows with proper delay to ensure Webamp store and Redux are fully ready
-                setTimeout(() => {
-                    if (window.innerWidth > 768) {
-                        console.log('Desktop: Initial window centering...');
-                        try {
-                            centerWindows();
-                            console.log('Desktop window centering successful');
-                        } catch (error) {
-                            console.error('Desktop window centering failed:', error);
-                            // Retry with longer delay if it fails
-                            setTimeout(() => {
-                                try {
-                                    centerWindows();
-                                    console.log('Desktop window centering retry successful');
-                                } catch (retryError) {
-                                    console.error('Desktop window centering retry failed:', retryError);
-                                }
-                            }, 1000);
-                        }
-                    } else {
-                        // Mobile Webamp positioning
-                        try {
-                            centerWebampForMobile();
-                            console.log('Mobile window centering successful');
-                        } catch (error) {
-                            console.error('Mobile window centering failed:', error);
-                        }
-                    }
-                }, 500); // Longer delay to ensure Redux store is fully ready
+                // Window positioning now handled immediately after initialization in DOMContentLoaded
 
 
 
@@ -5567,6 +5558,21 @@
                     }
                 }
                 
+                // Also resume Webamp's AudioContext if it exists
+                if (webampInstance && webampInstance.audioContext) {
+                    try {
+                        if (webampInstance.audioContext.state === 'suspended') {
+                            webampInstance.audioContext.resume().then(() => {
+                                console.log('Webamp AudioContext resumed during unlock');
+                            }).catch(err => {
+                                console.error('Failed to resume Webamp AudioContext:', err);
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error resuming Webamp AudioContext:', error);
+                    }
+                }
+                
                 // Store that we have user interaction for autoplay
                 window.userHasInteracted = true;
                 console.log('User interaction recorded for autoplay');
@@ -6032,8 +6038,13 @@
                 // Create audio context and analyzer only if they don't exist
                 if (!webampInstance.audioContext) {
                     // Use the global resumed AudioContext if available for mobile autoplay
-                    webampInstance.audioContext = window.globalAudioContext || new (window.AudioContext || window.webkitAudioContext)();
-                    console.log('AudioContext assigned to Webamp, state:', webampInstance.audioContext.state);
+                    if (window.globalAudioContext) {
+                        webampInstance.audioContext = window.globalAudioContext;
+                        console.log('Using global AudioContext for Webamp, state:', webampInstance.audioContext.state);
+                    } else {
+                        webampInstance.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        console.log('Created new AudioContext for Webamp, state:', webampInstance.audioContext.state);
+                    }
                 }
 
                 if (!webampInstance.analyzer) {
@@ -6163,7 +6174,7 @@
         }
 
         // Initialize everything when page loads
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             // Prevent multiple initializations
             if (window.hibernalTormentInitialized) {
                 console.log('Already initialized, skipping...');
@@ -6185,10 +6196,43 @@
             try {
                 console.log('Initializing Webamp early during page load...');
                 initWebamp().then(() => {
+                    console.log('Webamp initialized early - positioning windows...');
+                    
+                    // Small delay to ensure Webamp is fully rendered before positioning
+                    setTimeout(() => {
+                        if (window.innerWidth > 768) {
+                            console.log('Desktop: Centering windows after early init...');
+                            try {
+                                centerWindows();
+                                console.log('Desktop window centering successful after early init');
+                                // Show windows after positioning
+                                const webampElement = document.getElementById('webamp');
+                                if (webampElement) {
+                                    webampElement.classList.add('positioned');
+                                }
+                            } catch (error) {
+                                console.error('Desktop window centering failed after early init:', error);
+                            }
+                        } else {
+                            console.log('Mobile: Centering windows after early init...');
+                            try {
+                                centerWebampForMobile();
+                                console.log('Mobile window centering successful after early init');
+                                // Show windows after positioning
+                                const webampElement = document.getElementById('webamp');
+                                if (webampElement) {
+                                    webampElement.classList.add('positioned');
+                                }
+                            } catch (error) {
+                                console.error('Mobile window centering failed after early init:', error);
+                            }
+                        }
+                    }, 50); // Small delay to ensure rendering is complete
+                    
                     console.log('Webamp initialized early - ready for user interaction');
                 }).catch(error => {
                     console.error('Early Webamp initialization failed:', error);
-                    // Continue anyway
+                    // Continue anyway - desktop should still work
                 });
             } catch (error) {
                 console.error('Error during early Webamp initialization:', error);
