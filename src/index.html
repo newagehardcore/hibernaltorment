@@ -5535,18 +5535,14 @@
                 
                 console.log('Key unlocking sequence started...');
                 
-                // CRITICAL: Create and resume AudioContext immediately during user gesture
-                if (window.AudioContext || window.webkitAudioContext) {
+                // CRITICAL: Resume Webamp's AudioContext during user gesture (don't create our own)
+                if (webampInstance && webampInstance.audioContext) {
                     try {
-                        if (!window.globalAudioContext) {
-                            window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                            console.log('AudioContext created during user gesture');
-                        }
-                        if (window.globalAudioContext.state === 'suspended') {
-                            window.globalAudioContext.resume().then(() => {
-                                console.log('AudioContext resumed for autoplay support');
+                        if (webampInstance.audioContext.state === 'suspended') {
+                            webampInstance.audioContext.resume().then(() => {
+                                console.log('Webamp AudioContext resumed for autoplay support');
                             }).catch(err => {
-                                console.error('Failed to resume AudioContext:', err);
+                                console.error('Failed to resume Webamp AudioContext:', err);
                             });
                         }
                         
@@ -5554,8 +5550,31 @@
                         window.userHasInteracted = true;
                         console.log('User interaction recorded for autoplay');
                     } catch (error) {
-                        console.error('AudioContext setup failed:', error);
+                        console.error('Webamp AudioContext setup failed:', error);
                     }
+                } else {
+                    // Fallback: create minimal AudioContext only if Webamp doesn't have one
+                    if (window.AudioContext || window.webkitAudioContext) {
+                        try {
+                            if (!window.globalAudioContext) {
+                                window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                                console.log('Fallback AudioContext created during user gesture');
+                            }
+                            if (window.globalAudioContext.state === 'suspended') {
+                                window.globalAudioContext.resume().then(() => {
+                                    console.log('Fallback AudioContext resumed');
+                                }).catch(err => {
+                                    console.error('Failed to resume fallback AudioContext:', err);
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Fallback AudioContext setup failed:', error);
+                        }
+                    }
+                    
+                    // Store that we have user interaction for autoplay
+                    window.userHasInteracted = true;
+                    console.log('User interaction recorded for autoplay');
                 }
                 
                 // Also resume Webamp's AudioContext if it exists
@@ -5579,35 +5598,48 @@
                 
                 // IMMEDIATELY attempt Webamp autoplay during user gesture (mobile)
                 if (window.innerWidth <= 768 && webampInstance && webampInstance.store) {
-                    console.log('Mobile: Immediately attempting Webamp autoplay during user gesture');
+                    console.log('Mobile: Attempting Webamp autoplay during user gesture');
                     try {
-                        // Dispatch play immediately during user interaction
+                        // Set track first
                         webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
-                        webampInstance.store.dispatch({ type: 'PLAY' });
                         
-                        // Also try direct audio element access immediately (no setTimeout)
-                        const audioEl = document.querySelector('#webamp audio');
-                        if (audioEl && audioEl.paused) {
-                            audioEl.play().then(() => {
-                                console.log('Mobile: Direct audio play successful during gesture');
-                            }).catch(e => console.log('Mobile: Direct audio play failed:', e));
-                        }
+                        // Give Webamp a moment to be ready, but stay in user gesture context
+                        const attemptPlay = () => {
+                            try {
+                                // Try Redux dispatch first
+                                webampInstance.store.dispatch({ type: 'PLAY' });
+                                
+                                // Try direct audio element
+                                const audioEl = document.querySelector('#webamp audio');
+                                if (audioEl) {
+                                    audioEl.play().then(() => {
+                                        console.log('Mobile: Direct audio play successful');
+                                    }).catch(e => {
+                                        console.log('Mobile: Direct audio play failed:', e);
+                                        // Try Webamp API as fallback
+                                        if (webampInstance.play) {
+                                            webampInstance.play().catch(err => {
+                                                console.log('Mobile: Webamp API fallback failed:', err);
+                                            });
+                                        }
+                                    });
+                                }
+                            } catch (error) {
+                                console.error('Mobile: Play attempt failed:', error);
+                            }
+                        };
                         
-                        // Try Webamp API method immediately too
-                        if (webampInstance.play) {
-                            webampInstance.play().then(() => {
-                                console.log('Mobile: Webamp API play successful during gesture');
-                            }).catch(err => {
-                                console.log('Mobile: Webamp API play failed during gesture:', err);
-                            });
-                        }
+                        // Try immediately, then retry after short delays (still in gesture context)
+                        attemptPlay();
+                        setTimeout(attemptPlay, 100);
+                        setTimeout(attemptPlay, 300);
                         
                         // Switch background video immediately for mobile during user gesture
                         switchBackground(0);
                         
-                        console.log('Mobile: Webamp autoplay attempted during user gesture');
+                        console.log('Mobile: Webamp autoplay initiated during user gesture');
                     } catch (error) {
-                        console.error('Mobile: Immediate autoplay failed:', error);
+                        console.error('Mobile: Autoplay setup failed:', error);
                     }
                 }
                 
