@@ -4991,17 +4991,35 @@
                     console.error('Media Session setup failed:', error);
                 }
 
-                // Center windows
-                try {
+                // Position windows with proper delay to ensure Webamp store and Redux are fully ready
+                setTimeout(() => {
                     if (window.innerWidth > 768) {
-                        centerWindows();
+                        console.log('Desktop: Initial window centering...');
+                        try {
+                            centerWindows();
+                            console.log('Desktop window centering successful');
+                        } catch (error) {
+                            console.error('Desktop window centering failed:', error);
+                            // Retry with longer delay if it fails
+                            setTimeout(() => {
+                                try {
+                                    centerWindows();
+                                    console.log('Desktop window centering retry successful');
+                                } catch (retryError) {
+                                    console.error('Desktop window centering retry failed:', retryError);
+                                }
+                            }, 1000);
+                        }
                     } else {
                         // Mobile Webamp positioning
-                        centerWebampForMobile();
+                        try {
+                            centerWebampForMobile();
+                            console.log('Mobile window centering successful');
+                        } catch (error) {
+                            console.error('Mobile window centering failed:', error);
+                        }
                     }
-                } catch (error) {
-                    console.error('Window centering failed:', error);
-                }
+                }, 500); // Longer delay to ensure Redux store is fully ready
 
 
 
@@ -5632,26 +5650,14 @@
                     continueAfterUnlock();
                 };
                 
+                // Webamp should already be initialized - just set it up
                 if (webampInstance) {
                     console.log('Using existing Webamp instance');
                     setupWebamp();
                 } else {
-                    console.log('Initializing Webamp during unlock...');
-                    initWebamp().then((instance) => {
-                        console.log('Webamp initialized successfully during unlock');
-                        setupWebamp();
-                        
-                        // Start background preloading AFTER the site is shown
-                        setTimeout(() => {
-                            console.log('Starting background preloading...');
-                            preloadRemainingTracks();
-                        }, 2000);
-                    }).catch((error) => {
-                        console.error('Webamp initialization failed:', error);
-                        console.error('Error stack:', error.stack);
-                        // Continue anyway to prevent hanging
-                        continueAfterUnlock();
-                    });
+                    console.warn('Webamp instance not found during unlock - this should not happen');
+                    // Fallback: continue anyway
+                    continueAfterUnlock();
                 }
 
                 function continueAfterUnlock() {
@@ -5832,6 +5838,11 @@
                         } catch (error) {
                             console.error('AudioContext setup failed during touchstart:', error);
                         }
+                    }
+                    
+                    // Resume Webamp's AudioContext if it exists
+                    if (window.webampInstance && window.webampInstance.audioContext) {
+                        window.webampInstance.audioContext.resume();
                     }
                     
                     // Try to play existing videos immediately during touchstart
@@ -6170,6 +6181,19 @@
             
             console.log('DOM loaded, starting initialization...');
 
+            // Initialize Webamp early (invisibly) so AudioContext is ready
+            try {
+                console.log('Initializing Webamp early during page load...');
+                initWebamp().then(() => {
+                    console.log('Webamp initialized early - ready for user interaction');
+                }).catch(error => {
+                    console.error('Early Webamp initialization failed:', error);
+                    // Continue anyway
+                });
+            } catch (error) {
+                console.error('Error during early Webamp initialization:', error);
+            }
+            
             // Initialize desktop version
             try {
                 initializeDesktop();
