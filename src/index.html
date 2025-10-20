@@ -5783,11 +5783,11 @@
                 }
             }
 
-            // Click/tap handler for key
+            // Mobile-first tap handler to enable autoplay
             function handleKeyTap(e) {
                 if (passwordUnlocked) return;
                 
-                console.log('Key tapped - starting automatic animation to lock');
+                console.log('Key tapped - enabling autoplay for mobile');
                 e.preventDefault();
                 
                 // Mark user interaction immediately during the tap event
@@ -5822,52 +5822,97 @@
                     }
                 });
                 
-                // Animate key to lock position
-                animateKeyToLock();
+                // Visual feedback that tap was registered
+                key.style.transform += ' scale(1.1)';
+                setTimeout(() => {
+                    key.style.transform = key.style.transform.replace(' scale(1.1)', '');
+                }, 150);
+                
+                console.log('Autoplay enabled - now drag the key to the lock!');
             }
             
-            // Function to animate key to lock position
-            function animateKeyToLock() {
-                const lockRect = lock.getBoundingClientRect();
+            // Mouse/touch event handlers for dragging
+            function handleStart(e) {
+                if (passwordUnlocked) return;
+                
+                isDragging = true;
+                const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
                 const keyRect = key.getBoundingClientRect();
                 
-                // Calculate lock center position
-                const lockCenterX = lockRect.left + lockRect.width / 2;
-                const lockCenterY = lockRect.top + lockRect.height / 2;
+                dragOffset.x = clientX - keyRect.left;
+                dragOffset.y = clientY - keyRect.top;
                 
-                // Calculate key size
-                const keySize = window.innerWidth <= 480 ? 158 : window.innerWidth <= 768 ? 185 : 302;
-                
-                // Calculate target position (lock center minus half key size)
-                const targetX = lockCenterX - keySize / 2;
-                const targetY = lockCenterY - keySize / 2;
-                
-                console.log('Animating key to lock position');
-                
-                // Enable smooth transition
-                key.style.transition = 'left 1s ease-out, top 1s ease-out, transform 1s ease-out';
-                
-                // Move key to lock position
-                key.style.left = targetX + 'px';
-                key.style.top = targetY + 'px';
-                
-                // Rotate key to point at lock during animation
-                updateKeyRotation();
-                
-                // After animation completes, trigger unlock
-                setTimeout(() => {
-                    console.log('Key animation complete - triggering unlock');
-                    handleUnlock();
-                }, 1000); // Match animation duration
+                key.style.transition = 'none';
+                e.preventDefault();
             }
 
-            // Set up event listeners for tap/click instead of drag
-            key.addEventListener('click', handleKeyTap);
-            key.addEventListener('touchend', (e) => {
-                // Prevent both touchend and click from firing
+            function handleMove(e) {
+                if (!isDragging || passwordUnlocked) return;
+                
+                // Ensure we have touch data for mobile
+                let clientX, clientY;
+                if (e.type.includes('touch')) {
+                    if (!e.touches || e.touches.length === 0) {
+                        console.log('Touch move event but no touches data');
+                        return;
+                    }
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                const newX = clientX - dragOffset.x;
+                const newY = clientY - dragOffset.y;
+                
+                // Keep key within bounds (final adjusted sizes)
+                const keySize = window.innerWidth <= 480 ? 158 : window.innerWidth <= 768 ? 185 : 302;
+                const boundedX = Math.max(0, Math.min(newX, window.innerWidth - keySize));
+                const boundedY = Math.max(0, Math.min(newY, window.innerHeight - keySize));
+                
+                key.style.left = boundedX + 'px';
+                key.style.top = boundedY + 'px';
+                
+                updateKeyRotation();
+                
+                // Check collision immediately for both desktop and mobile
+                if (checkCollision()) {
+                    console.log('Collision detected during drag - triggering unlock');
+                    handleUnlock();
+                }
+                
                 e.preventDefault();
-                handleKeyTap(e);
+            }
+
+            function handleEnd(e) {
+                if (!isDragging) return;
+                
+                isDragging = false;
+                key.style.transition = 'transform 0.1s ease';
+                e.preventDefault();
+            }
+
+            // Set up event listeners - tap to enable autoplay, then drag to unlock
+            key.addEventListener('click', handleKeyTap);
+            key.addEventListener('touchstart', (e) => {
+                // On mobile, the first touch enables autoplay
+                if (window.innerWidth <= 768 && !window.userHasInteracted) {
+                    handleKeyTap(e);
+                }
+                // Then proceed with normal drag handling
+                handleStart(e);
             }, { passive: false });
+            
+            // Desktop just uses normal drag
+            key.addEventListener('mousedown', handleStart);
+            
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('touchmove', handleMove, { passive: false });
+            
+            document.addEventListener('mouseup', handleEnd);
+            document.addEventListener('touchend', handleEnd);
 
             // Initialize system
             positionKeyRandomly();
