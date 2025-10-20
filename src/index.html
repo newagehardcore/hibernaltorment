@@ -5576,13 +5576,39 @@
                 
                 // User interaction is already recorded above
                 
-                // Mobile autoplay will be handled by setupWebamp() function
+                // CRITICAL: All autoplay must happen immediately during user gesture for real mobile browsers
+                if (window.innerWidth <= 768 && webampInstance && webampInstance.store) {
+                    console.log('Mobile: Attempting immediate autoplay during user gesture');
+                    try {
+                        // Set track and play immediately
+                        webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
+                        webampInstance.store.dispatch({ type: 'PLAY' });
+                        
+                        // Try direct audio element immediately
+                        const audioEl = document.querySelector('#webamp audio');
+                        if (audioEl) {
+                            audioEl.play().then(() => {
+                                console.log('Mobile: Webamp audio autoplay successful');
+                            }).catch(e => {
+                                console.log('Mobile: Webamp audio autoplay failed:', e);
+                            });
+                        }
+                        
+                        // Switch background video immediately
+                        switchBackground(0);
+                        console.log('Mobile: Background video switched during gesture');
+                    } catch (error) {
+                        console.error('Mobile: Immediate autoplay failed:', error);
+                    }
+                }
                 
                 // Also try to play any existing video elements immediately
                 const existingVideos = document.querySelectorAll('video');
                 existingVideos.forEach(video => {
                     if (video.paused) {
-                        video.play().catch(e => console.log('Video play attempt failed:', e));
+                        video.play().then(() => {
+                            console.log('Video autoplay successful:', video.src);
+                        }).catch(e => console.log('Video play attempt failed:', e));
                     }
                 });
                 
@@ -5621,47 +5647,7 @@
                 console.log('Mobile device detected:', window.innerWidth <= 768);
                 
                 const setupWebamp = () => {
-                    // For mobile, try autoplay if we unlocked it during touchstart
-                    if (window.innerWidth <= 768 && window.userHasInteracted) {
-                        console.log('Mobile: attempting autoplay with user interaction');
-                        
-                        try {
-                            // Set track first
-                            if (webampInstance && webampInstance.store) {
-                                webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
-                                
-                                // Multiple play attempts to catch when Webamp is ready
-                                const attemptPlay = () => {
-                                    try {
-                                        webampInstance.store.dispatch({ type: 'PLAY' });
-                                        
-                                        const audioEl = document.querySelector('#webamp audio');
-                                        if (audioEl && audioEl.paused) {
-                                            audioEl.play().then(() => {
-                                                console.log('Mobile: Audio autoplay successful');
-                                            }).catch(e => {
-                                                console.log('Mobile: Audio autoplay failed:', e);
-                                            });
-                                        }
-                                    } catch (error) {
-                                        console.error('Mobile: Play attempt error:', error);
-                                    }
-                                };
-                                
-                                // Try multiple times with delays
-                                attemptPlay();
-                                setTimeout(attemptPlay, 50);
-                                setTimeout(attemptPlay, 150);
-                                setTimeout(attemptPlay, 300);
-                            }
-                            
-                            // Switch background video immediately
-                            switchBackground(0);
-                        } catch (error) {
-                            console.error('Mobile autoplay setup failed:', error);
-                        }
-                    }
-                    
+                    // Autoplay already handled immediately during user gesture
                     continueAfterUnlock();
                 };
                 
