@@ -5792,98 +5792,125 @@
             }
 
 
-            // Simplified approach: tap anywhere on key to unlock with drag-like animation
-            function handleKeyInteraction(e) {
+            // Real drag functionality with autoplay capture
+            let isDragging = false;
+            let dragOffset = { x: 0, y: 0 };
+            
+            // Mouse/touch event handlers for real dragging
+            function handleStart(e) {
                 if (passwordUnlocked) return;
                 
-                console.log('Key interaction detected');
+                console.log('Drag start - capturing user interaction for autoplay');
                 e.preventDefault();
                 e.stopPropagation();
                 
-                // Mark user interaction and setup AudioContext immediately
-                window.userHasInteracted = true;
-                
-                if (window.AudioContext || window.webkitAudioContext) {
-                    try {
-                        if (!window.globalAudioContext) {
-                            window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                            console.log('AudioContext created during key interaction');
+                // IMMEDIATELY capture autoplay during the very first touch/click
+                if (!window.userHasInteracted) {
+                    window.userHasInteracted = true;
+                    
+                    if (window.AudioContext || window.webkitAudioContext) {
+                        try {
+                            if (!window.globalAudioContext) {
+                                window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                                console.log('AudioContext created during drag start');
+                            }
+                            if (window.globalAudioContext.state === 'suspended') {
+                                console.log('Resuming AudioContext during drag start');
+                                window.globalAudioContext.resume().then(() => {
+                                    console.log('AudioContext resumed during drag');
+                                }).catch(err => {
+                                    console.error('Failed to resume AudioContext during drag:', err);
+                                });
+                            }
+                        } catch (error) {
+                            console.error('AudioContext setup during drag failed:', error);
                         }
-                        if (window.globalAudioContext.state === 'suspended') {
-                            console.log('Resuming AudioContext during key interaction');
-                            window.globalAudioContext.resume().then(() => {
-                                console.log('AudioContext resumed');
-                            }).catch(err => {
-                                console.error('Failed to resume AudioContext:', err);
-                            });
-                        }
-                    } catch (error) {
-                        console.error('AudioContext setup failed:', error);
                     }
+                    
+                    // Try to play any existing video elements immediately
+                    const existingVideos = document.querySelectorAll('video');
+                    existingVideos.forEach(video => {
+                        if (video.paused && document.contains(video)) {
+                            video.muted = true;
+                            video.play().catch(e => console.log('Video play during drag start failed:', e));
+                        }
+                    });
+                    
+                    console.log('Autoplay enabled during drag start - continue dragging!');
                 }
                 
-                // Try to play any existing video elements immediately
-                const existingVideos = document.querySelectorAll('video');
-                existingVideos.forEach(video => {
-                    if (video.paused && document.contains(video)) {
-                        video.muted = true;
-                        video.play().catch(e => console.log('Video play during interaction failed:', e));
-                    }
-                });
-                
-                // Animate key to lock with drag-like feel
-                animateKeyToLockDragStyle();
-            }
-            
-            // Enhanced animation that feels more like dragging
-            function animateKeyToLockDragStyle() {
-                const lockRect = lock.getBoundingClientRect();
+                // Set up drag state
+                isDragging = true;
+                const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
                 const keyRect = key.getBoundingClientRect();
                 
-                const lockCenterX = lockRect.left + lockRect.width / 2;
-                const lockCenterY = lockRect.top + lockRect.height / 2;
+                dragOffset.x = clientX - keyRect.left;
+                dragOffset.y = clientY - keyRect.top;
+                
+                key.style.transition = 'none';
+                key.style.cursor = 'grabbing';
+            }
+
+            function handleMove(e) {
+                if (!isDragging || passwordUnlocked) return;
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Get coordinates from touch or mouse
+                let clientX, clientY;
+                if (e.type.includes('touch')) {
+                    if (!e.touches || e.touches.length === 0) {
+                        return;
+                    }
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                const newX = clientX - dragOffset.x;
+                const newY = clientY - dragOffset.y;
+                
+                // Keep key within bounds
                 const keySize = window.innerWidth <= 480 ? 158 : window.innerWidth <= 768 ? 185 : 302;
+                const boundedX = Math.max(0, Math.min(newX, window.innerWidth - keySize));
+                const boundedY = Math.max(0, Math.min(newY, window.innerHeight - keySize));
                 
-                const targetX = lockCenterX - keySize / 2;
-                const targetY = lockCenterY - keySize / 2;
+                key.style.left = boundedX + 'px';
+                key.style.top = boundedY + 'px';
                 
-                console.log('Starting drag-style animation to lock');
+                updateKeyRotation();
                 
-                // Add a slight delay and more organic movement
-                key.style.transition = 'left 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), top 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s ease-out';
-                
-                // Add subtle shake before moving (like user grabbed it)
-                key.style.transform += ' rotate(-2deg)';
-                setTimeout(() => {
-                    key.style.transform = key.style.transform.replace(' rotate(-2deg)', ' rotate(2deg)');
-                    setTimeout(() => {
-                        key.style.transform = key.style.transform.replace(' rotate(2deg)', '');
-                        
-                        // Now move to lock
-                        key.style.left = targetX + 'px';
-                        key.style.top = targetY + 'px';
-                        updateKeyRotation();
-                    }, 100);
-                }, 100);
-                
-                // Trigger unlock after animation
-                setTimeout(() => {
-                    console.log('Drag-style animation complete - triggering unlock');
+                // Check collision during drag
+                if (checkCollision()) {
+                    console.log('Collision detected during real drag - triggering unlock');
                     handleUnlock();
-                }, 900);
+                }
+            }
+
+            function handleEnd(e) {
+                if (!isDragging) return;
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                isDragging = false;
+                key.style.transition = 'transform 0.1s ease';
+                key.style.cursor = 'grab';
             }
             
-            // Set up event listeners
-            key.addEventListener('touchstart', handleKeyInteraction, { passive: false });
-            key.addEventListener('click', handleKeyInteraction);
-            key.addEventListener('mousedown', (e) => {
-                if (window.innerWidth > 768) {
-                    // Desktop can still use real drag if desired
-                    handleKeyInteraction(e);
-                } else {
-                    e.preventDefault();
-                }
-            });
+            // Set up event listeners for real drag
+            key.addEventListener('mousedown', handleStart);
+            key.addEventListener('touchstart', handleStart, { passive: false });
+            
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('touchmove', handleMove, { passive: false });
+            
+            document.addEventListener('mouseup', handleEnd);
+            document.addEventListener('touchend', handleEnd, { passive: false });
 
             // Initialize system
             positionKeyRandomly();
