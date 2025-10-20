@@ -5370,17 +5370,27 @@
             let passwordUnlocked = false;
             let safetyTimeoutId = null;
             
-            // Safety timeout for mobile devices - if unlock hasn't happened after 30 seconds, force unlock
-            const isMobile = window.innerWidth <= 768;
-            if (isMobile) {
-                console.log('Mobile device detected - setting up 30-second safety timeout');
-                safetyTimeoutId = setTimeout(() => {
-                    if (!passwordUnlocked) {
-                        console.log('Safety timeout triggered - forcing unlock for mobile compatibility');
-                        handleUnlock();
-                    }
-                }, 30000); // 30 seconds
+            // Preload sound effects for immediate playback
+            let pickupSound = null;
+            let openSound = null;
+            
+            try {
+                pickupSound = new Audio('./assets/sounds/pickup.mp3');
+                pickupSound.volume = 0.5;
+                pickupSound.preload = 'auto';
+                pickupSound.load(); // Force load
+                
+                openSound = new Audio('./assets/sounds/open.mp3');
+                openSound.volume = 0.7;
+                openSound.preload = 'auto';
+                openSound.load(); // Force load
+                
+                console.log('Sound effects preloaded successfully');
+            } catch (error) {
+                console.error('Error preloading sound effects:', error);
             }
+            
+            // No timeout - lockscreen stays persistent until user interaction
 
             // Position key randomly on screen (keeping it in outer 50% of screen)
             function positionKeyRandomly() {
@@ -5557,6 +5567,23 @@
                 lock.classList.add('glowing'); // Add glow to lock
                 key.style.opacity = '0'; // Hide key (glow transfers to lock)
                 lock.classList.add('spinning'); // Start spinning (now with glow)
+                
+                // Play lock opening sound effect during user gesture (using preloaded sound)
+                if (openSound) {
+                    try {
+                        // Reset the audio to the beginning in case it was played before
+                        openSound.currentTime = 0;
+                        openSound.play().then(() => {
+                            console.log('✓ Lock opening sound effect played successfully during user gesture');
+                        }).catch(err => {
+                            console.log('Lock opening sound effect failed to play:', err);
+                        });
+                    } catch (error) {
+                        console.error('Error playing lock opening sound effect:', error);
+                    }
+                } else {
+                    console.log('Lock opening sound not preloaded, skipping');
+                }
                 
                 // Start dunes sliding animation
                 const dunesBackground = document.getElementById('dunes-background');
@@ -5769,6 +5796,20 @@
                 console.log('Starting drag');
                 e.preventDefault();
                 e.stopPropagation();
+                
+                // Play key pickup sound effect during user gesture
+                if (pickupSound) {
+                    try {
+                        pickupSound.currentTime = 0;
+                        pickupSound.play().then(() => {
+                            console.log('✓ Key pickup sound effect played successfully');
+                        }).catch(err => {
+                            console.log('Key pickup sound effect failed to play:', err);
+                        });
+                    } catch (error) {
+                        console.error('Error playing key pickup sound effect:', error);
+                    }
+                }
                 
                 // MOBILE AUTOPLAY FIX: Capture autoplay permission immediately on touchstart
                 if (e.type.includes('touch')) {
