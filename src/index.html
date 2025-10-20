@@ -280,6 +280,43 @@
             }
         }
 
+        /* ENTER button styles */
+        #enter-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #FFA500;
+            color: #FFA500;
+            font-family: 'Times New Roman', serif;
+            font-size: 48px;
+            font-weight: bold;
+            padding: 20px 40px;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 10px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1002;
+            display: none;
+            animation: yellowOrangeGlow 3s ease-in-out infinite alternate;
+        }
+        
+        #enter-button.visible {
+            opacity: 1;
+            display: block;
+        }
+        
+        #enter-button:hover {
+            background: rgba(255, 165, 0, 0.2);
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+        
+        #enter-button:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
         /* Mobile responsive sizing */
         @media (max-width: 768px) {
             #lock {
@@ -290,6 +327,11 @@
             #key {
                 width: 185px; /* 264px * 0.7 = 185px (30% smaller) */
                 height: 185px; /* 264px * 0.7 = 185px (30% smaller) */
+            }
+            
+            #enter-button {
+                font-size: 36px;
+                padding: 15px 30px;
             }
         }
 
@@ -1822,6 +1864,7 @@
         <div id="key">
             <img src="./assets/images/Key.png" alt="Key" draggable="false">
         </div>
+        <div id="enter-button">ENTER</div>
     </div>
 
 
@@ -4251,6 +4294,12 @@
 
                     // Start playing after the video is in the DOM
                     requestAnimationFrame(() => {
+                        // Check if video is still in DOM before trying to play
+                        if (!document.contains(newViewerVideo)) {
+                            console.log('Video was removed from DOM, skipping play attempt');
+                            return;
+                        }
+                        
                         // For mobile with user interaction, be more aggressive with video playback
                         if (window.innerWidth <= 768 && window.userHasInteracted) {
                             console.log('Mobile: aggressive video play attempt with user interaction');
@@ -4259,9 +4308,11 @@
                                 console.log('Mobile: viewer video started successfully');
                             }).catch(err => {
                                 console.error("Mobile viewer video play failed:", err);
-                                // Try again after short delay
+                                // Try again after short delay, but check DOM first
                                 setTimeout(() => {
-                                    newViewerVideo.play().catch(e => console.log('Mobile retry failed:', e));
+                                    if (document.contains(newViewerVideo)) {
+                                        newViewerVideo.play().catch(e => console.log('Mobile retry failed:', e));
+                                    }
                                 }, 100);
                             });
                         } else {
@@ -5556,9 +5607,12 @@
                     dunesBackground.classList.add('slide-out');
                 }
                 
-                // Initialize Webamp immediately during user gesture (like password approach)
-                console.log('Starting Webamp initialization immediately during user gesture...');
-                console.log('Mobile device detected:', window.innerWidth <= 768);
+                // After 3 seconds of spinning, show ENTER button
+                setTimeout(() => {
+                    showEnterButton();
+                }, 3000);
+                
+                return; // Don't continue with immediate initialization
                 
                 initWebamp().then((instance) => {
                     console.log('Webamp initialized successfully during user gesture');
@@ -5836,6 +5890,234 @@
                     updateKeyRotation();
                 }, 100);
             });
+            
+            // Function to show ENTER button after lock spinning
+            function showEnterButton() {
+                console.log('Showing ENTER button...');
+                
+                // Stop lock spinning and remove glow, but preserve final rotation
+                const lockStyle = getComputedStyle(lock);
+                const transform = lockStyle.transform;
+                
+                lock.classList.remove('spinning');
+                lock.classList.remove('glowing');
+                if (transform && transform !== 'none') {
+                    lock.style.transform = transform; // Keep whatever rotation it ended at
+                }
+                
+                // Show ENTER button
+                const enterButton = document.getElementById('enter-button');
+                if (enterButton) {
+                    enterButton.classList.add('visible');
+                    
+                    // Add click handler for ENTER button
+                    enterButton.addEventListener('click', (e) => {
+                        console.log('ENTER button clicked - starting site initialization');
+                        e.preventDefault();
+                        
+                        // Mark user interaction immediately
+                        window.userHasInteracted = true;
+                        
+                        // Setup AudioContext during this click event
+                        if (window.AudioContext || window.webkitAudioContext) {
+                            try {
+                                if (!window.globalAudioContext) {
+                                    window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                                    console.log('AudioContext created during ENTER click');
+                                }
+                                if (window.globalAudioContext.state === 'suspended') {
+                                    window.globalAudioContext.resume().then(() => {
+                                        console.log('AudioContext resumed during ENTER click');
+                                    }).catch(err => {
+                                        console.error('Failed to resume AudioContext:', err);
+                                    });
+                                }
+                            } catch (error) {
+                                console.error('AudioContext setup failed:', error);
+                            }
+                        }
+                        
+                        // Try to play any existing video elements immediately
+                        const existingVideos = document.querySelectorAll('video');
+                        existingVideos.forEach(video => {
+                            if (video.paused && document.contains(video)) {
+                                video.muted = true; // Ensure muted for autoplay
+                                video.play().catch(e => console.log('Video play attempt failed:', e));
+                            }
+                        });
+                        
+                        // Hide ENTER button
+                        enterButton.style.display = 'none';
+                        
+                        // Start the rest of the unlock sequence immediately
+                        console.log('Starting Webamp initialization during ENTER click...');
+                        
+                        initWebamp().then((instance) => {
+                            console.log('Webamp initialized successfully during ENTER click');
+                            
+                            // For mobile, try autoplay immediately since we have user interaction
+                            if (window.innerWidth <= 768 && window.userHasInteracted) {
+                                console.log('Mobile: attempting immediate autoplay due to ENTER click');
+                                try {
+                                    // Force first track to play using Webamp API
+                                    if (webampInstance && webampInstance.store) {
+                                        console.log('Mobile: dispatching PLAY action immediately after ENTER');
+                                        webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
+                                        webampInstance.store.dispatch({ type: 'PLAY' });
+                                        
+                                        // Also try the API method
+                                        setTimeout(() => {
+                                            webampInstance.play();
+                                        }, 100);
+                                    }
+                                    
+                                    // Switch background video immediately
+                                    switchBackground(0);
+                                } catch (error) {
+                                    console.error('Mobile autoplay after ENTER failed:', error);
+                                }
+                            }
+                            
+                            // Continue with the full unlock sequence
+                            continueAfterEnterClick();
+                            
+                            // Start background preloading AFTER the site is shown
+                            setTimeout(() => {
+                                console.log('Starting background preloading...');
+                                preloadRemainingTracks();
+                            }, 2000);
+                        }).catch((error) => {
+                            console.error('Webamp initialization failed:', error);
+                            console.error('Error stack:', error.stack);
+                            // Continue anyway to prevent hanging
+                            continueAfterEnterClick();
+                        });
+                    }, { once: true }); // Only handle click once
+                }
+            }
+            
+            // Function to continue the unlock sequence after ENTER click
+            function continueAfterEnterClick() {
+                console.log('continueAfterEnterClick() called');
+                
+                console.log('Starting TV turn-off effect...');
+                
+                // Apply TV turn off effect to overlay
+                unlockOverlay.classList.add('tv-turn-off');
+                unlockOverlay.style.pointerEvents = 'none';
+                
+                // Hide dunes background immediately
+                const dunesBackground = document.getElementById('dunes-background');
+                if (dunesBackground) {
+                    dunesBackground.style.display = 'none';
+                }
+                
+                // Ensure starfield stays in background
+                const starfieldCanvas = document.getElementById('starfield-canvas');
+                if (starfieldCanvas) {
+                    starfieldCanvas.style.zIndex = '-1';
+                }
+                
+                // Wait for TV turn-off effect to complete (1.2s), then show everything at once
+                setTimeout(() => {
+                    console.log('TV off complete - showing all elements');
+
+                    // Show webamp-container
+                    const webampContainer = document.getElementById('webamp-container');
+                    if (webampContainer) {
+                        webampContainer.style.opacity = '1';
+                    }
+
+                    // Show viewer window with TV turn-on effect
+                    const viewerWindow = document.getElementById('viewer-window');
+                    if (viewerWindow) {
+                        // Position first (before TV effect)
+                        if (window.innerWidth <= 768) {
+                            positionViewerForMobile(viewerWindow);
+                        }
+                        
+                        // Start with TV turn-on effect
+                        viewerWindow.classList.add('tv-appearing');
+                        
+                        // After TV turn-on completes, add visible class and remove tv effect
+                        setTimeout(() => {
+                            viewerWindow.classList.remove('tv-appearing');
+                            viewerWindow.classList.add('visible');
+                            
+                            // Show logo as easter egg 1 second after viewer powers on
+                            setTimeout(() => {
+                                const logoLink = document.getElementById('legendarium-logo-link');
+                                if (logoLink) {
+                                    logoLink.classList.add('visible');
+                                    if (!window.legendariumLogoAnimStarted) {
+                                        window.legendariumLogoAnimStarted = true;
+                                        startLegendariumLogoAnimation();
+                                    }
+                                }
+                            }, 1000); // 1 second after viewer is fully on
+                        }, 1200); // Match tvTurnOn duration
+                    }
+
+                    // Show cover window/icon (desktop: minimized icon, mobile: hidden)
+                    const coverWindow = document.getElementById('cover-window');
+                    if (coverWindow) {
+                        if (window.innerWidth <= 768) {
+                            coverWindow.style.display = 'none'; // Hidden on mobile
+                        } else {
+                            coverWindow.style.display = 'flex'; // Show as minimized icon on desktop
+                            coverWindow.classList.add('visible');
+                        }
+                    }
+
+                    // Start playback after a short delay
+                    setTimeout(() => {
+                        console.log('Starting post-unlock initialization...');
+                        
+                        try {
+                            if (window.innerWidth > 768) {
+                                // Desktop: normal initialization
+                                console.log('Desktop: Switching to first track background...');
+                                switchBackground(0);
+                                
+                                if (webampInstance) {
+                                    console.log('Desktop: Starting first track playback...');
+                                    playFirstTrack();
+                                } else {
+                                    console.warn('Webamp instance not available for playback');
+                                }
+                            } else {
+                                // Mobile: ensure playback started, try again if needed
+                                console.log('Mobile: ensuring autoplay started...');
+                                if (webampInstance) {
+                                    const state = webampInstance.store.getState();
+                                    const isPlaying = state?.media?.status === 'PLAYING';
+                                    
+                                    if (!isPlaying && window.userHasInteracted) {
+                                        console.log('Mobile: playback not detected, trying again...');
+                                        switchBackground(0);
+                                        playFirstTrack();
+                                    } else if (isPlaying) {
+                                        console.log('Mobile: playback confirmed running');
+                                    }
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error starting playback:', error);
+                        }
+                    }, window.innerWidth <= 768 ? 1000 : 2000);
+
+                    // Start deity messages after standard delay
+                    setTimeout(() => {
+                        try {
+                            deityMessageSystem.init();
+                        } catch (error) {
+                            console.error('Error initializing deity messages:', error);
+                        }
+                    }, 5000);
+
+                    console.log('Post-unlock initialization complete');
+                }, 1200); // Match tvTurnOff animation duration exactly
+            }
         }
 
         // Media Session API for background playback
