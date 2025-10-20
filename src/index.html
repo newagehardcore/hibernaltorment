@@ -5577,6 +5577,30 @@
                 window.userHasInteracted = true;
                 console.log('User interaction recorded for autoplay');
                 
+                // IMMEDIATELY attempt Webamp autoplay during user gesture (mobile)
+                if (window.innerWidth <= 768 && webampInstance && webampInstance.store) {
+                    console.log('Mobile: Immediately attempting Webamp autoplay during user gesture');
+                    try {
+                        // Dispatch play immediately during user interaction
+                        webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
+                        webampInstance.store.dispatch({ type: 'PLAY' });
+                        
+                        // Also try direct audio element access
+                        setTimeout(() => {
+                            const audioEl = document.querySelector('#webamp audio');
+                            if (audioEl && audioEl.paused) {
+                                audioEl.play().then(() => {
+                                    console.log('Mobile: Direct audio play successful during gesture');
+                                }).catch(e => console.log('Mobile: Direct audio play failed:', e));
+                            }
+                        }, 50);
+                        
+                        console.log('Mobile: Webamp autoplay dispatched during user gesture');
+                    } catch (error) {
+                        console.error('Mobile: Immediate autoplay failed:', error);
+                    }
+                }
+                
                 // Also try to play any existing video elements immediately
                 const existingVideos = document.querySelectorAll('video');
                 existingVideos.forEach(video => {
