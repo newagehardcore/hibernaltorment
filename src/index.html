@@ -5451,6 +5451,7 @@
             // Update key rotation
             function updateKeyRotation() {
                 const rotation = calculateKeyRotation();
+                // Only set rotation, don't interfere with other transforms
                 key.style.transform = `rotate(${rotation}deg)`;
             }
 
@@ -5751,34 +5752,32 @@
             
             // Hybrid tap-then-drag approach
             let mobileAutoplayEnabled = false;
+            let firstTouchProcessed = false;
             
             function handleStart(e) {
                 if (passwordUnlocked) return;
                 
-                console.log('Drag/tap start');
-                
-                // For mobile: if this is the first interaction, enable autoplay but don't start drag yet
-                if (window.innerWidth <= 768 && e.type.includes('touch') && !mobileAutoplayEnabled) {
-                    console.log('Mobile: First tap detected - enabling autoplay permissions');
-                    e.preventDefault();
-                    e.stopPropagation();
+                // For mobile: if this is the first interaction, enable autoplay but allow drag to continue
+                if (window.innerWidth <= 768 && e.type.includes('touch') && !mobileAutoplayEnabled && !firstTouchProcessed) {
+                    console.log('Mobile: First touch - enabling autoplay permissions');
+                    firstTouchProcessed = true;
                     
-                    // Enable autoplay permissions immediately in tap context
+                    // Enable autoplay permissions immediately in touch context
                     if (window.AudioContext || window.webkitAudioContext) {
                         try {
                             if (!window.globalAudioContext) {
                                 window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                                console.log('AudioContext created during first mobile tap');
+                                console.log('AudioContext created during first mobile touch');
                             }
                             if (window.globalAudioContext.state === 'suspended') {
                                 window.globalAudioContext.resume().then(() => {
-                                    console.log('AudioContext resumed during first mobile tap');
+                                    console.log('AudioContext resumed during first mobile touch');
                                 }).catch(err => {
                                     console.error('Failed to resume AudioContext:', err);
                                 });
                             }
                         } catch (error) {
-                            console.error('AudioContext setup during tap failed:', error);
+                            console.error('AudioContext setup during touch failed:', error);
                         }
                     }
                     
@@ -5786,27 +5785,20 @@
                     window.userHasInteracted = true;
                     mobileAutoplayEnabled = true;
                     
-                    // Initialize Webamp in background during tap
+                    // Initialize Webamp in background during touch
                     if (!webampInstance) {
-                        console.log('Mobile: Pre-initializing Webamp during first tap');
+                        console.log('Mobile: Pre-initializing Webamp during first touch');
                         initWebamp().catch(err => {
                             console.error('Background Webamp init failed:', err);
                         });
                     }
                     
-                    // Show visual feedback that tap was registered
-                    key.style.transform = key.style.transform + ' scale(1.1)';
-                    setTimeout(() => {
-                        key.style.transform = key.style.transform.replace(' scale(1.1)', '');
-                    }, 150);
-                    
-                    // Add instruction for mobile users
-                    console.log('Mobile: Autoplay enabled - now drag the key to the lock!');
-                    
-                    return; // Don't start drag on first tap
+                    console.log('Mobile: Autoplay enabled - continue dragging to unlock!');
+                    // Don't return - let the drag start normally
                 }
                 
-                // Normal drag start (desktop or mobile after first tap)
+                // Normal drag start for all cases
+                console.log('Starting drag');
                 e.preventDefault();
                 e.stopPropagation();
                 
@@ -5871,6 +5863,9 @@
                 isDragging = false;
                 key.style.transition = 'transform 0.1s ease';
                 key.style.cursor = 'grab';
+                
+                // Ensure rotation is preserved after drag ends
+                updateKeyRotation();
             }
             
             // Set up event listeners for real drag
