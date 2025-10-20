@@ -5780,76 +5780,40 @@
             // Real drag functionality with autoplay capture
             // isDragging and dragOffset already declared above
             
-            // Special click handler for mobile autoplay
-            function handleMobileAutoplayClick(e) {
-                if (passwordUnlocked || window.userHasInteracted) return;
-                
-                console.log('Mobile: Synthetic click for autoplay');
-                window.userHasInteracted = true;
-                
-                // Setup AudioContext in proper click context
-                if (window.AudioContext || window.webkitAudioContext) {
-                    try {
-                        if (!window.globalAudioContext) {
-                            window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                            console.log('AudioContext created during synthetic click');
-                        }
-                        if (window.globalAudioContext.state === 'suspended') {
-                            console.log('Resuming AudioContext during synthetic click');
-                            window.globalAudioContext.resume().then(() => {
-                                console.log('AudioContext resumed during synthetic click');
-                            }).catch(err => {
-                                console.error('Failed to resume AudioContext during synthetic click:', err);
-                            });
-                        }
-                    } catch (error) {
-                        console.error('AudioContext setup during synthetic click failed:', error);
-                    }
-                }
-                
-                // Try to play any existing videos
-                const existingVideos = document.querySelectorAll('video');
-                existingVideos.forEach(video => {
-                    if (video.paused && document.contains(video)) {
-                        video.muted = true;
-                        video.play().catch(e => console.log('Video play during synthetic click failed:', e));
-                    }
-                });
-                
-                // Initialize Webamp immediately in click context
-                if (!webampInstance) {
-                    console.log('Mobile: Initializing Webamp in click context');
-                    initWebamp().then(() => {
-                        console.log('Mobile: Webamp initialized in click context');
-                        // Try autoplay immediately
-                        setTimeout(() => {
-                            if (webampInstance && webampInstance.store) {
-                                webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
-                                webampInstance.store.dispatch({ type: 'PLAY' });
-                                webampInstance.play();
-                            }
-                        }, 100);
-                    }).catch(err => {
-                        console.error('Mobile: Webamp init in click context failed:', err);
-                    });
-                }
-                
-                console.log('Mobile: Autoplay setup complete in click context');
-            }
-            
-            // Mouse/touch event handlers for real dragging
+            // Try a different approach: dispatch real click event on touchstart
             function handleStart(e) {
                 if (passwordUnlocked) return;
                 
                 console.log('Drag start');
+                
+                // On mobile first touch, dispatch a real click event to enable autoplay
+                if (window.innerWidth <= 768 && e.type.includes('touch') && !window.userHasInteracted) {
+                    console.log('Mobile: Dispatching real click event for autoplay');
+                    
+                    // Create and dispatch a real click event
+                    const clickEvent = new MouseEvent('click', {
+                        bubbles: true,
+                        cancelable: true,
+                        view: window
+                    });
+                    
+                    // Dispatch it on the key element
+                    key.dispatchEvent(clickEvent);
+                    
+                    // Small delay to let the click event be processed
+                    setTimeout(() => {
+                        continueWithDrag(e);
+                    }, 50);
+                    
+                    return;
+                }
+                
+                continueWithDrag(e);
+            }
+            
+            function continueWithDrag(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
-                // On mobile, trigger a synthetic click first for autoplay
-                if (window.innerWidth <= 768 && e.type.includes('touch') && !window.userHasInteracted) {
-                    console.log('Mobile: Triggering synthetic click before drag');
-                    handleMobileAutoplayClick(e);
-                }
                 
                 // Set up drag state
                 isDragging = true;
@@ -5862,6 +5826,63 @@
                 
                 key.style.transition = 'none';
                 key.style.cursor = 'grabbing';
+            }
+            
+            // Click handler for autoplay (will be triggered by synthetic click on mobile)
+            function handleClick(e) {
+                if (passwordUnlocked || window.userHasInteracted) return;
+                
+                console.log('Click detected - enabling autoplay');
+                window.userHasInteracted = true;
+                
+                // Setup AudioContext in click context
+                if (window.AudioContext || window.webkitAudioContext) {
+                    try {
+                        if (!window.globalAudioContext) {
+                            window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                            console.log('AudioContext created during click');
+                        }
+                        if (window.globalAudioContext.state === 'suspended') {
+                            console.log('Resuming AudioContext during click');
+                            window.globalAudioContext.resume().then(() => {
+                                console.log('AudioContext resumed during click');
+                            }).catch(err => {
+                                console.error('Failed to resume AudioContext during click:', err);
+                            });
+                        }
+                    } catch (error) {
+                        console.error('AudioContext setup during click failed:', error);
+                    }
+                }
+                
+                // Try to play any existing videos
+                const existingVideos = document.querySelectorAll('video');
+                existingVideos.forEach(video => {
+                    if (video.paused && document.contains(video)) {
+                        video.muted = true;
+                        video.play().catch(e => console.log('Video play during click failed:', e));
+                    }
+                });
+                
+                // Initialize Webamp immediately in click context
+                if (!webampInstance) {
+                    console.log('Initializing Webamp in click context');
+                    initWebamp().then(() => {
+                        console.log('Webamp initialized in click context');
+                        // Try autoplay immediately
+                        setTimeout(() => {
+                            if (webampInstance && webampInstance.store) {
+                                webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
+                                webampInstance.store.dispatch({ type: 'PLAY' });
+                                webampInstance.play();
+                            }
+                        }, 100);
+                    }).catch(err => {
+                        console.error('Webamp init in click context failed:', err);
+                    });
+                }
+                
+                console.log('Autoplay setup complete in click context');
             }
 
             function handleMove(e) {
@@ -5915,6 +5936,7 @@
             }
             
             // Set up event listeners for real drag
+            key.addEventListener('click', handleClick); // Handle both real clicks and dispatched clicks
             key.addEventListener('mousedown', handleStart);
             key.addEventListener('touchstart', handleStart, { passive: false });
             
