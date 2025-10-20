@@ -2010,9 +2010,6 @@
                 "Gross Excelations": [
                     "Welcome",
                     "It's been a while"
-                ],
-                "Two Travelers": [
-                    "The journey continues"
                 ]
                 // Add more tracks and their messages here as needed:
                 // "Hibernal Torment": [
@@ -5577,71 +5574,9 @@
                     console.log('User interaction recorded for autoplay');
                 }
                 
-                // Also resume Webamp's AudioContext if it exists
-                if (webampInstance && webampInstance.audioContext) {
-                    try {
-                        if (webampInstance.audioContext.state === 'suspended') {
-                            webampInstance.audioContext.resume().then(() => {
-                                console.log('Webamp AudioContext resumed during unlock');
-                            }).catch(err => {
-                                console.error('Failed to resume Webamp AudioContext:', err);
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Error resuming Webamp AudioContext:', error);
-                    }
-                }
+                // User interaction is already recorded above
                 
-                // Store that we have user interaction for autoplay
-                window.userHasInteracted = true;
-                console.log('User interaction recorded for autoplay');
-                
-                // IMMEDIATELY attempt Webamp autoplay during user gesture (mobile)
-                if (window.innerWidth <= 768 && webampInstance && webampInstance.store) {
-                    console.log('Mobile: Attempting Webamp autoplay during user gesture');
-                    try {
-                        // Set track first
-                        webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
-                        
-                        // Give Webamp a moment to be ready, but stay in user gesture context
-                        const attemptPlay = () => {
-                            try {
-                                // Try Redux dispatch first
-                                webampInstance.store.dispatch({ type: 'PLAY' });
-                                
-                                // Try direct audio element
-                                const audioEl = document.querySelector('#webamp audio');
-                                if (audioEl) {
-                                    audioEl.play().then(() => {
-                                        console.log('Mobile: Direct audio play successful');
-                                    }).catch(e => {
-                                        console.log('Mobile: Direct audio play failed:', e);
-                                        // Try Webamp API as fallback
-                                        if (webampInstance.play) {
-                                            webampInstance.play().catch(err => {
-                                                console.log('Mobile: Webamp API fallback failed:', err);
-                                            });
-                                        }
-                                    });
-                                }
-                            } catch (error) {
-                                console.error('Mobile: Play attempt failed:', error);
-                            }
-                        };
-                        
-                        // Try immediately, then retry after short delays (still in gesture context)
-                        attemptPlay();
-                        setTimeout(attemptPlay, 100);
-                        setTimeout(attemptPlay, 300);
-                        
-                        // Switch background video immediately for mobile during user gesture
-                        switchBackground(0);
-                        
-                        console.log('Mobile: Webamp autoplay initiated during user gesture');
-                    } catch (error) {
-                        console.error('Mobile: Autoplay setup failed:', error);
-                    }
-                }
+                // Mobile autoplay will be handled by setupWebamp() function
                 
                 // Also try to play any existing video elements immediately
                 const existingVideos = document.querySelectorAll('video');
@@ -5687,35 +5622,43 @@
                 
                 const setupWebamp = () => {
                     // For mobile, try autoplay if we unlocked it during touchstart
-                    if (window.innerWidth <= 768 && (window.mobileAutoplayUnlocked || window.userHasInteracted)) {
-                        console.log('Mobile: attempting autoplay with unlocked permission');
+                    if (window.innerWidth <= 768 && window.userHasInteracted) {
+                        console.log('Mobile: attempting autoplay with user interaction');
                         
                         try {
-                            // Force first track to play using Webamp API
+                            // Set track first
                             if (webampInstance && webampInstance.store) {
-                                console.log('Mobile: dispatching PLAY action with unlocked autoplay');
                                 webampInstance.store.dispatch({ type: 'SET_CURRENT_TRACK', id: 0 });
-                                webampInstance.store.dispatch({ type: 'PLAY' });
                                 
-                                // Also try the API method
-                                setTimeout(() => {
-                                    if (webampInstance.play) {
-                                        webampInstance.play().catch(err => {
-                                            console.log('Webamp API play failed, trying alternative:', err);
-                                            // Try to directly access the audio element
-                                            const audioEl = document.querySelector('#webamp audio');
-                                            if (audioEl) {
-                                                audioEl.play().catch(e => console.log('Direct audio play failed:', e));
-                                            }
-                                        });
+                                // Multiple play attempts to catch when Webamp is ready
+                                const attemptPlay = () => {
+                                    try {
+                                        webampInstance.store.dispatch({ type: 'PLAY' });
+                                        
+                                        const audioEl = document.querySelector('#webamp audio');
+                                        if (audioEl && audioEl.paused) {
+                                            audioEl.play().then(() => {
+                                                console.log('Mobile: Audio autoplay successful');
+                                            }).catch(e => {
+                                                console.log('Mobile: Audio autoplay failed:', e);
+                                            });
+                                        }
+                                    } catch (error) {
+                                        console.error('Mobile: Play attempt error:', error);
                                     }
-                                }, 100);
+                                };
+                                
+                                // Try multiple times with delays
+                                attemptPlay();
+                                setTimeout(attemptPlay, 50);
+                                setTimeout(attemptPlay, 150);
+                                setTimeout(attemptPlay, 300);
                             }
                             
                             // Switch background video immediately
                             switchBackground(0);
                         } catch (error) {
-                            console.error('Mobile autoplay with unlocked permission failed:', error);
+                            console.error('Mobile autoplay setup failed:', error);
                         }
                     }
                     
