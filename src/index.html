@@ -216,126 +216,49 @@
             }
         }
 
-        #lock {
+
+        /* Unified logo button for both desktop and mobile */
+        #logo-button {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 180px;
-            height: 180px;
-            cursor: default;
-            transition: transform 0.3s ease;
-        }
-
-        #lock img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        #lock.spinning {
-            animation: spin 2s linear infinite;
-        }
-        
-        #lock.glowing {
-            animation: yellowOrangeGlow 3s ease-in-out infinite alternate;
-        }
-        
-        #lock.spinning.glowing {
-            animation: spin 2s linear infinite, yellowOrangeGlow 3s ease-in-out infinite alternate;
-        }
-
-        #key {
-            position: absolute;
-            width: 302px;  /* 377px * 0.8 = 302px (20% smaller) */
-            height: 302px; /* 377px * 0.8 = 302px (20% smaller) */
-            cursor: grab;
-            transition: none;
-            z-index: 1001;
-            animation: yellowOrangeGlow 3s ease-in-out infinite alternate;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-            touch-action: none;
-        }
-
-        #key:active {
-            cursor: grabbing;
-        }
-
-        #key img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            pointer-events: none; /* Prevent image context menu */
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: translate(-50%, -50%) rotate(0deg);
-            }
-            100% {
-                transform: translate(-50%, -50%) rotate(360deg);
-            }
-        }
-        
-        @keyframes yellowOrangeGlow {
-            0% {
-                filter: drop-shadow(0 0 15px rgba(255, 165, 0, 0.9)) 
-                        drop-shadow(0 0 30px rgba(255, 140, 0, 0.6));
-            }
-            50% {
-                filter: drop-shadow(0 0 25px rgba(255, 165, 0, 1.0)) 
-                        drop-shadow(0 0 50px rgba(255, 140, 0, 0.8))
-                        drop-shadow(0 0 75px rgba(255, 69, 0, 0.5));
-            }
-            100% {
-                filter: drop-shadow(0 0 20px rgba(255, 165, 0, 0.8)) 
-                        drop-shadow(0 0 40px rgba(255, 140, 0, 0.7));
-            }
-        }
-
-        /* Mobile Legendarium logo interaction button */
-        #mobile-logo-button {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            height: 200px;
-            background: url('./assets/images/Legendarium-Logo-Trans-1.png') no-repeat center;
-            background-size: contain;
-            border: none;
             cursor: pointer;
             z-index: 1001;
-            display: none; /* Hidden by default, shown on mobile */
+            transition: transform 0.3s ease-out;
+        }
+        
+        #logo-button img {
+            width: 375px; /* 25% larger than mobile's 300px */
+            height: 250px; /* 25% larger than mobile's 200px */
+            object-fit: contain;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+            transition: filter 0.3s ease-out;
+        }
+        
+        /* Hover grow animation for desktop */
+        @media (min-width: 769px) {
+            #logo-button:hover {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            
+            #logo-button:hover img {
+                filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.4));
+            }
         }
         
         /* Mobile responsive sizing */
         @media (max-width: 768px) {
-            #lock, #key {
-                display: none !important; /* Hide lock/key on mobile */
-            }
-            
-            #mobile-logo-button {
-                display: block; /* Show Legendarium logo button on mobile */
+            #logo-button img {
+                width: 300px;
+                height: 200px;
             }
         }
 
-        @media (max-width: 480px) {
-            #lock {
-                width: 120px;
-                height: 120px;
-            }
-            
-            #key {
-                width: 158px; /* 226px * 0.7 = 158px (30% smaller) */
-                height: 158px; /* 226px * 0.7 = 158px (30% smaller) */
-            }
-        }
 
         /* Add styles for viewer videos */
         .viewer-video {
@@ -1846,16 +1769,12 @@
     <!-- Dunes background -->
     <div id="dunes-background"></div>
 
-    <!-- Key unlocking system overlay -->
+    <!-- Simple logo button for site unlock -->
     <div id="unlock-overlay">
-        <div id="lock">
-            <img src="./assets/images/Lock.png" alt="Lock" draggable="false">
+        <!-- Simple Legendarium logo interaction button for both desktop and mobile -->
+        <div id="logo-button">
+            <img src="./assets/images/Legendarium-Logo-Trans-1.png" alt="Enter GATEKEEPER - WRONG PLANET" draggable="false">
         </div>
-        <div id="key">
-            <img src="./assets/images/Key.png" alt="Key" draggable="false">
-        </div>
-        <!-- Mobile Legendarium logo interaction button -->
-        <div id="mobile-logo-button"></div>
     </div>
 
 
@@ -5381,153 +5300,22 @@
             initWebamp();
         }
 
-        // Key unlocking system
-        function setupKeyUnlockingSystem() {
+        // Simple logo button unlock system
+        function setupLogoUnlockSystem() {
             const unlockOverlay = document.getElementById('unlock-overlay');
-            const lock = document.getElementById('lock');
-            const key = document.getElementById('key');
-            const mobileLogoButton = document.getElementById('mobile-logo-button');
-            let isDragging = false;
-            let dragOffset = { x: 0, y: 0 };
+            const logoButton = document.getElementById('logo-button');
             let passwordUnlocked = false;
             let safetyTimeoutId = null;
             
-            // Sound effects removed for cleaner mobile autoplay experience
-            
-            // Mobile Legendarium logo button handler
-            if (mobileLogoButton) {
-                mobileLogoButton.addEventListener('click', (e) => {
-                    console.log('Mobile: Legendarium logo clicked');
+            // Logo button click handler for both desktop and mobile
+            if (logoButton) {
+                logoButton.addEventListener('click', (e) => {
+                    console.log('Logo button clicked - starting unlock');
                     handleUnlock();
                 });
             }
             
-            // No timeout - lockscreen stays persistent until user interaction
-
-            // Position key randomly on screen (desktop only)
-            function positionKeyRandomly() {
-                if (window.innerWidth <= 768) {
-                    console.log('Mobile detected - skipping key positioning');
-                    return;
-                }
-                const margin = 100; // Keep key away from edges
-                // Final adjusted key sizes
-                const keySize = window.innerWidth <= 480 ? 158 : window.innerWidth <= 768 ? 185 : 302;
-                const screenWidth = window.innerWidth;
-                const screenHeight = window.innerHeight;
-                
-                // Define center exclusion zone (inner 50% of screen)
-                const centerExclusionWidth = screenWidth * 0.5; // Inner 50% width
-                const centerExclusionHeight = screenHeight * 0.5; // Inner 50% height
-                const centerExclusionLeft = screenWidth * 0.25; // Start at 25% from left
-                const centerExclusionTop = screenHeight * 0.25; // Start at 25% from top
-                const centerExclusionRight = centerExclusionLeft + centerExclusionWidth;
-                const centerExclusionBottom = centerExclusionTop + centerExclusionHeight;
-                
-                let x, y;
-                let attempts = 0;
-                const maxAttempts = 50;
-                
-                do {
-                    // Generate random position anywhere on screen (within margins)
-                    const maxX = screenWidth - margin - keySize;
-                    const maxY = screenHeight - margin - keySize;
-                    x = margin + Math.random() * Math.max(0, maxX);
-                    y = margin + Math.random() * Math.max(0, maxY);
-                    attempts++;
-                    
-                    // Check if key center would be in center exclusion zone
-                    const keyCenterX = x + keySize / 2;
-                    const keyCenterY = y + keySize / 2;
-                    
-                    const isInCenterZone = (keyCenterX >= centerExclusionLeft && 
-                                           keyCenterX <= centerExclusionRight &&
-                                           keyCenterY >= centerExclusionTop && 
-                                           keyCenterY <= centerExclusionBottom);
-                    
-                    // Accept position if it's outside center zone or we've tried too many times
-                    if (!isInCenterZone || attempts >= maxAttempts) {
-                        break;
-                    }
-                } while (true);
-                
-                key.style.left = x + 'px';
-                key.style.top = y + 'px';
-                console.log(`Key positioned at (${x}, ${y}), size: ${keySize}px, avoiding center zone`);
-            }
-
-            // Calculate angle from key to lock
-            function calculateKeyRotation() {
-                const lockRect = lock.getBoundingClientRect();
-                const keyRect = key.getBoundingClientRect();
-                
-                const lockCenterX = lockRect.left + lockRect.width / 2;
-                const lockCenterY = lockRect.top + lockRect.height / 2;
-                const keyCenterX = keyRect.left + keyRect.width / 2;
-                const keyCenterY = keyRect.top + keyRect.height / 2;
-                
-                const deltaX = lockCenterX - keyCenterX;
-                const deltaY = lockCenterY - keyCenterY;
-                
-                const angleRad = Math.atan2(deltaY, deltaX);
-                const angleDeg = angleRad * (180 / Math.PI);
-                
-                return angleDeg;
-            }
-
-            // Update key rotation
-            function updateKeyRotation() {
-                const rotation = calculateKeyRotation();
-                // Only set rotation, don't interfere with other transforms
-                key.style.transform = `rotate(${rotation}deg)`;
-            }
-
-            // Check if key overlaps with lock - improved for mobile compatibility
-            function checkCollision() {
-                try {
-                    const lockRect = lock.getBoundingClientRect();
-                    const keyRect = key.getBoundingClientRect();
-                    
-                    // Fallback to CSS positioning if getBoundingClientRect fails
-                    let lockCenterX, lockCenterY, keyCenterX, keyCenterY;
-                    
-                    if (lockRect.width === 0 || keyRect.width === 0) {
-                        // Fallback: use CSS positioning
-                        const lockSize = window.innerWidth <= 480 ? 120 : window.innerWidth <= 768 ? 150 : 180;
-                        const keySize = window.innerWidth <= 480 ? 158 : window.innerWidth <= 768 ? 185 : 302;
-                        
-                        lockCenterX = window.innerWidth / 2;
-                        lockCenterY = window.innerHeight / 2;
-                        
-                        const keyLeft = parseFloat(key.style.left) || 0;
-                        const keyTop = parseFloat(key.style.top) || 0;
-                        keyCenterX = keyLeft + keySize / 2;
-                        keyCenterY = keyTop + keySize / 2;
-                    } else {
-                        // Normal case: use getBoundingClientRect
-                        lockCenterX = lockRect.left + lockRect.width / 2;
-                        lockCenterY = lockRect.top + lockRect.height / 2;
-                        keyCenterX = keyRect.left + keyRect.width / 2;
-                        keyCenterY = keyRect.top + keyRect.height / 2;
-                    }
-                    
-                    const distance = Math.sqrt(
-                        Math.pow(lockCenterX - keyCenterX, 2) + 
-                        Math.pow(lockCenterY - keyCenterY, 2)
-                    );
-                    
-                    // Mobile-friendly collision threshold - more generous for touch
-                    const isMobile = window.innerWidth <= 768;
-                    const threshold = isMobile ? 150 : 120; // Larger threshold for mobile
-                    
-                    console.log(`Collision check: distance=${Math.round(distance)}, threshold=${threshold}, collision=${distance < threshold}`);
-                    return distance < threshold;
-                } catch (error) {
-                    console.error('Error in checkCollision:', error);
-                    // Fallback: always return false to prevent hanging
-                    return false;
-                }
-            }
+            // No complex key positioning needed - just simple click unlock
 
             // Handle unlock sequence
             function handleUnlock() {
@@ -5642,10 +5430,10 @@
                 
                 console.log('Starting immediate media activation for mobile autoplay');
                 
-                // Transfer glow from key to lock, then hide key and start lock spinning
-                lock.classList.add('glowing'); // Add glow to lock
-                key.style.opacity = '0'; // Hide key (glow transfers to lock)
-                lock.classList.add('spinning'); // Start spinning (now with glow)
+                // Hide logo button with fade animation
+                logoButton.style.opacity = '0';
+                logoButton.style.transform = 'translate(-50%, -50%) scale(0.8)';
+                logoButton.style.pointerEvents = 'none';
                 
                 // Skip open sound - go straight to Webamp autoplay after key pickup
                 console.log('Skipping open sound - starting Webamp autoplay immediately');
@@ -5680,17 +5468,6 @@
 
                 function continueAfterUnlock() {
                     console.log('continueAfterUnlock() called');
-
-                    // Get current lock rotation before stopping animation to preserve it for TV turn-off
-                    const lockStyle = getComputedStyle(lock);
-                    const transform = lockStyle.transform;
-                    
-                    // Stop lock spinning and remove glow, but preserve final rotation
-                    lock.classList.remove('spinning');
-                    lock.classList.remove('glowing');
-                    if (transform && transform !== 'none') {
-                        lock.style.transform = transform; // Keep whatever rotation it ended at
-                    }
                     
                     console.log('Starting TV turn-off effect...');
                     
@@ -5811,152 +5588,6 @@
                     }, 1200); // Match tvTurnOff animation duration exactly
                 }
             }
-
-
-            // Real drag functionality - capture autoplay on touchstart for mobile
-            function handleStart(e) {
-                if (passwordUnlocked) return;
-                
-                console.log('Starting drag');
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Sound effects removed for cleaner mobile autoplay experience
-                
-                // MOBILE AUTOPLAY FIX: Capture autoplay permission immediately on touchstart
-                if (e.type.includes('touch')) {
-                    console.log('Mobile: Touch detected - attempting immediate autoplay unlock');
-                    
-                    // Create and resume AudioContext immediately during touchstart
-                    if (window.AudioContext || window.webkitAudioContext) {
-                        try {
-                            if (!window.globalAudioContext) {
-                                window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                                console.log('AudioContext created during touchstart');
-                            }
-                            if (window.globalAudioContext.state === 'suspended') {
-                                window.globalAudioContext.resume().then(() => {
-                                    console.log('AudioContext resumed during touchstart');
-                                }).catch(err => {
-                                    console.error('Failed to resume AudioContext during touchstart:', err);
-                                });
-                            }
-                        } catch (error) {
-                            console.error('AudioContext setup failed during touchstart:', error);
-                        }
-                    }
-                    
-                    // Resume Webamp's AudioContext if it exists
-                    if (window.webampInstance && window.webampInstance.audioContext) {
-                        window.webampInstance.audioContext.resume();
-                    }
-                    
-                    // Try to play existing videos immediately during touchstart
-                    const existingVideos = document.querySelectorAll('video');
-                    existingVideos.forEach(video => {
-                        if (video.paused) {
-                            video.play().then(() => {
-                                console.log('Mobile: Video started during touchstart');
-                                window.mobileVideoUnlocked = true;
-                            }).catch(e => console.log('Video play during touchstart failed:', e));
-                        }
-                    });
-                    
-                    window.userHasInteracted = true;
-                    window.mobileAutoplayUnlocked = true;
-                    console.log('Mobile: Autoplay permission captured during touchstart');
-                }
-                
-                // Set up drag state
-                isDragging = true;
-                const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-                const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-                const keyRect = key.getBoundingClientRect();
-                
-                dragOffset.x = clientX - keyRect.left;
-                dragOffset.y = clientY - keyRect.top;
-                
-                key.style.transition = 'none';
-                key.style.cursor = 'grabbing';
-            }
-
-            function handleMove(e) {
-                if (!isDragging || passwordUnlocked) return;
-                
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Get coordinates from touch or mouse
-                let clientX, clientY;
-                if (e.type.includes('touch')) {
-                    if (!e.touches || e.touches.length === 0) {
-                        return;
-                    }
-                    clientX = e.touches[0].clientX;
-                    clientY = e.touches[0].clientY;
-                } else {
-                    clientX = e.clientX;
-                    clientY = e.clientY;
-                }
-                
-                const newX = clientX - dragOffset.x;
-                const newY = clientY - dragOffset.y;
-                
-                // Keep key within bounds
-                const keySize = window.innerWidth <= 480 ? 158 : window.innerWidth <= 768 ? 185 : 302;
-                const boundedX = Math.max(0, Math.min(newX, window.innerWidth - keySize));
-                const boundedY = Math.max(0, Math.min(newY, window.innerHeight - keySize));
-                
-                key.style.left = boundedX + 'px';
-                key.style.top = boundedY + 'px';
-                
-                updateKeyRotation();
-            }
-
-            function handleEnd(e) {
-                if (!isDragging) return;
-                
-                e.preventDefault();
-                e.stopPropagation();
-                
-                isDragging = false;
-                key.style.transition = 'transform 0.1s ease';
-                key.style.cursor = 'grab';
-                
-                // Check for collision at end of drag
-                if (checkCollision()) {
-                    console.log('Collision detected at end of drag - triggering unlock');
-                    handleUnlock();
-                } else {
-                    // Ensure rotation is preserved after drag ends if no collision
-                    updateKeyRotation();
-                }
-            }
-            
-            // Set up event listeners for drag (desktop only)
-            if (window.innerWidth > 768) {
-                key.addEventListener('mousedown', handleStart);
-                key.addEventListener('touchstart', handleStart, { passive: false });
-                
-                document.addEventListener('mousemove', handleMove);
-                document.addEventListener('touchmove', handleMove, { passive: false });
-                
-                document.addEventListener('mouseup', handleEnd);
-                document.addEventListener('touchend', handleEnd, { passive: false });
-
-                // Initialize desktop system
-                positionKeyRandomly();
-                updateKeyRotation();
-            } else {
-                console.log('Mobile detected - skipping desktop drag handlers');
-            }
-            
-            // Update rotation on window resize
-            window.addEventListener('resize', () => {
-                setTimeout(() => {
-                    updateKeyRotation();
-                }, 100);
-            });
             
         }
 
@@ -6165,8 +5796,8 @@
             // Initialize starfield background
             starField = new StarField();
 
-            // Setup key unlocking system
-            setupKeyUnlockingSystem();
+            // Setup logo unlocking system
+            setupLogoUnlockSystem();
             
 
             // Show unlock overlay
@@ -6248,7 +5879,7 @@
             } catch (error) {
                 console.error('Initialization error:', error);
                 // Fallback to basic initialization
-                setupKeyUnlockingSystem();
+                setupLogoUnlockSystem();
                 const unlockOverlay = document.getElementById('unlock-overlay');
                 if (unlockOverlay) {
                     unlockOverlay.style.opacity = '1';
