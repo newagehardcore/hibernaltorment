@@ -298,18 +298,31 @@
             }
         }
 
+        /* Mobile Legendarium logo interaction button */
+        #mobile-logo-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 200px;
+            background: url('./assets/images/Legendarium-Logo-Trans-1.png') no-repeat center;
+            background-size: contain;
+            border: none;
+            cursor: pointer;
+            z-index: 1001;
+            display: none; /* Hidden by default, shown on mobile */
+        }
+        
         /* Mobile responsive sizing */
         @media (max-width: 768px) {
-            #lock {
-                width: 150px;
-                height: 150px;
+            #lock, #key {
+                display: none !important; /* Hide lock/key on mobile */
             }
             
-            #key {
-                width: 185px; /* 264px * 0.7 = 185px (30% smaller) */
-                height: 185px; /* 264px * 0.7 = 185px (30% smaller) */
+            #mobile-logo-button {
+                display: block; /* Show Legendarium logo button on mobile */
             }
-            
         }
 
         @media (max-width: 480px) {
@@ -1841,6 +1854,8 @@
         <div id="key">
             <img src="./assets/images/Key.png" alt="Key" draggable="false">
         </div>
+        <!-- Mobile Legendarium logo interaction button -->
+        <div id="mobile-logo-button"></div>
     </div>
 
 
@@ -5371,35 +5386,30 @@
             const unlockOverlay = document.getElementById('unlock-overlay');
             const lock = document.getElementById('lock');
             const key = document.getElementById('key');
+            const mobileLogoButton = document.getElementById('mobile-logo-button');
             let isDragging = false;
             let dragOffset = { x: 0, y: 0 };
             let passwordUnlocked = false;
             let safetyTimeoutId = null;
             
-            // Preload sound effects for immediate playback
-            let pickupSound = null;
-            let openSound = null;
+            // Sound effects removed for cleaner mobile autoplay experience
             
-            try {
-                pickupSound = new Audio('./assets/sounds/pickup.mp3');
-                pickupSound.volume = 0.5;
-                pickupSound.preload = 'auto';
-                pickupSound.load(); // Force load
-                
-                openSound = new Audio('./assets/sounds/open.mp3');
-                openSound.volume = 0.7;
-                openSound.preload = 'auto';
-                openSound.load(); // Force load
-                
-                console.log('Sound effects preloaded successfully');
-            } catch (error) {
-                console.error('Error preloading sound effects:', error);
+            // Mobile Legendarium logo button handler
+            if (mobileLogoButton) {
+                mobileLogoButton.addEventListener('click', (e) => {
+                    console.log('Mobile: Legendarium logo clicked');
+                    handleUnlock();
+                });
             }
             
             // No timeout - lockscreen stays persistent until user interaction
 
-            // Position key randomly on screen (keeping it in outer 50% of screen)
+            // Position key randomly on screen (desktop only)
             function positionKeyRandomly() {
+                if (window.innerWidth <= 768) {
+                    console.log('Mobile detected - skipping key positioning');
+                    return;
+                }
                 const margin = 100; // Keep key away from edges
                 // Final adjusted key sizes
                 const keySize = window.innerWidth <= 480 ? 158 : window.innerWidth <= 768 ? 185 : 302;
@@ -5811,19 +5821,7 @@
                 e.preventDefault();
                 e.stopPropagation();
                 
-                // Play key pickup sound effect during user gesture
-                if (pickupSound) {
-                    try {
-                        pickupSound.currentTime = 0;
-                        pickupSound.play().then(() => {
-                            console.log('✓ Key pickup sound effect played successfully');
-                        }).catch(err => {
-                            console.log('Key pickup sound effect failed to play:', err);
-                        });
-                    } catch (error) {
-                        console.error('Error playing key pickup sound effect:', error);
-                    }
-                }
+                // Sound effects removed for cleaner mobile autoplay experience
                 
                 // MOBILE AUTOPLAY FIX: Capture autoplay permission immediately on touchstart
                 if (e.type.includes('touch')) {
@@ -5935,19 +5933,23 @@
                 }
             }
             
-            // Set up event listeners for drag
-            key.addEventListener('mousedown', handleStart);
-            key.addEventListener('touchstart', handleStart, { passive: false });
-            
-            document.addEventListener('mousemove', handleMove);
-            document.addEventListener('touchmove', handleMove, { passive: false });
-            
-            document.addEventListener('mouseup', handleEnd);
-            document.addEventListener('touchend', handleEnd, { passive: false });
+            // Set up event listeners for drag (desktop only)
+            if (window.innerWidth > 768) {
+                key.addEventListener('mousedown', handleStart);
+                key.addEventListener('touchstart', handleStart, { passive: false });
+                
+                document.addEventListener('mousemove', handleMove);
+                document.addEventListener('touchmove', handleMove, { passive: false });
+                
+                document.addEventListener('mouseup', handleEnd);
+                document.addEventListener('touchend', handleEnd, { passive: false });
 
-            // Initialize system
-            positionKeyRandomly();
-            updateKeyRotation();
+                // Initialize desktop system
+                positionKeyRandomly();
+                updateKeyRotation();
+            } else {
+                console.log('Mobile detected - skipping desktop drag handlers');
+            }
             
             // Update rotation on window resize
             window.addEventListener('resize', () => {
