@@ -5105,27 +5105,12 @@
                 return webampInstance;
             } catch (error) {
                 console.error("Error initializing Webamp:", error);
-
-                // Try to show something even if Webamp fails
-                const container = document.getElementById('webamp-container');
-                if (container) {
-                    container.innerHTML = `
-                        <div style="color: white; padding: 20px; text-align: center; font-family: monospace;">
-                            <div style="margin-bottom: 20px;">Audio player failed to load</div>
-                            <div style="margin-bottom: 20px;">
-                                <button onclick="location.reload()" style="padding: 10px 20px; background: #333; color: white; border: 1px solid #666; cursor: pointer;">
-                                    Refresh Page
-                                </button>
-                            </div>
-                            <div style="font-size: 12px; opacity: 0.7;">
-                                If this persists, try a different browser or device
-                            </div>
-                        </div>
-                    `;
-                    container.style.opacity = '1';
-                }
-
-                throw error; // Re-throw to trigger the timeout handler
+                console.error("Error stack:", error.stack);
+                
+                // Don't show error UI in dev tools - just log and continue
+                // The site should still work with basic functionality
+                
+                throw error; // Re-throw for debugging purposes
             }
         }
 
