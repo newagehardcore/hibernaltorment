@@ -1513,6 +1513,19 @@
             overflow: hidden;
             pointer-events: auto;
         }
+        
+        /* Make DVD cover image clickable as link */
+        #dvd-cover-window .cover-image-link {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        
+        #dvd-cover-window .cover-image-link:hover {
+            opacity: 0.85;
+        }
 
         /* DVD window header */
         #dvd-cover-window .cover-header {
@@ -1758,9 +1771,15 @@
         </div>
         <div class="cover-content">
             <div class="cover-image-container">
-                <img id="dvd-cover-image"
-                    src="https://res.cloudinary.com/dtwix3ubl/image/upload/v1751300090/gkHourglass8_np2lyy.jpg"
-                    alt="Album Cover">
+                <a href="https://gatekeeper-fm.bandcamp.com/merch/miniature-compact-disc-nfc-keychain" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   class="cover-image-link"
+                   title="Get the Miniature Compact Disc NFC Keychain">
+                    <img id="dvd-cover-image"
+                        src="https://res.cloudinary.com/dtwix3ubl/image/upload/v1751300090/gkHourglass8_np2lyy.jpg"
+                        alt="Album Cover">
+                </a>
             </div>
         </div>
         <div class="cover-bottom"></div>
